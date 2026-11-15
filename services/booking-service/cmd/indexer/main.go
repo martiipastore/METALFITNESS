@@ -19,6 +19,7 @@ import (
 	_ "time/tzdata" // fecha y hora locales del documento en America/Argentina/Buenos_Aires
 
 	"github.com/gin-gonic/gin"
+	goredis "github.com/redis/go-redis/v9"
 
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/health"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/httpserver"
@@ -28,11 +29,16 @@ import (
 	bookinghttp "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/http"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/opensearch"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/postgres"
+	bookingredis "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/redis"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/application"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/config"
 )
 
 const serviceName = "booking-indexer"
+
+// esperaVisibilidad supera el refresh periódico de OpenSearch (1 s): pasado ese
+// plazo, el cambio indexado ya aparece en las búsquedas (ADR-007 v2).
+const esperaVisibilidad = 1500 * time.Millisecond
 
 type relojSistema struct{}
 
@@ -99,7 +105,15 @@ func run(cfg config.Config, log *slog.Logger) error {
 		client := &opensearch.Client{URL: cfg.OpenSearchURL, HTTP: &http.Client{Timeout: 5 * time.Second}}
 		// Sin OpenSearch no hay dónde indexar: es dependencia crítica del indexer.
 		checks = append(checks, health.Check{Name: "opensearch", Fn: client.Ping})
-		adapter := indexeramqp.Adapter{App: application.NewIndexador(client, relojSistema{}), Metricas: metricas, Espera: 12 * time.Second}
+		indexador := application.NewIndexador(client, relojSistema{})
+		if cfg.CacheEnabled {
+			// ADR-007 v2: la caché de búsquedas copia resultados del índice; cada
+			// versión aplicada la invalida. Sin Redis, solo vence por tiempo.
+			redisClient := goredis.NewClient(&goredis.Options{Addr: cfg.RedisAddr, Password: cfg.RedisPassword, DialTimeout: cfg.CacheTimeout, ReadTimeout: cfg.CacheTimeout, WriteTimeout: cfg.CacheTimeout, MaxRetries: -1})
+			defer redisClient.Close()
+			indexador.ConInvalidacion(&bookingredis.Clases{Client: redisClient, Retencion: cfg.CacheClasesRetencion, Timeout: cfg.CacheTimeout, Metricas: &bookingredis.MetricasClases{}}, esperaVisibilidad)
+		}
+		adapter := indexeramqp.Adapter{App: indexador, Metricas: metricas, Espera: 12 * time.Second}
 		consumer = &messaging.Consumer{URL: cfg.AMQPURL, Route: messaging.Route{Queue: "booking-indexer.clase-actualizada", Key: "clase.actualizada"}, Handle: adapter.Handle, Permanent: indexeramqp.Permanent, Log: log}
 		checks = append(checks, health.Check{Name: consumer.Route.Queue, Fn: consumer.Ready, Partial: true})
 		consumerCtx, cancel := context.WithCancel(ctx)
@@ -109,7 +123,7 @@ func run(cfg config.Config, log *slog.Logger) error {
 		// automático con tipos adivinados en lugar del mapping estricto.
 		go func() {
 			defer close(done)
-			if asegurarIndice(consumerCtx, log, client) {
+			if asegurarIndice(consumerCtx, log, client, db) {
 				consumer.Run(consumerCtx)
 			}
 		}()
@@ -134,11 +148,24 @@ func run(cfg config.Config, log *slog.Logger) error {
 }
 
 // asegurarIndice crea el primer índice y su alias cuando OpenSearch responde.
-func asegurarIndice(ctx context.Context, log *slog.Logger, client *opensearch.Client) bool {
+func asegurarIndice(ctx context.Context, log *slog.Logger, client *opensearch.Client, db *postgres.DB) bool {
 	for ctx.Err() == nil {
 		work, cancel := context.WithTimeout(ctx, 10*time.Second)
 		err := client.Asegurar(work, nombreIndice())
+		vigente := false
+		if err == nil {
+			vigente, err = client.Vigente(work)
+		}
 		cancel()
+		if err == nil && !vigente {
+			// Índice anterior a la búsqueda parcial: se reconstruye con alias, sin
+			// pausa para las búsquedas (ADR-014, D-87).
+			log.Info("índice sin el campo texto; se reconstruye")
+			var out application.ResultadoReindexado
+			if out, err = application.Reindexar(ctx, db, client, nombreIndice()); err == nil {
+				log.Info("índice reconstruido", slog.String("indice", out.Indice), slog.Int64("clases", out.Clases))
+			}
+		}
 		if err == nil {
 			return true
 		}

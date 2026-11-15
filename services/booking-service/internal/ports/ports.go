@@ -68,6 +68,23 @@ type CacheActividades interface {
 	Invalidar(ctx context.Context) error
 }
 
+// CacheClases guarda copias no autoritativas de páginas de búsqueda de clases
+// (corrección de búsqueda del 13/11/2026, ADR-007 v2). La copia no lleva
+// ReservadaPorMi: la clave no depende del alumno. generacion identifica la
+// versión vigente de la caché; una invalidación la cambia y vuelve
+// inalcanzables todas las copias anteriores.
+type CacheClases interface {
+	LeerClases(ctx context.Context, clave string) (copia domain.PaginaClases, generacion string, encontrado bool, err error)
+	GuardarClases(ctx context.Context, generacion, clave string, copia domain.PaginaClases) error
+	InvalidacionClases
+}
+
+// InvalidacionClases vuelve inalcanzables las copias de búsquedas de clases. La
+// usan Booking al confirmar escrituras y el indexer al aplicar una versión.
+type InvalidacionClases interface {
+	InvalidarClases(ctx context.Context) error
+}
+
 // IndiceClases es el modelo de lectura de búsqueda (etapa 8, ADR-014). Devuelve
 // las clases sin ReservadaPorMi: ese dato del alumno sale de PostgreSQL.
 type IndiceClases interface {

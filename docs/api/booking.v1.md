@@ -13,9 +13,11 @@ formato de respuesta. Cambian tres cosas:
 
 - `pagina × tamano` no puede superar 10.000: si lo supera responde `400 VALIDACION`.
 - Si OpenSearch no responde, la búsqueda devuelve `503 DEPENDENCIA_NO_DISPONIBLE`, sin
-  respaldo en PostgreSQL. El detalle de clase, las reservas y los ingresos siguen.
+  respaldo en PostgreSQL, salvo que haya una copia de esa búsqueda en la caché
+  (ADR-007 v2). El detalle de clase, las reservas y los ingresos siguen.
 - El listado puede mostrar un cambio con un atraso de alrededor de 1 s. Reservar valida
-  siempre contra PostgreSQL. `reservada_por_mi` también sale de PostgreSQL.
+  siempre contra PostgreSQL. `reservada_por_mi` también sale de PostgreSQL; si la base no
+  responde, la búsqueda sigue y lo informa con `marcas_disponibles: false`.
 
 Ver [ETAPA_8_BUSQUEDA.md](../entrega-final/ETAPA_8_BUSQUEDA.md).
 
@@ -47,11 +49,25 @@ confirma con members-service (`/internal/v1/profesores`): debe ser un PROFESOR a
 
 | Método y ruta | Quién | Qué hace |
 |---|---|---|
-| GET /classes | ALUMNO, PROFESOR, ADMINISTRADOR | Búsqueda (HU-13): `fecha_desde` y `fecha_hasta` inclusivas (por defecto hoy y 14 días más, hasta 62), `actividad_id`, `franja` (hora de inicio `HH:MM`), `solo_disponibles`, paginación; orden por `inicio` ascendente e `id` como desempate (ADR-014) |
+| GET /classes | ALUMNO, PROFESOR, ADMINISTRADOR | Búsqueda (HU-13): `q` (texto parcial, hasta 60 caracteres y 5 palabras), `fecha_desde` y `fecha_hasta` inclusivas (por defecto hoy y 14 días más, hasta 62), `actividad_id`, `franja` (hora de inicio `HH:MM`), `solo_disponibles`, paginación; orden por `inicio` ascendente e `id` como desempate (ADR-014) |
 | GET /classes/{id} | ALUMNO, PROFESOR, ADMINISTRADOR | `{"clase": Clase}`; para ADMINISTRADOR y el profesor responsable agrega `reservas` no canceladas: `{id, alumno_id, alumno_nombre, estado, creada_en, ingreso_en}` (CA-21.1, CA-35.1/2). Si members no responde, `alumno_nombre` es `null` (D-22) |
 | GET /classes/mine | PROFESOR | Mis clases con ocupación (HU-21) |
 | PUT /classes/{id}/capacity | ADMINISTRADOR | `capacidad` ≥ ocupación y ≤ tope; solo PROGRAMADA (CA-08.1/2/4) |
 | POST /classes/{id}/cancel | ADMINISTRADOR | `motivo`; cancela la clase y sus reservas activas (CA-08.3, RN-32) |
+
+**Texto parcial y caché (ADR-007 v2, D-95).** Con `q`, cada palabra, sin distinguir
+mayúsculas ni tildes, debe ser el comienzo de alguna palabra del nombre de la actividad o
+del profesor: `q=zum` encuentra Zumba y `q=str gom` encuentra Strong Nation con Lucía Gómez.
+Además de `items`, `total`, `pagina` y `tamano`, la respuesta agrega tres campos
+compatibles con la versión anterior:
+
+| Campo | Significado |
+|---|---|
+| `consultado_en` | Cuándo se consultó la fuente (RFC 3339 UTC). En una copia guardada, su antigüedad |
+| `origen` | `fuente`, `cache` (copia de menos de 30 s) o `cache_vencida` (copia vieja servida porque la fuente no responde) |
+| `marcas_disponibles` | `false` si no se pudo confirmar `reservada_por_mi` (PostgreSQL no responde): las marcas salen en `false` y no deben leerse como «no reservada» |
+
+La cabecera `X-Cache` repite el origen: `MISS`, `HIT` o `STALE`.
 
 `Clase` en listados:
 

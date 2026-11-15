@@ -71,11 +71,30 @@ func TestBusquedaIndexada(t *testing.T) {
 		if !errors.Is(err, ports.ErrNoDisponible) {
 			t.Fatalf("debe ser dependencia no disponible: %v", err)
 		}
+	})
+	// Corrección de búsqueda (13/11/2026): con PostgreSQL caído el índice
+	// responde igual; solo falta la marca "ya reservada", y se informa.
+	t.Run("base_caida_busca_en_el_indice_sin_marcas", func(t *testing.T) {
 		indice.err = nil
 		marcas.err = errors.New("base caída")
-		_, err = s.BuscarClases(ctx, Actor{ID: alumno, Rol: RolAlumno}, domain.FiltroClases{Pagina: 1, Tamano: 20})
-		if !errors.Is(err, ports.ErrNoDisponible) {
-			t.Fatalf("sin marcas confiables tampoco responde: %v", err)
+		defer func() { marcas.err = nil }()
+		page, err := s.BuscarClases(ctx, Actor{ID: alumno, Rol: RolAlumno}, domain.FiltroClases{Pagina: 1, Tamano: 20})
+		if err != nil {
+			t.Fatalf("el índice no depende de la base: %v", err)
+		}
+		if page.MarcasDisponibles || page.Items[0].ReservadaPorMi || len(page.Items) != 2 {
+			t.Fatalf("debe informar marcas no disponibles y no inventar reservas: %+v", page)
+		}
+	})
+	t.Run("texto_parcial_llega_normalizado_al_indice", func(t *testing.T) {
+		if _, err := s.BuscarClases(ctx, Actor{ID: admin, Rol: RolAdministrador}, domain.FiltroClases{Texto: "  ZÚM ", Pagina: 1, Tamano: 20}); err != nil {
+			t.Fatal(err)
+		}
+		if len(indice.filtro.Palabras) != 1 || indice.filtro.Palabras[0] != "zum" {
+			t.Fatalf("palabras = %v", indice.filtro.Palabras)
+		}
+		if _, err := s.BuscarClases(ctx, Actor{ID: admin, Rol: RolAdministrador}, domain.FiltroClases{Texto: "a b c d e f", Pagina: 1, Tamano: 20}); !errors.Is(err, domain.ErrValidacion) {
+			t.Fatalf("más de 5 palabras es VALIDACION: %v", err)
 		}
 	})
 }

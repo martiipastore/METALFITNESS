@@ -131,10 +131,10 @@ func Register(r *gin.Engine, s *application.Servicio, secret string, ahora func(
 
 	// Clases (HU-08, HU-13, HU-21).
 	api.GET("/classes", func(c *gin.Context) {
-		if !consulta(c, "fecha_desde", "fecha_hasta", "actividad_id", "franja", "solo_disponibles", "pagina", "tamano") {
+		if !consulta(c, "fecha_desde", "fecha_hasta", "actividad_id", "franja", "solo_disponibles", "q", "pagina", "tamano") {
 			return
 		}
-		f := domain.FiltroClases{ActividadID: c.Query("actividad_id"), Franja: c.Query("franja")}
+		f := domain.FiltroClases{ActividadID: c.Query("actividad_id"), Franja: c.Query("franja"), Texto: c.Query("q")}
 		var err error
 		if v := c.Query("fecha_desde"); v != "" {
 			if f.Desde, err = domain.ParseFecha(v); err != nil {
@@ -174,7 +174,13 @@ func Register(r *gin.Engine, s *application.Servicio, secret string, ahora func(
 		for _, cl := range page.Items {
 			out = append(out, claseDTO(cl, now))
 		}
-		c.JSON(200, pagina(out, page.Total, page.Pagina, page.Tamano))
+		OrigenesBusqueda.contar(page)
+		c.Header("X-Cache", origenCabecera(page.Origen))
+		res := pagina(out, page.Total, page.Pagina, page.Tamano)
+		res["consultado_en"] = page.ConsultadoEn.UTC()
+		res["origen"] = page.Origen
+		res["marcas_disponibles"] = page.MarcasDisponibles
+		c.JSON(200, res)
 	})
 	api.GET("/classes/mine", func(c *gin.Context) {
 		if !consulta(c) {

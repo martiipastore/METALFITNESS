@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
@@ -15,6 +16,39 @@ import (
 type Indexador struct {
 	indice ports.IndiceEscritura
 	reloj  ports.Reloj
+	// cache, si está configurada, se invalida cada vez que el índice cambia: la
+	// caché de búsquedas copia resultados del índice (ADR-007 v2).
+	cache ports.InvalidacionClases
+	// espera es cuánto tarda OpenSearch en hacer visible un documento (refresh
+	// periódico de 1 s). La caché se invalida al aplicar y otra vez después de
+	// espera: una búsqueda en ese hueco puede guardar el estado anterior, y la
+	// segunda invalidación lo descarta. Varias versiones seguidas posponen la
+	// segunda invalidación hasta la última.
+	espera time.Duration
+	mu     sync.Mutex
+	timer  *time.Timer
+}
+
+// ConInvalidacion hace que cada versión aplicada invalide la caché de búsquedas
+// ahora y de nuevo cuando el cambio ya es visible en el índice.
+func (i *Indexador) ConInvalidacion(c ports.InvalidacionClases, espera time.Duration) *Indexador {
+	i.cache, i.espera = c, espera
+	return i
+}
+
+func (i *Indexador) invalidar(ctx context.Context) {
+	// Si Redis no responde, la copia dura como máximo su vigencia fresca.
+	_ = i.cache.InvalidarClases(ctx)
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	if i.timer != nil {
+		i.timer.Stop()
+	}
+	i.timer = time.AfterFunc(i.espera, func() {
+		diferida, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		_ = i.cache.InvalidarClases(diferida)
+	})
 }
 
 func NewIndexador(indice ports.IndiceEscritura, reloj ports.Reloj) *Indexador {
@@ -35,6 +69,9 @@ func (i *Indexador) Aplicar(ctx context.Context, e domain.EventoClase) (Resultad
 	aplicado, err := i.indice.Indexar(ctx, e.Clase)
 	if err != nil {
 		return ResultadoIndexado{}, err
+	}
+	if aplicado && i.cache != nil {
+		i.invalidar(ctx)
 	}
 	return ResultadoIndexado{Aplicado: aplicado, Retraso: i.reloj.Ahora().Sub(e.OcurridoEn)}, nil
 }
