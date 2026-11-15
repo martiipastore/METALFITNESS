@@ -235,6 +235,8 @@ li button { margin-left: 0.5rem; }
 .page { overflow-x: auto; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1rem; margin: 1rem 0; }
 .filters .check { display: flex; gap: 0.4rem; align-items: center; }
+.filters .filters-search { flex: 1 1 16rem; min-width: 0; }
+.filters .filters-search input { width: 100%; }
 button.link { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-decoration: underline; }
 .reception input { font-size: 1.6rem; letter-spacing: 0.1em; width: 12ch; }
 .checkin { margin-top: 1.5rem; padding: 1.25rem 1.5rem; border-radius: 8px; border: 2px solid; }

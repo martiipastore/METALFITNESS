@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../../auth/session';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { fullName, Person } from '../admin/types';
@@ -22,6 +22,7 @@ export function ActivitiesPage() {
   const [period, setPeriod] = useState({ desde: todayPlus(), hasta: todayPlus(13) });
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const schedulesRef = useRef<HTMLElement>(null);
 
   const current = activities.find((a) => a.id === selected);
 
@@ -68,11 +69,12 @@ export function ActivitiesPage() {
     try {
       await action();
       setMessage(done);
-      await loadActivities();
-      await loadSchedules();
     } catch (error) {
       setMessage(errorText(error, 'No se pudo completar la operación.'));
     } finally {
+      // También tras un error: si el horario se creó y falló la generación, se ve.
+      await loadActivities();
+      await loadSchedules();
       setBusy(false);
     }
   }
@@ -80,10 +82,33 @@ export function ActivitiesPage() {
   const send = (path: string, method: string, body: object) =>
     authRequest(path, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
-  function createActivity(event: FormEvent) {
+  // La actividad nueva queda elegida y se baja a sus horarios: sin horario no
+  // hay clases que el alumno pueda ver.
+  async function createActivity(event: FormEvent) {
     event.preventDefault();
-    void run(() => send('/api/v1/activities', 'POST', { nombre: newActivity.nombre, capacidad_maxima: Number(newActivity.capacidad) }), 'Actividad creada.')
-      .then(() => setNewActivity({ nombre: '', capacidad: '30' }));
+    setBusy(true);
+    setMessage('');
+    try {
+      const res = await authRequest<Actividad>('/api/v1/activities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: newActivity.nombre, capacidad_maxima: Number(newActivity.capacidad) }),
+      });
+      setNewActivity({ nombre: '', capacidad: '30' });
+      await loadActivities();
+      setSelected(res.data.id);
+      setMessage(`Actividad ${res.data.nombre} creada. Ahora agregale un horario: sus clases se generan solas.`);
+      window.setTimeout(() => schedulesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    } catch (error) {
+      setMessage(errorText(error, 'No se pudo crear la actividad.'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function selectActivity(id: string) {
+    setSelected(id);
+    window.setTimeout(() => schedulesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   }
 
   function toggle(a: Actividad) {
@@ -92,24 +117,34 @@ export function ActivitiesPage() {
 
   async function changeMax(a: Actividad) {
     const value = await confirm({
-      title: `Capacidad de ${a.nombre}`,
-      message: `Nueva capacidad máxima de la actividad. Tope: ${a.musculacion ? 50 : 30} personas.`,
-      confirmLabel: 'Guardar capacidad',
-      input: { label: 'Capacidad máxima', type: 'number', initial: String(a.capacidad_maxima), min: 1, max: a.musculacion ? 50 : 30 },
+      title: `Tope por clase de ${a.nombre}`,
+      message: `Es el máximo de personas que puede tener cada clase de ${a.nombre} (hasta ${a.musculacion ? 50 : 30}). No cambia los cupos de las clases ya generadas: esos se editan en Clases, con el botón «Cupos».`,
+      confirmLabel: 'Guardar tope',
+      input: { label: 'Tope por clase', type: 'number', initial: String(a.capacidad_maxima), min: 1, max: a.musculacion ? 50 : 30 },
     });
     if (value === null) return;
-    void run(() => send(`/api/v1/activities/${a.id}`, 'PUT', { capacidad_maxima: Number(value) }), 'Capacidad máxima actualizada.');
+    void run(() => send(`/api/v1/activities/${a.id}`, 'PUT', { capacidad_maxima: Number(value) }), 'Tope actualizado. Los cupos de las clases ya generadas no cambian: editalos en Clases.');
   }
 
+  // Crear el horario y generar sus clases del período elegido abajo en un solo
+  // paso: es lo que hace que el alumno las vea. Regenerar no duplica (CA-07.5).
   function createSchedule(event: FormEvent) {
     event.preventDefault();
-    void run(() => send(`/api/v1/activities/${selected}/schedules`, 'POST', {
-      dia_semana: Number(schedule.dia),
-      inicio: schedule.inicio,
-      duracion_minutos: Number(schedule.duracion),
-      profesor_id: schedule.profesor,
-      capacidad: Number(schedule.capacidad),
-    }), 'Horario creado.');
+    void run(async () => {
+      await send(`/api/v1/activities/${selected}/schedules`, 'POST', {
+        dia_semana: Number(schedule.dia),
+        inicio: schedule.inicio,
+        duracion_minutos: Number(schedule.duracion),
+        profesor_id: schedule.profesor,
+        capacidad: Number(schedule.capacidad),
+      });
+      const res = await authRequest<{ creadas: number }>('/api/v1/classes/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(period),
+      });
+      return res.data.creadas;
+    }, `Horario creado. Sus clases se generaron hasta el ${period.hasta} y los alumnos ya pueden verlas y reservarlas.`);
   }
 
   async function generate(event: FormEvent) {
@@ -145,17 +180,18 @@ export function ActivitiesPage() {
 
       <table className="data-table">
         <thead>
-          <tr><th>Actividad</th><th>Capacidad máxima</th><th>Puntos por asistencia</th><th>Estado</th><th /></tr>
+          <tr><th>Actividad</th><th>Tope por clase</th><th>Puntos por asistencia</th><th>Estado</th><th /></tr>
         </thead>
         <tbody>
           {activities.map((a) => (
             <tr key={a.id} aria-selected={a.id === selected}>
-              <td><button type="button" className="link" onClick={() => setSelected(a.id)}>{a.nombre}</button></td>
+              <td><button type="button" className="link" onClick={() => selectActivity(a.id)}>{a.nombre}</button>{a.id === selected && <span className="muted"> · elegida</span>}</td>
               <td>{a.capacidad_maxima}</td>
               <td>{a.puntos_asistencia}</td>
               <td>{a.activa ? 'Activa' : 'Inactiva'}</td>
               <td>
-                <button type="button" disabled={busy} onClick={() => void changeMax(a)}>Capacidad</button>{' '}
+                <button type="button" disabled={busy} onClick={() => selectActivity(a.id)}>Horarios</button>{' '}
+                <button type="button" disabled={busy} onClick={() => void changeMax(a)}>Tope</button>{' '}
                 <button type="button" disabled={busy} onClick={() => toggle(a)}>{a.activa ? 'Inactivar' : 'Activar'}</button>
               </td>
             </tr>
@@ -165,16 +201,17 @@ export function ActivitiesPage() {
 
       <form className="inline-form admin-toolbar-panel" onSubmit={createActivity}>
         <label>Nueva actividad <input value={newActivity.nombre} onChange={(e) => setNewActivity({ ...newActivity, nombre: e.target.value })} maxLength={60} required /></label>
-        <label>Capacidad máxima <input type="number" min={1} max={30} value={newActivity.capacidad} onChange={(e) => setNewActivity({ ...newActivity, capacidad: e.target.value })} required /></label>
+        <label>Tope por clase <input type="number" min={1} max={30} value={newActivity.capacidad} onChange={(e) => setNewActivity({ ...newActivity, capacidad: e.target.value })} required /></label>
         <button type="submit" disabled={busy}>Crear</button>
       </form>
 
       {current && (
-        <section className="admin-section">
+        <section className="admin-section" ref={schedulesRef}>
           <div className="admin-section-heading">
             <span aria-hidden="true">03</span>
             <div><p>Actividad seleccionada</p><h2>Horarios de {current.nombre}</h2></div>
           </div>
+          <p className="muted">Al agregar un horario se generan sus clases desde el {period.desde} hasta el {period.hasta} (período de la sección 04). Para ponerle horario a otra actividad, tocá «Horarios» en la tabla.</p>
           {schedules.length === 0 ? (
             <p>Sin horarios.</p>
           ) : (
@@ -220,14 +257,14 @@ export function ActivitiesPage() {
       <section className="admin-section">
         <div className="admin-section-heading">
           <span aria-hidden="true">04</span>
-          <div><p>Último paso</p><h2>Generar clases</h2></div>
+          <div><p>Período</p><h2>Generar clases</h2></div>
         </div>
         <form className="inline-form" onSubmit={generate}>
           <label>Desde <input type="date" value={period.desde} onChange={(e) => setPeriod({ ...period, desde: e.target.value })} required /></label>
           <label>Hasta <input type="date" value={period.hasta} onChange={(e) => setPeriod({ ...period, hasta: e.target.value })} required /></label>
           <button type="submit" disabled={busy}>Generar</button>
         </form>
-        <p className="muted">Se generan las clases futuras de todas las actividades activas; regenerar un período no duplica clases.</p>
+        <p className="muted">Se generan las clases futuras de todas las actividades activas; regenerar un período no duplica clases. Usalo para extender el período: al agregar un horario sus clases ya se generan solas.</p>
       </section>
     </main>
   );
