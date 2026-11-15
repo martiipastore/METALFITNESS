@@ -28,7 +28,7 @@ documento de cada etapa.
 | **Capacidad externa (D9)**: 100 puntos en MELT por asistencia, entrega en segundo plano con referencia estable | Implementado y validado contra MELT real | [Etapa 13](entrega-final/ETAPA_13_MELT.md), [ADR-009 v2](adr/ADR-009-v2-acreditacion-melt.md) |
 | **Observabilidad**: logs JSON con `correlation_id`, trazas del gateway y Benefits en Jaeger, Prometheus, tablero de Grafana y tres alertas | Implementado; trazas de Members y Booking pendientes | [Etapa 14](entrega-final/ETAPA_14_OBSERVABILIDAD.md), D-93 |
 | **Nube**: gateway, Members, Benefits y web en Vercel con PostgreSQL gestionado; la API de partners es pública | Publicado; Booking, training y mensajería solo locales (L-19) | [ADR-021](adr/ADR-021-despliegue-vercel.md), D-75 |
-| **Balanceo de Booking** (2 instancias detrás de Traefik) | Pendiente (etapa 12B) | [ADR-012 v2](adr/ADR-012-v2-estabilidad-health-checks.md) |
+| **Balanceo de Booking** (2 instancias, balanceadas por el gateway) | Implementado el 15/11/2026 (etapa 12B) | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md) |
 | Eventos `membresia.cancelada`, `usuario.desactivado` y `alumno.creado` | Diseño objetivo; no publicados | §7 |
 
 Los diagramas y las demás secciones describen el **diseño objetivo** salvo que digan
@@ -84,7 +84,7 @@ Salvo que una sección indique expresamente el estado actual, sus descripciones 
 | Backend | Go 1.22+ con Gin |
 | Frontend | React + Vite + TypeScript (SPA) |
 | Entrada | `api-gateway` en Go: JWT, identidad, rate limiting, routing semántico, correlation ID, timeouts |
-| Servicios de negocio | `members-service`, `booking-service` (×2 detrás de Traefik), `benefits-service`, `training-service` |
+| Servicios de negocio | `members-service`, `booking-service` (×2, balanceado por el gateway), `benefits-service`, `training-service` |
 | Procesos de soporte | `booking-indexer` (CQRS de lectura), `notification-worker` (emails) |
 | Persistencia | PostgreSQL (una instancia, una base por servicio) y MongoDB (training y notificaciones) |
 | Mensajería | RabbitMQ, exchange topic `gym.events`, Transactional Outbox, consumidores idempotentes |
@@ -152,7 +152,6 @@ flowchart LR
 
     subgraph services["Servicios de negocio"]
         members["<b>members-service</b><br/>Go · Capas · :8081"]
-        traefik["<b>Traefik</b><br/>LB interno + health checks"]
         booking1["<b>booking-service #1</b><br/>Go · Hexagonal · :8082"]
         booking2["<b>booking-service #2</b><br/>Go · Hexagonal · :8082"]
         benefits["<b>benefits-service</b><br/>Go · Hexagonal · :8083"]
@@ -177,9 +176,8 @@ flowchart LR
     web -->|"HTTPS/JSON + JWT"| gw
     partner -->|"HTTPS/JSON + API key<br/>+ Idempotency-Key"| gw
     gw -->|"HTTP"| members
-    gw -->|"HTTP"| traefik
-    traefik --> booking1
-    traefik --> booking2
+    gw -->|"HTTP · round-robin<br/>chequeo 3/2"| booking1
+    gw -->|"HTTP"| booking2
     gw -->|"HTTP"| benefits
     gw -->|"HTTP"| training
     gw -.->|"token bucket"| redis
@@ -243,7 +241,7 @@ flowchart LR
 - **CQRS de lectura:** las búsquedas de clases disponibles (`GET /clases?actividad=&fecha=`) se resuelven en OpenSearch; **toda escritura y toda validación** (cupo, duplicados, superposición) se hacen contra PostgreSQL. La ocupación mostrada en listados es eventualmente consistente; la reserva nunca lo es.
 - **Concurrencia del cupo (RN-14):** actualización condicional atómica sobre la clase (`ocupacion < capacidad`) o bloqueo de fila, en la misma transacción que inserta la reserva. Restricciones únicas parciales para "una reserva CONFIRMADA por alumno y clase". Detalle en ADR-003.
 - **Cancelaciones concurrentes de membresía:** cada reserva conserva `membresia_id`; booking registra las revocaciones consumidas. La creación de reservas y el consumidor se serializan con `pg_advisory_xact_lock` sobre esa membresía, conforme a ADR-005 v2.
-- **2 instancias detrás de Traefik:** sin estado en memoria. Los procesos programados (marcar ausencias al finalizar clases, relay del outbox) se coordinan con `pg_advisory_lock` / `FOR UPDATE SKIP LOCKED` para no ejecutarse dos veces.
+- **2 instancias balanceadas por el gateway (ADR-012 v3):** sin estado en memoria. Los procesos programados (marcar ausencias al finalizar clases, relay del outbox) se coordinan con `pg_advisory_lock` / `FOR UPDATE SKIP LOCKED` para no ejecutarse dos veces.
 - **Binarios:** `cmd/api` (HTTP + consumidor) y `cmd/indexer` (booking-indexer). Mismo módulo, mismo dominio de lectura.
 
 #### benefits-service — Hexagonal
@@ -695,7 +693,7 @@ Estados por servicio: `ready`, `degraded`, `not_ready` (respondió 503) o `unrea
 | `web` | build `web/`: Vite compila estáticos, nginx los sirve | 5173 | 1 | Sí |
 | `api-gateway` | build `gateway/` | 8080 | 1 | Sí |
 | `members-service` | build | 127.0.0.1:8081 | 1 | Sí |
-| `booking-service` | build | 127.0.0.1:8082 | 1 (2 detrás de Traefik más adelante) | Sí |
+| `booking-service` y `booking-service-2` | build | 127.0.0.1:8082 y 127.0.0.1:8087 | 2, balanceadas por el gateway | Sí |
 | `booking-indexer` | misma imagen que booking, entrypoint `/app/booking-indexer` | 127.0.0.1:8086 (health, métricas) | 1 | Sí; consumidor con `BOOKING_INDEXER_ENABLED` (etapa 8) |
 | `benefits-service` | build | 127.0.0.1:8083 | 1 | Sí |
 | `training-service` | build | 127.0.0.1:8084 | 1 | Sí |
@@ -705,7 +703,6 @@ Estados por servicio: `ready`, `degraded`, `not_ready` (respondió 503) o `unrea
 | `redis` | redis:7-alpine (con contraseña) | 127.0.0.1:6379 | 1 | Sí: control de tráfico del gateway y caché de Booking |
 | `rabbitmq` | rabbitmq:3-management | 127.0.0.1:5672 / 15672 | 1 | Sí: eventos con reintentos y DLQ; métricas por cola en 15692 |
 | `benefits-mock` | stoplight/prism:5.15.10 (contrato de partners) | 4010 | 1 | Sí |
-| `traefik` | traefik v3 | — | 1 | No, etapa de balanceo |
 | `opensearch` | opensearch 2.17.1 (perfil `search`) | 127.0.0.1:9200 | 1 | Sí, etapa 8 (local) |
 | `mailpit` | axllent/mailpit:v1.20 | 127.0.0.1:8025 (UI) | 1 | Sí, con el perfil `identity` (correo de activación y bienvenida de Members) |
 | `otel-collector`, `jaeger` | versiones fijadas en Compose | Jaeger UI 16686 (loopback) | 1 c/u | Sí, primera traza del flujo mínimo; memoria local |
@@ -771,7 +768,7 @@ flowchart LR
 | L-13 | **Más dependencias síncronas hacia members** (asignaciones desde training, datos de alumnos desde booking), agregadas para cumplir RN-30 y HU-21. | members concentra más tráfico; su caída rechaza las operaciones que necesitan autorización y degrada los listados. | Timeout, un reintento y circuit breaker; autorización sin caché y falla cerrada; listados degradan a IDs sin nombre. |
 | L-14 | **Stack local pesado** (~8 GB de RAM, 15 GB de disco). | Máquinas modestas pueden no levantarlo completo. | Perfil reducido sin observabilidad cuando esta se agregue; Dockerfiles con caché de módulos compartida. |
 | L-15 | **MongoDB standalone** (ADR-003 prevé un replica set de 1 nodo). | Sin transacciones multi-documento. | Ninguna operación las necesita todavía; se pasa a replica set cuando un caso de uso lo requiera. |
-| L-16 | **booking-service con 1 réplica y sin Traefik** en el esqueleto. | No se demuestra balanceo todavía. | Se agrega en la etapa de balanceo (2 réplicas + Traefik con health checks). |
+| L-16 | **El balanceo vive en el gateway**, que es una sola instancia (L-06). | Mientras se detecta una caída (10 a 15 s) fallan algunas solicitudes a la instancia caída; si el gateway cae, no hay entrada. | Aceptado para el alcance del TP (ADR-012 v3). |
 | L-17 | **Healthchecks de compose sobre `/health/ready`**. | Si una dependencia crítica cae, Docker marca el proceso *unhealthy* (no lo reinicia); una dependencia parcial produce estado `degraded`. | Es lo esperado: el detalle se ve en `/api/v1/status` y solo se retira tráfico cuando falla la capacidad principal. |
 | L-18 | **Acreditaciones y penalizaciones no son conmutativas.** Dos operaciones concurrentes pueden dejar saldo 400 o 500 según cuál se aplique primero. | El resultado no se deduce solo de la fecha del hecho. | Bloqueo de cuenta, secuencia creciente y fechas de hecho/aplicación diferenciadas; orden auditable según ADR-004. |
 | L-19 | **La nube no replica el entorno local** (ADR-021). Vercel no tiene RabbitMQ, Redis, OpenSearch ni Collector/Jaeger. | En producción no hay trazas ni rate limiting del gateway; la evidencia de observabilidad es local. | Límites y cuota por integración en PostgreSQL (ADR-016); evaluar observabilidad gestionada si se exige en la nube. |
@@ -840,7 +837,7 @@ flowchart LR
 | D9 — Consumo del proveedor | 100 puntos en MELT por asistencia, en segundo plano con anticorrupción | [ADR-009 v2](adr/ADR-009-v2-acreditacion-melt.md), D-92 | Implementado y validado contra MELT real | Test de contrato; [etapa 13](entrega-final/ETAPA_13_MELT.md) |
 | D10 — Resiliencia | Timeouts, reintentos idempotentes, fallas parciales sin retirar el proceso | [ADR-010 v2](adr/ADR-010-v2-resiliencia-validada.md) | Implementado | [POSTMORTEM.md](POSTMORTEM.md); caídas en los E2E; Redis caído en la etapa 12 |
 | D11 — Observabilidad | Logs JSON correlacionados, trazas OTel, métricas, tablero y alertas | [ADR-011 v2](adr/ADR-011-v2-observabilidad-local.md), D-93 | Implementado en parte: trazas solo en gateway y Benefits (L-26) | [Etapa 14](entrega-final/ETAPA_14_OBSERVABILIDAD.md): caída controlada visible en el tablero |
-| D12 — Balanceo | Dos instancias de Booking detrás de Traefik con health checks | [ADR-012 v2](adr/ADR-012-v2-estabilidad-health-checks.md) | Pendiente (etapa 12B) | — |
+| D12 — Balanceo | Dos instancias de Booking balanceadas por el gateway con chequeos 3/2 | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md) | Implementado y verificado el 15/11/2026 | Reparto 50/50 y caída provocada en ETAPA_12_BORDE.md |
 | D13 — Capacidad y costos | Mediciones de carga con k6 y costos fechados | [ADR-013 v2](adr/ADR-013-v2-capacidad-costos-medidos.md) | Mediciones locales; costos de Oracle desactualizados por ADR-021 | `tests/load/`; [etapa 9](entrega-final/ETAPA_9_CACHE.md) (pool del gateway) |
 
 La revisión de la Entrega 2 se registra en [REVISION_ETAPA_1.md](REVISION_ETAPA_1.md), incluyendo patrones de acceso de Benefits y la traducción de los errores 502/504 del gateway ya implementada con el formato público. Las propuestas no cambian las decisiones aceptadas ni acreditan implementación.

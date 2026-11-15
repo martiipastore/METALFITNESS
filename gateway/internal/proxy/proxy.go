@@ -10,11 +10,13 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"path"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/GuadiViti/Arquitectura-de-Software/gateway/internal/balance"
 	gwconfig "github.com/GuadiViti/Arquitectura-de-Software/gateway/internal/config"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/access"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/correlation"
@@ -36,6 +38,17 @@ type Proxy struct {
 	routes     []route
 	log        *slog.Logger
 	limits     *Limits
+	// balanceadores por servicio con más de una instancia (etapa 12, parte B).
+	balanceadores map[string]*balance.Balanceador
+}
+
+// instanciaKey guarda en el contexto la instancia elegida para la solicitud.
+type instanciaKey struct{}
+
+// WithBalanceadores reparte las solicitudes de esos servicios entre sus
+// instancias elegibles (ADR-012 v3).
+func (p *Proxy) WithBalanceadores(b map[string]*balance.Balanceador) {
+	p.balanceadores = b
 }
 
 // Pool hacia los servicios (etapa 9 de la entrega final, D-88). El transporte
@@ -79,6 +92,10 @@ func New(cfg gwconfig.Config, transport http.RoundTripper, log *slog.Logger) (*P
 		service := svc.Name
 		rp := &httputil.ReverseProxy{
 			Rewrite: func(pr *httputil.ProxyRequest) {
+				target := target
+				if inst, ok := pr.In.Context().Value(instanciaKey{}).(*balance.Instancia); ok {
+					target = inst.URL
+				}
 				pr.SetURL(target)
 				pr.Out.Header.Del(problem.ForwardedPrefixHeader)
 				if r.Prefix == "/partner-api/v1" || r.Prefix == "/partner-api/v2" {
@@ -161,6 +178,24 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(r.Context(), rt.timeout)
 	defer cancel()
+	if b, ok := p.balanceadores[rt.service]; ok {
+		inst, err := b.Elegir()
+		if err != nil {
+			// Ninguna instancia pasó sus chequeos: se rechaza enseguida en lugar
+			// de esperar el timeout contra un destino caído.
+			p.log.ErrorContext(r.Context(), "servicio sin instancias disponibles", slog.String("upstream", rt.service))
+			w.Header().Set("Retry-After", "5")
+			if partner {
+				// El contrato de partners solo define 502 UNAVAILABLE para esto (D-44).
+				problem.WritePartnerHTTP(w, r, problem.New(502, "UNAVAILABLE", "Servicio no disponible", "No se pudo alcanzar el Club de Beneficios."))
+				return
+			}
+			problem.WriteHTTP(w, r, problem.New(http.StatusServiceUnavailable, problem.CodeDependencyUnavailable,
+				"Servicio no disponible", "El servicio "+rt.service+" no está disponible. Reintentá en unos segundos."))
+			return
+		}
+		ctx = context.WithValue(ctx, instanciaKey{}, inst)
+	}
 	out := r.WithContext(ctx)
 	u := *r.URL
 	u.Path = cleaned
@@ -200,8 +235,11 @@ func (p *Proxy) errorHandler(service string, partner bool) func(http.ResponseWri
 			// El cliente cortó la conexión: no hay a quién responder.
 			return
 		}
-		p.log.ErrorContext(r.Context(), "servicio no disponible",
-			slog.String("upstream", service), slog.String("path", httpx.SafeLogPath(r.URL.Path)))
+		attrs := []any{slog.String("upstream", service), slog.String("path", httpx.SafeLogPath(r.URL.Path))}
+		if inst, ok := r.Context().Value(instanciaKey{}).(*balance.Instancia); ok {
+			attrs = append(attrs, slog.String("instancia", inst.Nombre))
+		}
+		p.log.ErrorContext(r.Context(), "servicio no disponible", attrs...)
 		if partner {
 			w.Header().Set("Retry-After", "1")
 			problem.WritePartnerHTTP(w, r, problem.New(502, "UNAVAILABLE", "Servicio no disponible", "No se pudo alcanzar el Club de Beneficios."))
@@ -232,4 +270,21 @@ func isInternal(cleaned string) bool {
 		}
 	}
 	return false
+}
+
+// MetricasBalanceo devuelve las métricas de todos los balanceadores.
+func (p *Proxy) MetricasBalanceo() string {
+	nombres := make([]string, 0, len(p.balanceadores))
+	for n := range p.balanceadores {
+		nombres = append(nombres, n)
+	}
+	sort.Strings(nombres)
+	var b strings.Builder
+	if len(nombres) > 0 {
+		b.WriteString("# TYPE gateway_balancer_instance_up gauge\n# TYPE gateway_balancer_requests_total counter\n# TYPE gateway_balancer_removals_total counter\n# TYPE gateway_balancer_restorations_total counter\n")
+	}
+	for _, n := range nombres {
+		b.WriteString(p.balanceadores[n].Metricas())
+	}
+	return b.String()
 }

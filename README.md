@@ -174,7 +174,7 @@ Sin `make`: `docker compose --env-file .env -f deploy/docker-compose.yml up -d -
 | http://127.0.0.1:8086/health/ready | booking-indexer |
 | `127.0.0.1:5432` / `127.0.0.1:27017` / `127.0.0.1:6379` | PostgreSQL / MongoDB / Redis (credenciales en `.env`) |
 
-Collector y Jaeger ya participan en el flujo mínimo; Mailpit, con el perfil `identity`. Grafana, Traefik y OpenSearch se suman en las etapas que los usan.
+Collector y Jaeger ya participan en el flujo mínimo; Mailpit, con el perfil `identity`; OpenSearch, con el perfil `search`. Booking corre en dos instancias (`booking-service` y `booking-service-2`, diagnóstico en `127.0.0.1:8082` y `:8087`) que el gateway balancea.
 
 Identidad y registro externo vienen apagados por defecto (`MEMBERS_IDENTITY_ENABLED` y `BENEFITS_EXTERNAL_REGISTRATION_ENABLED`). Para probarlos localmente, con claves y correo de prueba, seguí [docs/CLUB_REGISTRO_EXTERNO.md](docs/CLUB_REGISTRO_EXTERNO.md) o ejecutá el E2E aislado `go run ./tests/e2e/identity/main.go -memberships`, que levanta sus propias bases y Mailpit sin tocar tu `.env`.
 

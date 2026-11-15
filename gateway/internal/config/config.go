@@ -22,10 +22,13 @@ const (
 	Notification = "notification-worker"
 )
 
-// Service es un servicio interno al que el gateway enruta o del que consulta la salud.
+// Service es un servicio interno al que el gateway enruta o del que consulta la
+// salud. URLs tiene una entrada por instancia (etapa 12, parte B): con más de
+// una, el gateway las balancea; URL es la primera.
 type Service struct {
 	Name string
 	URL  *url.URL
+	URLs []*url.URL
 }
 
 // Route asocia un prefijo público con un servicio y un timeout.
@@ -66,7 +69,9 @@ type RateLimit struct {
 	PartnerBurst   int
 }
 
-// serviceDefs: nombre, variable de entorno con la URL base y valor por defecto (red de Docker Compose).
+// serviceDefs: nombre, variable de entorno con la URL base y valor por defecto
+// (red de Docker Compose). Varias URLs separadas por coma son instancias del
+// mismo servicio, que el gateway balancea (ADR-012 v3).
 var serviceDefs = []struct{ name, env, def string }{
 	{Members, "GATEWAY_MEMBERS_URL", "http://members-service:8081"},
 	{Booking, "GATEWAY_BOOKING_URL", "http://booking-service:8082"},
@@ -135,12 +140,21 @@ func load(l *config.Loader) (Config, error) {
 	known := map[string]bool{}
 	for _, s := range serviceDefs {
 		raw := l.String(s.env, s.def)
-		u, err := url.Parse(raw)
-		if err != nil || u.Scheme == "" || u.Host == "" {
-			errs = append(errs, fmt.Errorf("%s debe ser una URL absoluta (ej. http://host:puerto): %q", s.env, raw))
+		var urls []*url.URL
+		for _, part := range strings.Split(raw, ",") {
+			part = strings.TrimSpace(part)
+			u, err := url.Parse(part)
+			if err != nil || u.Scheme == "" || u.Host == "" {
+				errs = append(errs, fmt.Errorf("%s debe ser una o más URLs absolutas separadas por coma (ej. http://host:puerto): %q", s.env, raw))
+				urls = nil
+				break
+			}
+			urls = append(urls, u)
+		}
+		if len(urls) == 0 {
 			continue
 		}
-		cfg.Services = append(cfg.Services, Service{Name: s.name, URL: u})
+		cfg.Services = append(cfg.Services, Service{Name: s.name, URL: urls[0], URLs: urls})
 		known[s.name] = true
 	}
 

@@ -225,7 +225,11 @@ services:
       <<: *healthcheck
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8081/health/ready"]
 
-  booking-service:
+  # Dos instancias de Booking que el gateway balancea (etapa 12, parte B;
+  # ADR-012 v3). Comparten base, Redis y OpenSearch; el relay del outbox y el
+  # cierre automático corren en ambas sin duplicar (FOR UPDATE SKIP LOCKED) y
+  # las migraciones se serializan con un lock de PostgreSQL.
+  booking-service: &booking-service
     <<: *go-service
     build:
       context: ..
@@ -255,6 +259,11 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8082/health/ready"]
+
+  booking-service-2:
+    <<: *booking-service
+    ports:
+      - "127.0.0.1:8087:8082"
 
   booking-indexer:
     <<: *go-service
@@ -371,7 +380,8 @@ services:
       GATEWAY_JWT_PUBLIC_KEY: ${GATEWAY_JWT_PUBLIC_KEY:-}
       GYM_INTERNAL_SERVICE_KEY: ${GYM_INTERNAL_SERVICE_KEY:-}
       GATEWAY_MEMBERS_URL: http://members-service:8081
-      GATEWAY_BOOKING_URL: http://booking-service:8082
+      # Varias URLs = instancias balanceadas por el gateway (ADR-012 v3).
+      GATEWAY_BOOKING_URL: http://booking-service:8082,http://booking-service-2:8082
       GATEWAY_BOOKING_INDEXER_URL: http://booking-indexer:8086
       GATEWAY_BENEFITS_URL: http://benefits-service:8083
       GATEWAY_TRAINING_URL: http://training-service:8084
@@ -398,6 +408,8 @@ services:
       members-service:
         condition: service_healthy
       booking-service:
+        condition: service_healthy
+      booking-service-2:
         condition: service_healthy
       booking-indexer:
         condition: service_healthy

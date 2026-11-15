@@ -16,6 +16,7 @@ import (
 
 	goredis "github.com/redis/go-redis/v9"
 
+	"github.com/GuadiViti/Arquitectura-de-Software/gateway/internal/balance"
 	gwconfig "github.com/GuadiViti/Arquitectura-de-Software/gateway/internal/config"
 	"github.com/GuadiViti/Arquitectura-de-Software/gateway/internal/proxy"
 	"github.com/GuadiViti/Arquitectura-de-Software/gateway/internal/ratelimit"
@@ -86,9 +87,26 @@ func run(cfg gwconfig.Config, log *slog.Logger) error {
 		log.Info("rate limiting activo", slog.Int("login_por_minuto", rl.LoginPerMinute), slog.Int("usuario_por_segundo", rl.UserRate), slog.Int("partner_por_segundo", rl.PartnerRate))
 	}
 
+	// Balanceo (etapa 12, parte B; ADR-012 v3): un servicio con varias URLs se
+	// reparte entre sus instancias con chequeos 5 s / 2 s y política 3/2.
+	balanceadores := map[string]*balance.Balanceador{}
+	for _, s := range cfg.Services {
+		if len(s.URLs) < 2 {
+			continue
+		}
+		b := balance.New(s.Name, s.URLs, balance.PoliticaAprobada, &http.Client{Transport: transport}, log)
+		balanceadores[s.Name] = b
+		go b.Run(ctx)
+		log.Info("balanceo activo", slog.String("upstream", s.Name), slog.Int("instancias", len(s.URLs)))
+	}
+	p.WithBalanceadores(balanceadores)
+
+	// /api/v1/status muestra cada instancia por separado.
 	targets := make([]status.Target, 0, len(cfg.Services))
 	for _, s := range cfg.Services {
-		targets = append(targets, status.Target{Name: s.Name, BaseURL: s.URL.String()})
+		for n, u := range s.URLs {
+			targets = append(targets, status.Target{Name: balance.NombreInstancia(s.Name, n, len(s.URLs)), BaseURL: u.String()})
+		}
 	}
 	checker := status.NewChecker(&http.Client{Transport: transport}, cfg.StatusTimeout, targets...)
 
