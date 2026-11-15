@@ -92,10 +92,11 @@ services:
     healthcheck:
       <<: *healthcheck
       start_period: 20s
-      # Como el usuario rabbitmq, no como root: la imagen usa HOME=/var/lib/rabbitmq
-      # y, si el chequeo corría antes del arranque, creaba la .erlang.cookie con
-      # dueño root; el servidor no podía leerla (eacces) y se reiniciaba.
-      test: ["CMD", "gosu", "rabbitmq", "rabbitmq-diagnostics", "-q", "ping"]
+      # Chequeo liviano: el puerto AMQP acepta conexiones (RabbitMQ lo abre al
+      # terminar de arrancar). rabbitmq-diagnostics arrancaba una máquina virtual
+      # de Erlang cada 5 s (picos de 140-200 % de CPU en reposo) y, corriendo como
+      # root, podía crear la .erlang.cookie que después el servidor no leía.
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/5672"]
 
   # Búsqueda de clases (etapa 8, ADR-014). Solo local, en loopback y sin el
   # plugin de seguridad: el acceso pasa siempre por booking-service/indexer.

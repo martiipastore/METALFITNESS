@@ -1,4 +1,40 @@
-# Carga contractual de Benefits (D13)
+# Pruebas de carga (D13)
+
+Hay dos mediciones:
+
+- **Flujo principal** (búsqueda y reservas, 15/11/2026): `run-flujo.go` + `flujo.js`. D-97, ADR-013 v3 y [CARGA_D13.md](../../docs/entrega-final/CARGA_D13.md).
+- **API de partners de Benefits** (Entrega 2, 16/10/2026): `run-benefits.ps1`. D-50, D-57 a D-60 y ADR-013 v2. Se describe más abajo.
+
+## Flujo principal
+
+Con el stack de `make demo` arriba y los datos de `go run scripts/cargar-datos-demo.go`, desde la raíz:
+
+```bash
+go run tests/load/run-flujo.go          # unos 20 minutos
+go run tests/load/run-flujo.go -corta   # prueba breve del entorno; usar -salida con una carpeta temporal
+go run tests/load/run-flujo.go -informe # regenera RESULTADOS.md desde los JSON, sin medir
+```
+
+Escribe `environment.json`, `resultados.json` (también después de cada escalón) y `RESULTADOS.md` en `docs/evidence/entrega-final/carga`. k6 (`grafana/k6:1.3.0`) corre dentro de la red `gym_default` contra `api-gateway:8080`; no hace falta instalarlo.
+
+Qué hace el runner, en orden:
+
+1. Recrea el gateway con umbrales altos del limitador y lo restaura al terminar, incluso si falla. Si se interrumpe a mano, restaurarlo con `make up`.
+2. Crea por la API 100 alumnos `carga.NNN@gym.local` con membresía, un profesor y la actividad «Carga Pico». Las contraseñas se derivan de `GYM_INTERNAL_SERVICE_KEY`: no se imprimen ni se guardan.
+3. Abre una sesión por alumno y pasa los tokens a k6 por un archivo temporal que se borra al final. Members limita el login a 120 por minuto en todo el sistema; el runner renueva los tokens cuando tienen más de 8 minutos y nunca dos veces en el mismo minuto.
+4. Cancela por la API las reservas futuras de los alumnos sintéticos, antes de medir y al terminar.
+5. Escalera 10/25/50/100 usuarios en búsqueda y en mezcla (90/10), tres picos de 100 alumnos por una clase de 30 cupos con verificación SQL, y una caída de `booking-service-2` con 25 usuarios.
+
+**Mantener el equipo despierto.** Si Windows suspende la notebook, los contenedores se congelan y el escalón queda inválido. En PowerShell, antes de `go run`:
+
+```powershell
+Add-Type -Namespace Win32 -Name Power -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint esFlags);'
+[Win32.Power]::SetThreadExecutionState([uint32]"0x80000001") | Out-Null
+```
+
+No cambia la configuración de energía: vale mientras viva esa sesión de PowerShell.
+
+## API de partners de Benefits (Entrega 2)
 
 Ejecutar solo contra el stack local del gimnasio, con Docker Desktop iniciado, `.env` configurado y migraciones aplicadas según el README principal. El runner es para Windows PowerShell 5.1+ y usa la red `gym_default`. No requiere instalar k6 en Windows ni paquetes adicionales de Python.
 

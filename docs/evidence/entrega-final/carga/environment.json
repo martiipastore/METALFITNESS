@@ -1,0 +1,14 @@
+{
+  "alumnos": 100,
+  "clases_pool": 22,
+  "corta": false,
+  "cpus_host": "8",
+  "criterio_corte": {
+    "errores": 0.01,
+    "p95_ms": 500
+  },
+  "docker": "29.9.3",
+  "fecha": "2026-11-15T22:25:51Z",
+  "k6": "grafana/k6:1.3.0",
+  "memoria_host": "4018262016"
+}

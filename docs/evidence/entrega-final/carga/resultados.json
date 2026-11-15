@@ -1,0 +1,1241 @@
+[
+  {
+    "Escenario": "busqueda",
+    "Usuarios": 10,
+    "Operaciones": 47642,
+    "OpsPorSegundo": 794.0333333333333,
+    "P50": 9.3363005,
+    "P95": 28.4226922,
+    "P99": 49.34595476999998,
+    "ReservaP95": 0,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 0,
+    "Negocio409": 0,
+    "Reparto": {
+      "booking-service-1": 38192,
+      "booking-service-2": 38191
+    },
+    "Origen": {
+      "cache": 76297,
+      "cache_vencida": 0,
+      "fuente": 86
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 111.6075,
+        "CPUMax": 142.4,
+        "MemMaxMiB": 13.71
+      },
+      "benefits-mock": {
+        "CPUProm": 17.928749999999997,
+        "CPUMax": 84.33,
+        "MemMaxMiB": 96.91
+      },
+      "benefits-service": {
+        "CPUProm": 1.9412500000000001,
+        "CPUMax": 14.98,
+        "MemMaxMiB": 13.04
+      },
+      "booking-indexer": {
+        "CPUProm": 2.29625,
+        "CPUMax": 7.61,
+        "MemMaxMiB": 12.95
+      },
+      "booking-service": {
+        "CPUProm": 69.41375000000001,
+        "CPUMax": 90.6,
+        "MemMaxMiB": 19.33
+      },
+      "booking-service-2": {
+        "CPUProm": 70.88000000000001,
+        "CPUMax": 88.29,
+        "MemMaxMiB": 20.38
+      },
+      "grafana": {
+        "CPUProm": 1.92,
+        "CPUMax": 8.94,
+        "MemMaxMiB": 68.55
+      },
+      "jaeger": {
+        "CPUProm": 0.27625,
+        "CPUMax": 0.66,
+        "MemMaxMiB": 14.23
+      },
+      "mailpit": {
+        "CPUProm": 2.4299999999999997,
+        "CPUMax": 10.91,
+        "MemMaxMiB": 39.98
+      },
+      "members-service": {
+        "CPUProm": 2.02375,
+        "CPUMax": 11.9,
+        "MemMaxMiB": 17.29
+      },
+      "mongo": {
+        "CPUProm": 47.86875,
+        "CPUMax": 122.35,
+        "MemMaxMiB": 221.1
+      },
+      "notification-worker": {
+        "CPUProm": 1.46875,
+        "CPUMax": 10.49,
+        "MemMaxMiB": 13.93
+      },
+      "opensearch": {
+        "CPUProm": 16.271250000000002,
+        "CPUMax": 42.46,
+        "MemMaxMiB": 929.6
+      },
+      "otel-collector": {
+        "CPUProm": 0.23625000000000002,
+        "CPUMax": 0.84,
+        "MemMaxMiB": 18.87
+      },
+      "postgres": {
+        "CPUProm": 39.43375,
+        "CPUMax": 57.17,
+        "MemMaxMiB": 134.6
+      },
+      "prometheus": {
+        "CPUProm": 2.21,
+        "CPUMax": 8.31,
+        "MemMaxMiB": 39.9
+      },
+      "rabbitmq": {
+        "CPUProm": 6.27125,
+        "CPUMax": 25.5,
+        "MemMaxMiB": 149.1
+      },
+      "redis": {
+        "CPUProm": 33.78375,
+        "CPUMax": 46.07,
+        "MemMaxMiB": 23.19
+      },
+      "training-service": {
+        "CPUProm": 2.73875,
+        "CPUMax": 9.44,
+        "MemMaxMiB": 16.38
+      },
+      "web": {
+        "CPUProm": 3.1225,
+        "CPUMax": 24.98,
+        "MemMaxMiB": 9.82
+      }
+    }
+  },
+  {
+    "Escenario": "busqueda",
+    "Usuarios": 25,
+    "Operaciones": 34337,
+    "OpsPorSegundo": 572.2833333333333,
+    "P50": 32.525372,
+    "P95": 105.0585047999998,
+    "P99": 184.23046819999968,
+    "ReservaP95": 0,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 0,
+    "Negocio409": 0,
+    "Reparto": {
+      "booking-service-1": 21256,
+      "booking-service-2": 21256
+    },
+    "Origen": {
+      "cache": 42338,
+      "cache_vencida": 0,
+      "fuente": 174
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 120.34142857142858,
+        "CPUMax": 173.33,
+        "MemMaxMiB": 16.73
+      },
+      "benefits-mock": {
+        "CPUProm": 9.374285714285715,
+        "CPUMax": 41.57,
+        "MemMaxMiB": 107.5
+      },
+      "benefits-service": {
+        "CPUProm": 5.832857142857144,
+        "CPUMax": 18.52,
+        "MemMaxMiB": 12.94
+      },
+      "booking-indexer": {
+        "CPUProm": 1.9000000000000001,
+        "CPUMax": 11.46,
+        "MemMaxMiB": 12.98
+      },
+      "booking-service": {
+        "CPUProm": 75.52000000000001,
+        "CPUMax": 107.89,
+        "MemMaxMiB": 19.76
+      },
+      "booking-service-2": {
+        "CPUProm": 77.84,
+        "CPUMax": 121.64,
+        "MemMaxMiB": 22.24
+      },
+      "grafana": {
+        "CPUProm": 5.252857142857143,
+        "CPUMax": 20.8,
+        "MemMaxMiB": 71.53
+      },
+      "jaeger": {
+        "CPUProm": 2.0757142857142856,
+        "CPUMax": 13.62,
+        "MemMaxMiB": 14.23
+      },
+      "mailpit": {
+        "CPUProm": 11.505714285714285,
+        "CPUMax": 78.41,
+        "MemMaxMiB": 40.02
+      },
+      "members-service": {
+        "CPUProm": 3.8085714285714287,
+        "CPUMax": 19.37,
+        "MemMaxMiB": 17.43
+      },
+      "mongo": {
+        "CPUProm": 86.71428571428571,
+        "CPUMax": 117.5,
+        "MemMaxMiB": 203.5
+      },
+      "notification-worker": {
+        "CPUProm": 8.391428571428571,
+        "CPUMax": 16.14,
+        "MemMaxMiB": 13.92
+      },
+      "opensearch": {
+        "CPUProm": 22.36571428571429,
+        "CPUMax": 70.22,
+        "MemMaxMiB": 929.4
+      },
+      "otel-collector": {
+        "CPUProm": 0.6100000000000001,
+        "CPUMax": 1.71,
+        "MemMaxMiB": 18.88
+      },
+      "postgres": {
+        "CPUProm": 43.83714285714286,
+        "CPUMax": 61.29,
+        "MemMaxMiB": 135.1
+      },
+      "prometheus": {
+        "CPUProm": 5.392857142857143,
+        "CPUMax": 17.44,
+        "MemMaxMiB": 36.4
+      },
+      "rabbitmq": {
+        "CPUProm": 10.857142857142858,
+        "CPUMax": 26.35,
+        "MemMaxMiB": 148.1
+      },
+      "redis": {
+        "CPUProm": 35.57142857142857,
+        "CPUMax": 54.07,
+        "MemMaxMiB": 23.88
+      },
+      "training-service": {
+        "CPUProm": 2.11,
+        "CPUMax": 13.1,
+        "MemMaxMiB": 12.96
+      },
+      "web": {
+        "CPUProm": 4.074285714285715,
+        "CPUMax": 18.46,
+        "MemMaxMiB": 9.82
+      }
+    }
+  },
+  {
+    "Escenario": "busqueda",
+    "Usuarios": 50,
+    "Operaciones": 39565,
+    "OpsPorSegundo": 659.4166666666666,
+    "P50": 60.340398,
+    "P95": 172.37974499999993,
+    "P99": 253.71262144000005,
+    "ReservaP95": 0,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 0,
+    "Negocio409": 0,
+    "Reparto": {
+      "booking-service-1": 33247,
+      "booking-service-2": 33248
+    },
+    "Origen": {
+      "cache": 66296,
+      "cache_vencida": 0,
+      "fuente": 199
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 126.56857142857143,
+        "CPUMax": 183.44,
+        "MemMaxMiB": 21.44
+      },
+      "benefits-mock": {
+        "CPUProm": 29.321428571428566,
+        "CPUMax": 85.21,
+        "MemMaxMiB": 112.9
+      },
+      "benefits-service": {
+        "CPUProm": 5.028571428571429,
+        "CPUMax": 20.56,
+        "MemMaxMiB": 12.94
+      },
+      "booking-indexer": {
+        "CPUProm": 8.742857142857144,
+        "CPUMax": 52.32,
+        "MemMaxMiB": 13.2
+      },
+      "booking-service": {
+        "CPUProm": 76.93571428571428,
+        "CPUMax": 111.44,
+        "MemMaxMiB": 20.93
+      },
+      "booking-service-2": {
+        "CPUProm": 76.73571428571428,
+        "CPUMax": 104.66,
+        "MemMaxMiB": 22.43
+      },
+      "grafana": {
+        "CPUProm": 8.645714285714286,
+        "CPUMax": 33.82,
+        "MemMaxMiB": 71.8
+      },
+      "jaeger": {
+        "CPUProm": 0.4985714285714286,
+        "CPUMax": 1.41,
+        "MemMaxMiB": 14.23
+      },
+      "mailpit": {
+        "CPUProm": 4.612857142857143,
+        "CPUMax": 32.11,
+        "MemMaxMiB": 40.02
+      },
+      "members-service": {
+        "CPUProm": 6.125714285714286,
+        "CPUMax": 23.1,
+        "MemMaxMiB": 16.28
+      },
+      "mongo": {
+        "CPUProm": 81.67,
+        "CPUMax": 126.77,
+        "MemMaxMiB": 222.7
+      },
+      "notification-worker": {
+        "CPUProm": 3.1485714285714286,
+        "CPUMax": 17.93,
+        "MemMaxMiB": 17.7
+      },
+      "opensearch": {
+        "CPUProm": 10.544285714285715,
+        "CPUMax": 18.71,
+        "MemMaxMiB": 929.4
+      },
+      "otel-collector": {
+        "CPUProm": 0.43714285714285717,
+        "CPUMax": 2.14,
+        "MemMaxMiB": 18.88
+      },
+      "postgres": {
+        "CPUProm": 48.135714285714286,
+        "CPUMax": 70.09,
+        "MemMaxMiB": 136.2
+      },
+      "prometheus": {
+        "CPUProm": 3.717142857142857,
+        "CPUMax": 12.26,
+        "MemMaxMiB": 36.44
+      },
+      "rabbitmq": {
+        "CPUProm": 6.744285714285715,
+        "CPUMax": 18.67,
+        "MemMaxMiB": 152
+      },
+      "redis": {
+        "CPUProm": 35.03571428571429,
+        "CPUMax": 46.52,
+        "MemMaxMiB": 26.58
+      },
+      "training-service": {
+        "CPUProm": 2.8628571428571425,
+        "CPUMax": 11.56,
+        "MemMaxMiB": 17.03
+      },
+      "web": {
+        "CPUProm": 4.164285714285714,
+        "CPUMax": 23.25,
+        "MemMaxMiB": 9.82
+      }
+    }
+  },
+  {
+    "Escenario": "busqueda",
+    "Usuarios": 100,
+    "Operaciones": 72894,
+    "OpsPorSegundo": 1214.9,
+    "P50": 67.847474,
+    "P95": 167.23435659999998,
+    "P99": 330.9679714699977,
+    "ReservaP95": 0,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 0,
+    "Negocio409": 0,
+    "Reparto": {
+      "booking-service-1": 51115,
+      "booking-service-2": 51115
+    },
+    "Origen": {
+      "cache": 101662,
+      "cache_vencida": 0,
+      "fuente": 568
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 171.25571428571428,
+        "CPUMax": 202.04,
+        "MemMaxMiB": 30.81
+      },
+      "benefits-mock": {
+        "CPUProm": 8.18,
+        "CPUMax": 50.12,
+        "MemMaxMiB": 96.92
+      },
+      "benefits-service": {
+        "CPUProm": 0.10428571428571429,
+        "CPUMax": 0.59,
+        "MemMaxMiB": 12.94
+      },
+      "booking-indexer": {
+        "CPUProm": 1.3499999999999999,
+        "CPUMax": 8.99,
+        "MemMaxMiB": 13.61
+      },
+      "booking-service": {
+        "CPUProm": 100.9357142857143,
+        "CPUMax": 116.99,
+        "MemMaxMiB": 24.37
+      },
+      "booking-service-2": {
+        "CPUProm": 104.48857142857142,
+        "CPUMax": 117.37,
+        "MemMaxMiB": 25.09
+      },
+      "grafana": {
+        "CPUProm": 1.2014285714285715,
+        "CPUMax": 4.71,
+        "MemMaxMiB": 71.83
+      },
+      "jaeger": {
+        "CPUProm": 0.14714285714285716,
+        "CPUMax": 0.39,
+        "MemMaxMiB": 14.24
+      },
+      "mailpit": {
+        "CPUProm": 0,
+        "CPUMax": 0,
+        "MemMaxMiB": 40.03
+      },
+      "members-service": {
+        "CPUProm": 3.0742857142857143,
+        "CPUMax": 10.74,
+        "MemMaxMiB": 16.28
+      },
+      "mongo": {
+        "CPUProm": 6.78,
+        "CPUMax": 37.95,
+        "MemMaxMiB": 55.42
+      },
+      "notification-worker": {
+        "CPUProm": 0.17714285714285713,
+        "CPUMax": 0.73,
+        "MemMaxMiB": 14.09
+      },
+      "opensearch": {
+        "CPUProm": 7.057142857142857,
+        "CPUMax": 15.25,
+        "MemMaxMiB": 929.5
+      },
+      "otel-collector": {
+        "CPUProm": 0.12142857142857143,
+        "CPUMax": 0.18,
+        "MemMaxMiB": 18.88
+      },
+      "postgres": {
+        "CPUProm": 66.37285714285716,
+        "CPUMax": 73.96,
+        "MemMaxMiB": 135.4
+      },
+      "prometheus": {
+        "CPUProm": 1.282857142857143,
+        "CPUMax": 6.91,
+        "MemMaxMiB": 35.87
+      },
+      "rabbitmq": {
+        "CPUProm": 3.0042857142857144,
+        "CPUMax": 9.38,
+        "MemMaxMiB": 151.7
+      },
+      "redis": {
+        "CPUProm": 41.53857142857142,
+        "CPUMax": 46.8,
+        "MemMaxMiB": 26.06
+      },
+      "training-service": {
+        "CPUProm": 1.242857142857143,
+        "CPUMax": 8.07,
+        "MemMaxMiB": 13.21
+      },
+      "web": {
+        "CPUProm": 1.2571428571428573,
+        "CPUMax": 8.8,
+        "MemMaxMiB": 9.82
+      }
+    }
+  },
+  {
+    "Escenario": "mezcla",
+    "Usuarios": 10,
+    "Operaciones": 32402,
+    "OpsPorSegundo": 540.0333333333333,
+    "P50": 10.8396,
+    "P95": 47.470081599999986,
+    "P99": 91.47793199999998,
+    "ReservaP95": 72.85543719999997,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 220,
+    "Negocio409": 2955,
+    "Reparto": {
+      "booking-service-1": 20253,
+      "booking-service-2": 20253
+    },
+    "Origen": {
+      "cache": 29440,
+      "cache_vencida": 0,
+      "fuente": 7073
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 103.89857142857143,
+        "CPUMax": 142.4,
+        "MemMaxMiB": 21.03
+      },
+      "benefits-mock": {
+        "CPUProm": 6.848571428571428,
+        "CPUMax": 47.87,
+        "MemMaxMiB": 97.02
+      },
+      "benefits-service": {
+        "CPUProm": 0.34142857142857136,
+        "CPUMax": 1.4,
+        "MemMaxMiB": 12.94
+      },
+      "booking-indexer": {
+        "CPUProm": 9.094285714285714,
+        "CPUMax": 34.62,
+        "MemMaxMiB": 17.34
+      },
+      "booking-service": {
+        "CPUProm": 73.48428571428572,
+        "CPUMax": 93.59,
+        "MemMaxMiB": 22.3
+      },
+      "booking-service-2": {
+        "CPUProm": 77.49285714285715,
+        "CPUMax": 99.32,
+        "MemMaxMiB": 22.96
+      },
+      "grafana": {
+        "CPUProm": 5.208571428571429,
+        "CPUMax": 12.95,
+        "MemMaxMiB": 71.97
+      },
+      "jaeger": {
+        "CPUProm": 0.1285714285714286,
+        "CPUMax": 0.18,
+        "MemMaxMiB": 14.24
+      },
+      "mailpit": {
+        "CPUProm": 0,
+        "CPUMax": 0,
+        "MemMaxMiB": 40.13
+      },
+      "members-service": {
+        "CPUProm": 12.755714285714287,
+        "CPUMax": 23.95,
+        "MemMaxMiB": 17.58
+      },
+      "mongo": {
+        "CPUProm": 15.422857142857143,
+        "CPUMax": 83.15,
+        "MemMaxMiB": 88.11
+      },
+      "notification-worker": {
+        "CPUProm": 2.4085714285714284,
+        "CPUMax": 14.51,
+        "MemMaxMiB": 16.9
+      },
+      "opensearch": {
+        "CPUProm": 55.36285714285714,
+        "CPUMax": 214.62,
+        "MemMaxMiB": 946.8
+      },
+      "otel-collector": {
+        "CPUProm": 0.1471428571428571,
+        "CPUMax": 0.33,
+        "MemMaxMiB": 18.88
+      },
+      "postgres": {
+        "CPUProm": 60.63714285714286,
+        "CPUMax": 85.87,
+        "MemMaxMiB": 141.7
+      },
+      "prometheus": {
+        "CPUProm": 8.120000000000001,
+        "CPUMax": 24.28,
+        "MemMaxMiB": 36.04
+      },
+      "rabbitmq": {
+        "CPUProm": 13.862857142857141,
+        "CPUMax": 38.87,
+        "MemMaxMiB": 148.5
+      },
+      "redis": {
+        "CPUProm": 35.30285714285714,
+        "CPUMax": 48.04,
+        "MemMaxMiB": 45.06
+      },
+      "training-service": {
+        "CPUProm": 7.512857142857143,
+        "CPUMax": 22.92,
+        "MemMaxMiB": 13.24
+      },
+      "web": {
+        "CPUProm": 3.825714285714286,
+        "CPUMax": 11.31,
+        "MemMaxMiB": 9.82
+      }
+    }
+  },
+  {
+    "Escenario": "mezcla",
+    "Usuarios": 25,
+    "Operaciones": 56506,
+    "OpsPorSegundo": 941.7666666666667,
+    "P50": 20.344099999999997,
+    "P95": 61.68410764999997,
+    "P99": 107.19711098999998,
+    "ReservaP95": 50.44013384999999,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 55,
+    "Negocio409": 5549,
+    "Reparto": {
+      "booking-service-1": 36337,
+      "booking-service-2": 36336
+    },
+    "Origen": {
+      "cache": 60814,
+      "cache_vencida": 0,
+      "fuente": 4623
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 144.62714285714284,
+        "CPUMax": 154.26,
+        "MemMaxMiB": 20.3
+      },
+      "benefits-mock": {
+        "CPUProm": 11.677142857142856,
+        "CPUMax": 59.73,
+        "MemMaxMiB": 97.21
+      },
+      "benefits-service": {
+        "CPUProm": 4.064285714285714,
+        "CPUMax": 17.83,
+        "MemMaxMiB": 12.94
+      },
+      "booking-indexer": {
+        "CPUProm": 4.862857142857143,
+        "CPUMax": 25.46,
+        "MemMaxMiB": 13.72
+      },
+      "booking-service": {
+        "CPUProm": 76.8757142857143,
+        "CPUMax": 86.62,
+        "MemMaxMiB": 21.71
+      },
+      "booking-service-2": {
+        "CPUProm": 84.6542857142857,
+        "CPUMax": 95.89,
+        "MemMaxMiB": 21.99
+      },
+      "grafana": {
+        "CPUProm": 6.151428571428572,
+        "CPUMax": 14.27,
+        "MemMaxMiB": 75.86
+      },
+      "jaeger": {
+        "CPUProm": 0.18714285714285714,
+        "CPUMax": 0.61,
+        "MemMaxMiB": 14.24
+      },
+      "mailpit": {
+        "CPUProm": 1.7114285714285715,
+        "CPUMax": 11.98,
+        "MemMaxMiB": 40.13
+      },
+      "members-service": {
+        "CPUProm": 1.8900000000000001,
+        "CPUMax": 9.43,
+        "MemMaxMiB": 18.39
+      },
+      "mongo": {
+        "CPUProm": 61.05285714285714,
+        "CPUMax": 109.8,
+        "MemMaxMiB": 224.6
+      },
+      "notification-worker": {
+        "CPUProm": 3.0657142857142854,
+        "CPUMax": 13.87,
+        "MemMaxMiB": 14.21
+      },
+      "opensearch": {
+        "CPUProm": 7.735714285714285,
+        "CPUMax": 19.9,
+        "MemMaxMiB": 948.1
+      },
+      "otel-collector": {
+        "CPUProm": 0.29857142857142854,
+        "CPUMax": 1.07,
+        "MemMaxMiB": 18.88
+      },
+      "postgres": {
+        "CPUProm": 55.15142857142856,
+        "CPUMax": 66.26,
+        "MemMaxMiB": 142.6
+      },
+      "prometheus": {
+        "CPUProm": 3.5085714285714285,
+        "CPUMax": 23.74,
+        "MemMaxMiB": 35.97
+      },
+      "rabbitmq": {
+        "CPUProm": 4.5042857142857144,
+        "CPUMax": 12.57,
+        "MemMaxMiB": 148.6
+      },
+      "redis": {
+        "CPUProm": 37.56142857142857,
+        "CPUMax": 43.43,
+        "MemMaxMiB": 51.54
+      },
+      "training-service": {
+        "CPUProm": 4.659999999999999,
+        "CPUMax": 11.65,
+        "MemMaxMiB": 16.73
+      },
+      "web": {
+        "CPUProm": 1.1014285714285714,
+        "CPUMax": 7.12,
+        "MemMaxMiB": 11.86
+      }
+    }
+  },
+  {
+    "Escenario": "mezcla",
+    "Usuarios": 50,
+    "Operaciones": 76154,
+    "OpsPorSegundo": 1269.2333333333333,
+    "P50": 32.7078,
+    "P95": 84.7353412,
+    "P99": 133.36018187999935,
+    "ReservaP95": 72.715403,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 0,
+    "Negocio409": 7601,
+    "Reparto": {
+      "booking-service-1": 53497,
+      "booking-service-2": 53497
+    },
+    "Origen": {
+      "cache": 96168,
+      "cache_vencida": 0,
+      "fuente": 173
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 135.92375,
+        "CPUMax": 175.95,
+        "MemMaxMiB": 22.96
+      },
+      "benefits-mock": {
+        "CPUProm": 0.8025,
+        "CPUMax": 6.11,
+        "MemMaxMiB": 100.7
+      },
+      "benefits-service": {
+        "CPUProm": 4.791250000000001,
+        "CPUMax": 12.21,
+        "MemMaxMiB": 12.82
+      },
+      "booking-indexer": {
+        "CPUProm": 0.15124999999999997,
+        "CPUMax": 0.57,
+        "MemMaxMiB": 13.34
+      },
+      "booking-service": {
+        "CPUProm": 71.08,
+        "CPUMax": 91.36,
+        "MemMaxMiB": 21.71
+      },
+      "booking-service-2": {
+        "CPUProm": 76.4775,
+        "CPUMax": 99.2,
+        "MemMaxMiB": 22.61
+      },
+      "grafana": {
+        "CPUProm": 2.5012499999999998,
+        "CPUMax": 7.6,
+        "MemMaxMiB": 72.11
+      },
+      "jaeger": {
+        "CPUProm": 0.31500000000000006,
+        "CPUMax": 1.59,
+        "MemMaxMiB": 14.24
+      },
+      "mailpit": {
+        "CPUProm": 0,
+        "CPUMax": 0,
+        "MemMaxMiB": 40.13
+      },
+      "members-service": {
+        "CPUProm": 0.62375,
+        "CPUMax": 1.25,
+        "MemMaxMiB": 18.37
+      },
+      "mongo": {
+        "CPUProm": 65.99374999999999,
+        "CPUMax": 102.35,
+        "MemMaxMiB": 216
+      },
+      "notification-worker": {
+        "CPUProm": 2.21625,
+        "CPUMax": 15.38,
+        "MemMaxMiB": 14.24
+      },
+      "opensearch": {
+        "CPUProm": 13.8675,
+        "CPUMax": 64.61,
+        "MemMaxMiB": 948.1
+      },
+      "otel-collector": {
+        "CPUProm": 1.7850000000000001,
+        "CPUMax": 13.38,
+        "MemMaxMiB": 19.13
+      },
+      "postgres": {
+        "CPUProm": 48.23875,
+        "CPUMax": 60.43,
+        "MemMaxMiB": 142.5
+      },
+      "prometheus": {
+        "CPUProm": 0.2525,
+        "CPUMax": 0.61,
+        "MemMaxMiB": 36.08
+      },
+      "rabbitmq": {
+        "CPUProm": 1.8350000000000002,
+        "CPUMax": 4.51,
+        "MemMaxMiB": 148.9
+      },
+      "redis": {
+        "CPUProm": 38.1375,
+        "CPUMax": 73.37,
+        "MemMaxMiB": 49.87
+      },
+      "training-service": {
+        "CPUProm": 5.763749999999999,
+        "CPUMax": 13.45,
+        "MemMaxMiB": 13.32
+      },
+      "web": {
+        "CPUProm": 5.10625,
+        "CPUMax": 14.24,
+        "MemMaxMiB": 10.15
+      }
+    }
+  },
+  {
+    "Escenario": "mezcla",
+    "Usuarios": 100,
+    "Operaciones": 32083,
+    "OpsPorSegundo": 534.7166666666667,
+    "P50": 145.9875075,
+    "P95": 438.15815199999975,
+    "P99": 839.8799420599964,
+    "ReservaP95": 336.60322479999996,
+    "Errores": 23,
+    "TasaErrores": 0.0007168905650967802,
+    "ErroresPor": {
+      "medicion_errores{status:503}": 23
+    },
+    "Confirmadas": 0,
+    "Negocio409": 3269,
+    "Reparto": {
+      "booking-service-1": 32664,
+      "booking-service-2": 32664
+    },
+    "Origen": {
+      "cache": 57888,
+      "cache_vencida": 0,
+      "fuente": 812
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 114.63571428571429,
+        "CPUMax": 174.19,
+        "MemMaxMiB": 33.27
+      },
+      "benefits-mock": {
+        "CPUProm": 34.28142857142857,
+        "CPUMax": 86.6,
+        "MemMaxMiB": 110.3
+      },
+      "benefits-service": {
+        "CPUProm": 4.865714285714286,
+        "CPUMax": 17.98,
+        "MemMaxMiB": 12.94
+      },
+      "booking-indexer": {
+        "CPUProm": 4.994285714285715,
+        "CPUMax": 21.32,
+        "MemMaxMiB": 13.81
+      },
+      "booking-service": {
+        "CPUProm": 62.117142857142866,
+        "CPUMax": 100.52,
+        "MemMaxMiB": 24.09
+      },
+      "booking-service-2": {
+        "CPUProm": 72.67714285714285,
+        "CPUMax": 98.96,
+        "MemMaxMiB": 25.25
+      },
+      "grafana": {
+        "CPUProm": 19.78,
+        "CPUMax": 110.12,
+        "MemMaxMiB": 72.38
+      },
+      "jaeger": {
+        "CPUProm": 0.13714285714285715,
+        "CPUMax": 0.24,
+        "MemMaxMiB": 14.25
+      },
+      "mailpit": {
+        "CPUProm": 2.825714285714286,
+        "CPUMax": 19.78,
+        "MemMaxMiB": 40.14
+      },
+      "members-service": {
+        "CPUProm": 6.881428571428571,
+        "CPUMax": 19.99,
+        "MemMaxMiB": 16.59
+      },
+      "mongo": {
+        "CPUProm": 57.98857142857144,
+        "CPUMax": 88.29,
+        "MemMaxMiB": 223.4
+      },
+      "notification-worker": {
+        "CPUProm": 2.1957142857142857,
+        "CPUMax": 5.43,
+        "MemMaxMiB": 14.09
+      },
+      "opensearch": {
+        "CPUProm": 81.31857142857143,
+        "CPUMax": 295.55,
+        "MemMaxMiB": 950.7
+      },
+      "otel-collector": {
+        "CPUProm": 0.44,
+        "CPUMax": 2.25,
+        "MemMaxMiB": 18.88
+      },
+      "postgres": {
+        "CPUProm": 62.50571428571429,
+        "CPUMax": 98.02,
+        "MemMaxMiB": 145.4
+      },
+      "prometheus": {
+        "CPUProm": 4.11,
+        "CPUMax": 15.75,
+        "MemMaxMiB": 36.09
+      },
+      "rabbitmq": {
+        "CPUProm": 6.8914285714285715,
+        "CPUMax": 21.33,
+        "MemMaxMiB": 148.5
+      },
+      "redis": {
+        "CPUProm": 50.10857142857143,
+        "CPUMax": 126.43,
+        "MemMaxMiB": 53.74
+      },
+      "training-service": {
+        "CPUProm": 9.508571428571429,
+        "CPUMax": 32.03,
+        "MemMaxMiB": 15.86
+      },
+      "web": {
+        "CPUProm": 4.074285714285714,
+        "CPUMax": 15.33,
+        "MemMaxMiB": 10.15
+      }
+    }
+  },
+  {
+    "Escenario": "pico",
+    "Usuarios": 100,
+    "Operaciones": 100,
+    "OpsPorSegundo": 0,
+    "P50": 1670.88015,
+    "P95": 1765.87826,
+    "P99": 1783.139226,
+    "ReservaP95": 1765.87826,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 30,
+    "Negocio409": 70,
+    "Reparto": {
+      "booking-service-1": 50,
+      "booking-service-2": 50
+    },
+    "Origen": {
+      "cache": 0,
+      "cache_vencida": 0,
+      "fuente": 0
+    },
+    "Recursos": {},
+    "Integridad": {
+      "capacidad": "30",
+      "clases_sobre_cupo": "0",
+      "ocupacion": "30",
+      "reservas_activas_duplicadas": "0",
+      "reservas_confirmadas": "30"
+    }
+  },
+  {
+    "Escenario": "pico",
+    "Usuarios": 100,
+    "Operaciones": 100,
+    "OpsPorSegundo": 0,
+    "P50": 1244.68166,
+    "P95": 1508.29076105,
+    "P99": 1586.661748,
+    "ReservaP95": 1508.29076105,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 30,
+    "Negocio409": 70,
+    "Reparto": {
+      "booking-service-1": 50,
+      "booking-service-2": 50
+    },
+    "Origen": {
+      "cache": 0,
+      "cache_vencida": 0,
+      "fuente": 0
+    },
+    "Recursos": {},
+    "Integridad": {
+      "capacidad": "30",
+      "clases_sobre_cupo": "0",
+      "ocupacion": "30",
+      "reservas_activas_duplicadas": "0",
+      "reservas_confirmadas": "30"
+    }
+  },
+  {
+    "Escenario": "pico",
+    "Usuarios": 100,
+    "Operaciones": 100,
+    "OpsPorSegundo": 0,
+    "P50": 905.6036039999999,
+    "P95": 1015.26796495,
+    "P99": 1054.5567720000001,
+    "ReservaP95": 1015.26796495,
+    "Errores": 0,
+    "TasaErrores": 0,
+    "ErroresPor": {},
+    "Confirmadas": 30,
+    "Negocio409": 70,
+    "Reparto": {
+      "booking-service-1": 50,
+      "booking-service-2": 50
+    },
+    "Origen": {
+      "cache": 0,
+      "cache_vencida": 0,
+      "fuente": 0
+    },
+    "Recursos": {},
+    "Integridad": {
+      "capacidad": "30",
+      "clases_sobre_cupo": "0",
+      "ocupacion": "30",
+      "reservas_activas_duplicadas": "0",
+      "reservas_confirmadas": "30"
+    }
+  },
+  {
+    "Escenario": "caida",
+    "Usuarios": 25,
+    "Operaciones": 60642,
+    "OpsPorSegundo": 673.8,
+    "P50": 25.669451000000002,
+    "P95": 68.72220094999996,
+    "P99": 115.04944399999984,
+    "ReservaP95": 62.52458504999998,
+    "Errores": 570,
+    "TasaErrores": 0.009399426140298803,
+    "ErroresPor": {
+      "medicion_errores{status:502}": 530,
+      "medicion_errores{status:504}": 40
+    },
+    "Confirmadas": 0,
+    "Negocio409": 6066,
+    "Reparto": {
+      "booking-service-1": 53767,
+      "booking-service-2": 27348
+    },
+    "Origen": {
+      "cache": -607694,
+      "cache_vencida": -1,
+      "fuente": -16219
+    },
+    "Recursos": {
+      "api-gateway": {
+        "CPUProm": 130.4418181818182,
+        "CPUMax": 194.5,
+        "MemMaxMiB": 23.14
+      },
+      "benefits-mock": {
+        "CPUProm": 12.989090909090908,
+        "CPUMax": 62.96,
+        "MemMaxMiB": 112.8
+      },
+      "benefits-service": {
+        "CPUProm": 2.9436363636363634,
+        "CPUMax": 17.11,
+        "MemMaxMiB": 12.98
+      },
+      "booking-indexer": {
+        "CPUProm": 3.387272727272727,
+        "CPUMax": 15.85,
+        "MemMaxMiB": 14
+      },
+      "booking-service": {
+        "CPUProm": 93.43909090909091,
+        "CPUMax": 172.4,
+        "MemMaxMiB": 22.94
+      },
+      "booking-service-2": {
+        "CPUProm": 62.36571428571428,
+        "CPUMax": 103.43,
+        "MemMaxMiB": 22.87
+      },
+      "grafana": {
+        "CPUProm": 4.720909090909091,
+        "CPUMax": 12.07,
+        "MemMaxMiB": 73.5
+      },
+      "jaeger": {
+        "CPUProm": 0.12363636363636363,
+        "CPUMax": 0.18,
+        "MemMaxMiB": 14.25
+      },
+      "mailpit": {
+        "CPUProm": 0,
+        "CPUMax": 0,
+        "MemMaxMiB": 40.24
+      },
+      "members-service": {
+        "CPUProm": 3.429090909090909,
+        "CPUMax": 13.85,
+        "MemMaxMiB": 18.85
+      },
+      "mongo": {
+        "CPUProm": 34.13818181818182,
+        "CPUMax": 81.99,
+        "MemMaxMiB": 206.1
+      },
+      "notification-worker": {
+        "CPUProm": 5.243636363636363,
+        "CPUMax": 30.14,
+        "MemMaxMiB": 18.16
+      },
+      "opensearch": {
+        "CPUProm": 9.816363636363635,
+        "CPUMax": 24.58,
+        "MemMaxMiB": 952.8
+      },
+      "otel-collector": {
+        "CPUProm": 0.30818181818181817,
+        "CPUMax": 1.92,
+        "MemMaxMiB": 18.88
+      },
+      "postgres": {
+        "CPUProm": 52.60636363636363,
+        "CPUMax": 77.18,
+        "MemMaxMiB": 144.2
+      },
+      "prometheus": {
+        "CPUProm": 5.083636363636364,
+        "CPUMax": 24.09,
+        "MemMaxMiB": 36.15
+      },
+      "rabbitmq": {
+        "CPUProm": 4.780909090909091,
+        "CPUMax": 11.75,
+        "MemMaxMiB": 148.9
+      },
+      "redis": {
+        "CPUProm": 41.99818181818182,
+        "CPUMax": 129.32,
+        "MemMaxMiB": 47.75
+      },
+      "training-service": {
+        "CPUProm": 1.9254545454545455,
+        "CPUMax": 9.89,
+        "MemMaxMiB": 13.32
+      },
+      "web": {
+        "CPUProm": 0.829090909090909,
+        "CPUMax": 9.12,
+        "MemMaxMiB": 10.16
+      }
+    },
+    "Sucesos": [
+      "22:40:16.727 (+22.3 s) docker kill gym-booking-service-2-1",
+      "22:40:53.038 (+58.6 s) docker start booking-service-2"
+    ]
+  }
+]

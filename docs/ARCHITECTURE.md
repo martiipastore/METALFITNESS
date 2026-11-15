@@ -2,11 +2,11 @@
 
 > Documento de referencia de la arquitectura del proyecto. La funcionalidad está definida en [SPEC.md](../SPEC.md); las decisiones estructurales están en [docs/adr/](adr/).
 >
-> - Versión: 1.12 (estado de la entrega final: etapas 0 a 14)
-> - Fecha: 2026-11-11
+> - Versión: 1.13 (estado de la entrega final: etapas 0 a 14, correcciones de búsqueda y balanceo)
+> - Fecha: 2026-11-15
 > - Incluye tres decisiones agregadas y aprobadas por el equipo (2026-10-07) para cubrir huecos con el SPEC: eventos `membresia.cancelada` y `usuario.desactivado`, consulta de asignaciones training → members y consulta de datos de alumnos booking → members. Registro completo en [Registro_de_Decisiones_Gimnasio.docx](../Registro_de_Decisiones_Gimnasio.docx) (D-20 a D-23).
 
-## Estado de implementación al 11/11/2026
+## Estado de implementación al 15/11/2026
 
 Todo lo siguiente corre en el stack local (`make demo`). Cada fila se validó con
 tests y con el recorrido desde el frontend; el detalle y la evidencia están en el
@@ -21,14 +21,15 @@ documento de cada etapa.
 | **Mensajería**: outbox con relay, `gym.events`, consumidores idempotentes, reintentos 10 s/1 min/10 min y DLQ | Implementado para `membresia.activada`, `asistencia.registrada`, `inasistencia.registrada` y `clase.actualizada` | [Etapa 5](entrega-final/ETAPA_5_MENSAJERIA.md), [etapa 6](entrega-final/ETAPA_6_BOOKING_BENEFITS.md) |
 | **Benefits** (Hexagonal): ledger, +500 por asistencia y −100 por ausencia, API de partners v2, integraciones y reversiones | Implementado | [Etapa 6](entrega-final/ETAPA_6_BOOKING_BENEFITS.md), [etapa 7](entrega-final/ETAPA_7_CLUB.md) |
 | **Notificaciones**: notification-worker con MongoDB y SMTP (Mailpit) | Implementado | [Etapa 5](entrega-final/ETAPA_5_MENSAJERIA.md) |
-| **Búsqueda**: OpenSearch con alias `clases-read`, indexer versionado y `-reindex` sin pausa | Implementado (perfil `search`) | [Etapa 8](entrega-final/ETAPA_8_BUSQUEDA.md), D-87 |
-| **Caché**: catálogo de actividades en Redis (cache-aside, TTL 10 min, invalidación) | Implementado y medido | [Etapa 9](entrega-final/ETAPA_9_CACHE.md), D-88 |
+| **Búsqueda**: OpenSearch con alias `clases-read`, indexer versionado y `-reindex` sin pausa; texto parcial `q` («zum» → Zumba) con la misma regla en OpenSearch y PostgreSQL | Implementado (perfil `search`); texto parcial el 14/11/2026 | [Etapa 8](entrega-final/ETAPA_8_BUSQUEDA.md), D-87, [corrección](entrega-final/CORRECCION_BUSQUEDA.md) |
+| **Caché**: catálogo de actividades en Redis (cache-aside, TTL 10 min, invalidación) y páginas de `GET /classes` (fresca 30 s, copia vencida hasta 30 min solo si la fuente cae, invalidación por generación) | Implementado y medido; la búsqueda responde con PostgreSQL apagado | [Etapa 9](entrega-final/ETAPA_9_CACHE.md), D-88, [ADR-007 v2](adr/ADR-007-v2-cache-busqueda-clases.md), D-95 (propuesta) |
 | **Training** (Capas, MongoDB): planes, mediciones y consultas, con autorización por asignación | Implementado | [Etapa 10](entrega-final/ETAPA_10_TRAINING.md) |
 | **Frontend**: pantallas de los cuatro roles con la identidad visual | Implementado | [Etapa 11](entrega-final/ETAPA_11_FRONTEND.md) |
 | **Capacidad externa (D9)**: 100 puntos en MELT por asistencia, entrega en segundo plano con referencia estable | Implementado y validado contra MELT real | [Etapa 13](entrega-final/ETAPA_13_MELT.md), [ADR-009 v2](adr/ADR-009-v2-acreditacion-melt.md) |
-| **Observabilidad**: logs JSON con `correlation_id`, trazas del gateway y Benefits en Jaeger, Prometheus, tablero de Grafana y tres alertas | Implementado; trazas de Members y Booking pendientes | [Etapa 14](entrega-final/ETAPA_14_OBSERVABILIDAD.md), D-93 |
+| **Observabilidad**: logs JSON con `correlation_id`, trazas del gateway y Benefits en Jaeger, Prometheus, tablero de Grafana y tres alertas | Implementado; trazas de Members y Booking y Loki pendientes | [Etapa 14](entrega-final/ETAPA_14_OBSERVABILIDAD.md), D-93 |
 | **Nube**: gateway, Members, Benefits y web en Vercel con PostgreSQL gestionado; la API de partners es pública | Publicado; Booking, training y mensajería solo locales (L-19) | [ADR-021](adr/ADR-021-despliegue-vercel.md), D-75 |
-| **Balanceo de Booking** (2 instancias, balanceadas por el gateway) | Implementado el 15/11/2026 (etapa 12B) | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md) |
+| **Balanceo de Booking** (2 instancias, balanceadas por el gateway) | Implementado el 15/11/2026 (etapa 12B): round-robin, política 3/2, métricas y tablero | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md), D-96, [etapa 12B](entrega-final/ETAPA_12_BORDE.md) |
+| **Arranque desde cero**: healthchecks que no dan sano durante el init, `make down`/`make clean` con perfiles, datos de prueba | Verificado con arranques limpios | [ARRANQUE_DOCKER.md](entrega-final/ARRANQUE_DOCKER.md) |
 | Eventos `membresia.cancelada`, `usuario.desactivado` y `alumno.creado` | Diseño objetivo; no publicados | §7 |
 
 Los diagramas y las demás secciones describen el **diseño objetivo** salvo que digan
@@ -69,13 +70,13 @@ Este documento describe la **arquitectura objetivo** del sistema. Las tablas de 
 | **Implementado** | Módulos Go y ejecutables iniciales; health checks y readiness contra PostgreSQL/MongoDB; gateway con routing por prefijo, correlación, CORS, timeouts, errores y estado agregado; frontend de estado; bases y usuarios separados por servicio; contrato OpenAPI, guía y mock de partners. |
 | **Implementado en Benefits** | API de partners v2 (`/partner-api/v2`; v1 conservada por compatibilidad) con registro externo, créditos, saldo y movimientos; autenticación por API key sin caché; permisos, límites de puntos, identidad de evento y cuota por minuto por integración; dominio, puertos y adaptador PostgreSQL; migraciones y restricciones para saldo, secuencia e idempotencia; tests de concurrencia y rollback contra base real. [Persistencia](entrega-2/ETAPA_2_BENEFITS.md), [API](entrega-2/ETAPA_3_API_BENEFITS.md) y [CB-02](CB02_VALIDACION.md). |
 | **Implementado en Members** | Identidad, registro externo, activación de un solo uso por correo, login JWT RS256 (15 min), roles, bcrypt 12 y membresías mensual/trimestral/anual/por clases con historial inmutable, idempotencia y outbox. Padrón de alumnos y profesionales, asignaciones y vigencia por fecha para booking (etapa 3 de la entrega final). [CB-03](CB03_VALIDACION.md), [ADR-020](adr/ADR-020-membresias-independientes.md), [API de membresías](api/memberships.v1.md) y [API de usuarios](api/users.v1.md). |
-| **Implementado en Booking** | Etapa 4 de la entrega final, detrás de `BOOKING_ENABLED`: actividades, horarios y generación de clases; reservas y cancelación con idempotencia; cupo, unicidad, turno diario de Musculación y superposición garantizados también por PostgreSQL (CHECK, índices únicos parciales y exclusión con `btree_gist`); vigencia validada con members y falla cerrada; ingreso por DNI con ventana de asistencia; cierre automático con ausencias; outbox de `asistencia.registrada` e `inasistencia.registrada` sin publicador todavía. Desde la etapa 8, con `BOOKING_SEARCH_ENABLED`, la búsqueda lee OpenSearch (alias `clases-read`) que mantiene `booking-indexer` con `clase.actualizada` versionado ([etapa 8](entrega-final/ETAPA_8_BUSQUEDA.md), D-87). [API](api/booking.v1.md) y [etapa 4](entrega-final/ETAPA_4_BOOKING.md). |
+| **Implementado en Booking** | Etapa 4 de la entrega final, detrás de `BOOKING_ENABLED`: actividades, horarios y generación de clases; reservas y cancelación con idempotencia; cupo, unicidad, turno diario de Musculación y superposición garantizados también por PostgreSQL (CHECK, índices únicos parciales y exclusión con `btree_gist`); vigencia validada con members y falla cerrada; ingreso por DNI con ventana de asistencia; cierre automático con ausencias; outbox de `asistencia.registrada` e `inasistencia.registrada` publicado por el relay desde la etapa 6. Desde la etapa 8, con `BOOKING_SEARCH_ENABLED`, la búsqueda lee OpenSearch (alias `clases-read`) que mantiene `booking-indexer` con `clase.actualizada` versionado ([etapa 8](entrega-final/ETAPA_8_BUSQUEDA.md), D-87); desde el 14/11/2026 guarda cada página en Redis y acepta texto parcial ([corrección](entrega-final/CORRECCION_BUSQUEDA.md)). Desde el 15/11/2026 corre en dos instancias balanceadas por el gateway (ADR-012 v3). [API](api/booking.v1.md) y [etapa 4](entrega-final/ETAPA_4_BOOKING.md). |
 | **Publicado en la nube** | Gateway, Benefits, Members (con su worker) y web en Vercel, con PostgreSQL gestionado y SMTP externo: `https://metalfitness-club.vercel.app`. Sin RabbitMQ, Redis ni observabilidad en la nube. [ADR-021](adr/ADR-021-despliegue-vercel.md). |
 | **Validado en resiliencia** | Caída controlada 502/503/504 antes/después de commit, recuperación por misma clave y rollback previo al commit; proxy exclusivo de pruebas retirado al terminar. [Etapa 6](entrega-2/ETAPA_6_RESILIENCIA.md) y [postmortem](POSTMORTEM.md). |
 | **Implementado en observabilidad** | Primera traza Gateway → Benefits → PostgreSQL y logs correlacionados; Collector y Jaeger en memoria. [Evidencia](entrega-2/ETAPA_4_OBSERVABILIDAD.md). |
-| **Desplegado, todavía sin integración funcional** | Redis está en Docker Compose; desde la etapa 9 Booking cachea el catálogo de actividades (`BOOKING_CACHE_ENABLED`, D-88, [etapa 9](entrega-final/ETAPA_9_CACHE.md)). Desde la etapa 12 el gateway aplica el rate limiting de §5.2 con token bucket atómico en Redis (D-91, [etapa 12](entrega-final/ETAPA_12_BORDE.md)); el balanceo de Booking sigue pendiente. La mensajería se integró en las etapas 5 y 6. El gateway reutiliza hasta 64 conexiones ociosas por servicio (D-88). |
-| **Pendiente de implementación** | Publicación de los outbox en RabbitMQ, consumidores idempotentes y DLQ; notification-worker; booking (actividades, clases, reservas, kiosco, asistencia); training; recompensas y panel administrativo (CB-05 y CB-07); alumnos con DNI, profesionales y asignaciones; caché y rate limiting en Redis; OpenSearch/CQRS; balanceo de Booking; métricas y tableros. |
-| **Pendiente de definición externa** | Capacidad que METALFITNESS consumirá de otro grupo, su proveedor y el flujo relevante donde se integrará, según SPEC §1.5 y la futura decisión D9. |
+| **Implementado en el resto de la entrega final** | Relay de outbox, `gym.events`, consumidores idempotentes, reintentos y DLQ (etapas 5 y 6); notification-worker; training (etapa 10); caché de actividades y de búsqueda de clases en Redis (etapa 9, D-95); rate limiting en Redis (etapa 12A, D-91); OpenSearch/CQRS (etapa 8); balanceo de Booking en el gateway (etapa 12B, D-96); Prometheus, Grafana y alertas (etapa 14); cuponera interna del Club (D-94). Ver la tabla de estado al comienzo. |
+| **Pendiente de implementación** | Trazas de Members y Booking y propagación de `traceparent` por el outbox; Loki; publicación y consumo de `membresia.cancelada` y `usuario.desactivado` (RN-04, RN-34) y `alumno.creado`; recompensas y panel administrativo restantes (CB-05 y resto de CB-07); revisión de ADR-013 v3 (D13, medido el 15/11/2026). |
+| **Pendiente de corrección externa** | La capacidad consumida (D9) es MELT, implementada y validada en la etapa 13; el grupo proveedor debe enviar una versión corregida y hasta entonces no se cambia el adaptador ni se simula su caída en el postmortem. |
 
 Salvo que una sección indique expresamente el estado actual, sus descripciones deben leerse como decisiones y comportamiento **objetivo**, no como funcionalidad ya disponible.
 
@@ -446,10 +447,11 @@ Misma clave + mismo hash de request → misma respuesta guardada. Misma clave + 
 | Clave | Servicio | TTL | Invalidación |
 |---|---|---|---|
 | Catálogo de actividades | booking | 10 min | Al modificar una actividad |
+| Páginas de `GET /classes` (por filtros, texto y página; sin datos del alumno) | booking | Fresca 30 s; copia vencida hasta 30 min, servida solo si PostgreSQL u OpenSearch no responden | Por generación: Booking al reservar, cancelar, generar o cambiar cupos, y el indexer al aplicar un evento y 1,5 s después ([ADR-007 v2](adr/ADR-007-v2-cache-busqueda-clases.md)) |
 | Catálogo de beneficios | benefits | 5 min | Al modificar un beneficio |
 | Tipos de membresía | members | 1 h | Al modificar un tipo |
 
-**No se cachean los datos de autorización que requieren una decisión vigente:** vigencia de membresía, asignaciones profesional–alumno y validez de una API key. Un valor viejo podría permitir una operación después de cancelar una membresía, revocar una asignación o revocar una credencial. Si no se puede consultar al dueño del dato, la operación protegida falla cerrada; los listados que solo enriquecen una vista pueden degradar a identificadores. Redis se usa para acelerar catálogos y para contadores, no como fuente de esos permisos. Detalle en [ADR-007](adr/ADR-007-cache-autorizacion-disponibilidad.md).
+**No se cachean los datos de autorización que requieren una decisión vigente:** vigencia de membresía, asignaciones profesional–alumno y validez de una API key. Un valor viejo podría permitir una operación después de cancelar una membresía, revocar una asignación o revocar una credencial. Si no se puede consultar al dueño del dato, la operación protegida falla cerrada; los listados que solo enriquecen una vista pueden degradar a identificadores. Redis se usa para acelerar catálogos y para contadores, no como fuente de esos permisos. Detalle en [ADR-007](adr/ADR-007-cache-autorizacion-disponibilidad.md). La caché de búsqueda no cambia esa regla: la marca «ya reservada» del alumno se calcula aparte (tiempo máximo 800 ms; si no hay base, la respuesta lleva `marcas_disponibles: false`) y la reserva siempre se valida en PostgreSQL.
 
 Detalle y justificación en [ADR-003](adr/ADR-003-persistencia.md).
 
@@ -459,7 +461,7 @@ Detalle y justificación en [ADR-003](adr/ADR-003-persistencia.md).
 
 | Tema | Decisión |
 |---|---|
-| Entrada pública | En producción, Traefik termina HTTPS y expone la SPA y las rutas del gateway. Servicios de negocio, bases, broker, caché y observabilidad permanecen en una red privada y no publican puertos en el host. |
+| Entrada pública | En producción, el ruteo de Vercel termina HTTPS y expone la SPA y las rutas del gateway (ADR-021; reemplaza a Traefik en una VM, D-41). Servicios de negocio, bases, broker, caché y observabilidad permanecen en una red privada y no publican puertos en el host. |
 | Autenticación de usuarios | Login en members-service; JWT RS256 (15 min) con `sub`, `role`, `iss=gym-members`, `aud=gym-api`. Sin refresh token en v1 (el usuario vuelve a loguearse). El gateway es el único componente que interpreta el JWT. |
 | Identidad propagada | Antes de autenticar, el gateway elimina `X-User-Id`, `X-User-Role`, `X-Partner-Id` y todo `X-Internal-*` recibido. Después inyecta `X-User-Id` y `X-User-Role` únicamente desde un JWT verificado. Benefits deriva el partner de la API key validada y no acepta `X-Partner-Id` del cliente. Los servicios nunca aceptan identidad desde el body o query string. |
 | Autorización | Gruesa en el gateway (rol admitido por ruta) y **fina en cada servicio** sobre el recurso y los datos vigentes (ej. "solo el administrador", "solo su propia reserva", "solo un alumno asignado"). El ingreso por DNI valida identidad y membresía en booking/members, no usa un rol de profesor. |
@@ -758,9 +760,9 @@ flowchart LR
 | L-03 | **Ocupación eventualmente consistente** en los listados (OpenSearch). | Un listado puede mostrar "1 disponible" cuando ya no hay. | La reserva valida contra Postgres y devuelve `SIN_CUPO`; lag objetivo < 2 s. |
 | L-04 | **Puntos por asistencia con demora** (asincrónicos). | El alumno puede no ver los puntos inmediatamente. | Lag objetivo < 5 s; reintentos + DLQ monitoreada. |
 | L-05 | **Entrega de email no transaccional.** Si el worker muere entre enviar por SMTP y registrar `ENVIADO`, el reintento puede duplicar el correo. | El alumno puede recibir más de una copia en una ventana de falla. | Una notificación lógica por membresía/tipo, trazabilidad de intentos y riesgo explícito en RN-05 y ADR-005 v2. |
-| L-06 | **Gateway, Redis, RabbitMQ y OpenSearch en instancia única.** | Puntos únicos de falla. | Aceptado para el alcance del TP; booking es el único servicio replicado para demostrar balanceo. |
+| L-06 | **Gateway, Redis, RabbitMQ y OpenSearch en instancia única.** | Puntos únicos de falla. | Aceptado para el alcance del TP; booking es el único servicio replicado para demostrar balanceo. Si Redis cae, la búsqueda sigue contra la fuente; si cae PostgreSQL, se sirve la copia vencida de Redis (ADR-007 v2). |
 | L-07 | **JWT sin revocación.** Un usuario dado de baja o cuyo rol cambió conserva los claims anteriores hasta que vence el token. | Hasta 15 min de acceso residual, salvo operaciones que además consultan estado o permisos vigentes. | Vida corta; nueva autenticación para renovar identidad; estado y relaciones vigentes se verifican en operaciones sensibles. |
-| L-08 | **Confianza por red interna** (sin mTLS ni firma de cabeceras entre servicios). | Un proceso comprometido dentro de la red privada puede falsificar identidad. En desarrollo, una llamada directa desde el host puede hacer lo mismo. | En producción Traefik es la única entrada pública y el gateway solo se alcanza a través de él; reglas de firewall y red privada. Puertos loopback solo para diagnóstico local. mTLS queda fuera de v1. |
+| L-08 | **Confianza por red interna** (sin mTLS ni firma de cabeceras entre servicios). | Un proceso comprometido dentro de la red privada puede falsificar identidad. En desarrollo, una llamada directa desde el host puede hacer lo mismo. | En producción el ruteo de Vercel es la única entrada pública (ADR-021) y los servicios solo se alcanzan por bindings internos. Puertos loopback solo para diagnóstico local. mTLS queda fuera de v1. |
 | L-09 | **Outbox por polling.** | Latencia de hasta ~500 ms y carga constante sobre Postgres. | Índice parcial sobre pendientes; CDC queda como mejora futura. |
 | L-10 | **Sin orden garantizado** de eventos con 2 instancias de booking. | Un `clase.actualizada` viejo podría llegar tarde. | Campo `version` por clase; el indexer descarta versiones menores. |
 | L-11 | **Procesos programados en servicios replicados** (ausencias automáticas, vencimientos). | Doble ejecución. | `pg_advisory_lock` por job. |
@@ -780,6 +782,8 @@ flowchart LR
 | L-25 | **Dependencia de un proveedor externo con arranque en frío** (MELT en Render, ~25 s). | Los puntos MELT llegan con demora; si la persona no tiene cuenta queda pendiente de registro. | Entrega en segundo plano, timeout de 40 s, reintentos con la misma referencia y reconsulta cada 2 min (ADR-009 v2). La asistencia y el ledger local nunca dependen de MELT. |
 | L-26 | **Observabilidad parcial.** Trazas solo en gateway y Benefits; sin Loki ni Alertmanager; Members y training sin `/metrics` propios. | Una operación de Booking se reconstruye con logs por `correlation_id` y métricas, no con una traza completa. | Su disponibilidad se mide desde el gateway (`gateway_upstream_up`). Extender OTel a Members y Booking y propagar `traceparent` por el outbox (etapa 14, parte individual). |
 | L-27 | **Clave del proveedor compartida por privado.** `BENEFITS_MELT_PARTNER_KEY` vive solo en `.env`. | Si se filtra, un tercero podría acreditar puntos a nombre del gimnasio. | No se versiona ni se registra en logs; pedir a MELT que la rote después de la evaluación. |
+| L-28 | **El pico sobre una clase se serializa** en el bloqueo de su fila (`FOR UPDATE`), que garantiza el cupo. | 100 reservas simultáneas a una clase tardan hasta 1,8 s (p95), unos 16 ms por reserva en serie; ninguna réplica lo acorta. | Aceptado: es el costo de la invariante (RN-12); siempre 30 de 30 confirmadas. Cola de espera evaluada y no recomendada (ADR-013 v3). |
+| L-29 | **Al saturarse el equipo, la caché de búsqueda puede no leerse** (timeout de Redis de 100 ms). | La búsqueda va a la fuente; si OpenSearch no responde en 2 s, 503. Medido: 0,07 % con 100 usuarios en la mezcla. | Fallar rápido es lo diseñado; dimensionar CPU propia para gateway y OpenSearch si se despliega el stack (ADR-013 v3, B). |
 
 ---
 
@@ -797,7 +801,8 @@ flowchart LR
 | [ADR-005 original](adr/ADR-005-comunicacion.md) | D5 — Comunicación síncrona y asíncrona | Reemplazado por ADR-005 v2 |
 | [ADR-005 v2](adr/ADR-005-v2-comunicacion.md) | D5 — Comunicación y garantías entre servicios | Aceptado |
 | [ADR-006](adr/ADR-006-seguridad.md) | Seguridad — decisión adicional (etiqueta corregida el 09/11/2026; D6 del TP es búsqueda) | Aceptado; JWT, roles y bcrypt implementados en CB-03 |
-| [ADR-007](adr/ADR-007-cache-autorizacion-disponibilidad.md) | D7 — Caché, autorización y disponibilidad degradada | Aceptado |
+| [ADR-007](adr/ADR-007-cache-autorizacion-disponibilidad.md) | D7 — Caché, autorización y disponibilidad degradada | Aceptado; ampliado por ADR-007 v2 |
+| [ADR-007 v2](adr/ADR-007-v2-cache-busqueda-clases.md) | D7 — Caché de búsqueda de clases con copia vencida si cae la fuente | Propuesto (D-95, corrección pedida por la cátedra); implementado y verificado el 14/11/2026 |
 | [ADR-008](adr/ADR-008-contrato-propio.md) | D8 — Contrato propio inicial | Reemplazado por ADR-008 v2 |
 | [ADR-008 v2](adr/ADR-008-v2-errores-gateway-partners.md) | D8 — Contrato 1.1.0 con errores del gateway | Reemplazado por ADR-008 v3 |
 | [ADR-008 v3](adr/ADR-008-v3-fecha-cuenta-sin-movimientos.md) | D8 — Contrato 1.1.1, fecha de cuenta sin movimientos | Aceptado; flujo mínimo implementado |
@@ -808,9 +813,11 @@ flowchart LR
 | [ADR-011](adr/ADR-011-observabilidad-v1.md) | D11 — Diseño inicial de observabilidad | Reemplazado por v2 |
 | [ADR-011 v2](adr/ADR-011-v2-observabilidad-local.md) | D11 — Primera traza y memoria local | Aceptado; primera traza implementada; métricas, tablero y alertas agregados por D-93 |
 | [ADR-012](adr/ADR-012-balanceo-booking.md) | D12 — Balanceo inicial | Reemplazado por ADR-012 v2 |
-| [ADR-012 v2](adr/ADR-012-v2-estabilidad-health-checks.md) | D12 — Balanceo con verificaciones consecutivas (3 fallos / 2 éxitos) | Aceptado como diseño inicial; implementación pendiente (etapa 12B) |
+| [ADR-012 v2](adr/ADR-012-v2-estabilidad-health-checks.md) | D12 — Balanceo con verificaciones consecutivas (3 fallos / 2 éxitos) | Política vigente; herramienta (Traefik) reemplazada por ADR-012 v3 |
+| [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md) | D12 — Balanceo de Booking en el gateway con la política 3/2 | Aceptado (D-96); implementado y verificado el 15/11/2026 |
 | [ADR-013](adr/ADR-013-capacidad-costos.md) | D13 — Plan inicial de capacidad/costos | Reemplazado por v2 |
 | [ADR-013 v2](adr/ADR-013-v2-capacidad-costos-medidos.md) | D13 — Mediciones y costos fechados | Aceptado; evidencia local y límites en etapa 7 |
+| [ADR-013 v3](adr/ADR-013-v3-capacidad-flujo-principal.md) | D13 — Capacidad del flujo principal y alternativa de escalado | Propuesto (D-97); medido el 15/11/2026 |
 | [ADR-014](adr/ADR-014-busqueda-clases.md) | D6 — Búsqueda de clases | Aceptado; implementado en la etapa 8 y precisado por D-87 |
 | [ADR-015](adr/ADR-015-bloqueo-idempotencia-en-curso.md) | D4/D8 — Bloqueo por clave y operación en curso | Aceptado; implementado |
 | [ADR-016](adr/ADR-016-politicas-eventos-integraciones.md) | Club — Permisos, presupuesto y evento | Propuesto en detalles técnicos; CB-02 validada localmente, revisión pendiente |
@@ -824,21 +831,21 @@ flowchart LR
 
 ### Decisión del TP → ADR
 
-| Decisión del enunciado | Qué se decidió | ADR vigente | Estado al 11/11/2026 | Evidencia |
+| Decisión del enunciado | Qué se decidió | ADR vigente | Estado al 15/11/2026 | Evidencia |
 |---|---|---|---|---|
 | D1 — Límites de los servicios | Gateway + 5 servicios por capacidad de negocio; cada uno dueño de su base | [ADR-001](adr/ADR-001-limites-de-servicios.md), [ADR-022](adr/ADR-022-registro-externo-members-benefits.md) | Implementado | Sección 4; ningún servicio consulta la base de otro |
 | D2 — Arquitectura interna | Capas en Members y Training; Hexagonal en Booking y Benefits | [ADR-002 v2](adr/ADR-002-v2-patrones-internos.md) | Implementado | `internal/domain/architecture_test.go` en Booking y Benefits |
 | D3 — Persistencia | PostgreSQL por servicio; MongoDB en Training y notificaciones; Redis; OpenSearch | [ADR-003](adr/ADR-003-persistencia.md) | Implementado | Tests de integración con testcontainers; [etapa 10](entrega-final/ETAPA_10_TRAINING.md) |
 | D4 — Consistencia y concurrencia | Cupo, unicidad y saldo garantizados por la base; ledger ordenado; `Idempotency-Key` | [ADR-004 v2](adr/ADR-004-v2-saldo-ledger.md), [ADR-015](adr/ADR-015-bloqueo-idempotencia-en-curso.md) | Implementado | Tests concurrentes de reservas ([etapa 4](entrega-final/ETAPA_4_BOOKING.md)) y del ledger |
 | D5 — Comunicación | HTTP síncrono con timeout; eventos con outbox, consumo idempotente, reintentos y DLQ | [ADR-005 v2](adr/ADR-005-v2-comunicacion.md) | Implementado | E2E `-messaging` y `-attendance` ([etapa 5](entrega-final/ETAPA_5_MENSAJERIA.md), [etapa 6](entrega-final/ETAPA_6_BOOKING_BENEFITS.md)) |
-| D6 — Búsqueda | OpenSearch con alias, indexer versionado y reindexado sin pausa | [ADR-014](adr/ADR-014-busqueda-clases.md), D-87 | Implementado | E2E `-search`; retraso medido ~1 s ([etapa 8](entrega-final/ETAPA_8_BUSQUEDA.md)) |
-| D7 — Caché | Catálogo de actividades en Redis; nunca permisos ni vigencias | [ADR-007](adr/ADR-007-cache-autorizacion-disponibilidad.md), D-88 | Implementado y medido | Medición A/B/A/B con control ([etapa 9](entrega-final/ETAPA_9_CACHE.md)) |
+| D6 — Búsqueda | OpenSearch con alias, indexer versionado y reindexado sin pausa; texto parcial por prefijo de palabra | [ADR-014](adr/ADR-014-busqueda-clases.md), D-87, D-95 | Implementado | E2E `-search`; retraso medido ~1 s ([etapa 8](entrega-final/ETAPA_8_BUSQUEDA.md)); [corrección](entrega-final/CORRECCION_BUSQUEDA.md) |
+| D7 — Caché | Catálogo de actividades y páginas de búsqueda de clases en Redis; nunca permisos ni vigencias | [ADR-007](adr/ADR-007-cache-autorizacion-disponibilidad.md), [ADR-007 v2](adr/ADR-007-v2-cache-busqueda-clases.md), D-88, D-95 | Implementado y medido | Medición A/B/A/B con control ([etapa 9](entrega-final/ETAPA_9_CACHE.md)); búsqueda con PostgreSQL apagado ([corrección](entrega-final/CORRECCION_BUSQUEDA.md)) |
 | D8 — Contrato propio | API de partners v2.0.0 en Vercel | [ADR-008 v4](adr/ADR-008-v4-capacidad-operativa-club.md) | Publicado | `make contract-lint`; smoke `scripts/smoke-club-vercel.ps1` |
 | D9 — Consumo del proveedor | 100 puntos en MELT por asistencia, en segundo plano con anticorrupción | [ADR-009 v2](adr/ADR-009-v2-acreditacion-melt.md), D-92 | Implementado y validado contra MELT real | Test de contrato; [etapa 13](entrega-final/ETAPA_13_MELT.md) |
 | D10 — Resiliencia | Timeouts, reintentos idempotentes, fallas parciales sin retirar el proceso | [ADR-010 v2](adr/ADR-010-v2-resiliencia-validada.md) | Implementado | [POSTMORTEM.md](POSTMORTEM.md); caídas en los E2E; Redis caído en la etapa 12 |
 | D11 — Observabilidad | Logs JSON correlacionados, trazas OTel, métricas, tablero y alertas | [ADR-011 v2](adr/ADR-011-v2-observabilidad-local.md), D-93 | Implementado en parte: trazas solo en gateway y Benefits (L-26) | [Etapa 14](entrega-final/ETAPA_14_OBSERVABILIDAD.md): caída controlada visible en el tablero |
-| D12 — Balanceo | Dos instancias de Booking balanceadas por el gateway con chequeos 3/2 | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md) | Implementado y verificado el 15/11/2026 | Reparto 50/50 y caída provocada en ETAPA_12_BORDE.md |
-| D13 — Capacidad y costos | Mediciones de carga con k6 y costos fechados | [ADR-013 v2](adr/ADR-013-v2-capacidad-costos-medidos.md) | Mediciones locales; costos de Oracle desactualizados por ADR-021 | `tests/load/`; [etapa 9](entrega-final/ETAPA_9_CACHE.md) (pool del gateway) |
+| D12 — Balanceo | Dos instancias de Booking balanceadas por el gateway con chequeos 3/2 | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md), D-96 | Implementado y verificado el 15/11/2026 | Reparto 50/50 y caída provocada en [ETAPA_12_BORDE.md](entrega-final/ETAPA_12_BORDE.md) |
+| D13 — Capacidad y costos | Mediciones de carga con k6: partners de Benefits y flujo principal de búsqueda y reservas; alternativa de escalado con costos fechados | [ADR-013 v2](adr/ADR-013-v2-capacidad-costos-medidos.md), [ADR-013 v3](adr/ADR-013-v3-capacidad-flujo-principal.md), D-97 | Medido localmente el 15/11/2026; alternativa propuesta, costos del 16/10/2026 a reverificar | [CARGA_D13.md](entrega-final/CARGA_D13.md); `go run tests/load/run-flujo.go` |
 
 La revisión de la Entrega 2 se registra en [REVISION_ETAPA_1.md](REVISION_ETAPA_1.md), incluyendo patrones de acceso de Benefits y la traducción de los errores 502/504 del gateway ya implementada con el formato público. Las propuestas no cambian las decisiones aceptadas ni acreditan implementación.
 
