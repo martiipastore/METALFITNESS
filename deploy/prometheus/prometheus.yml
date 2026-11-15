@@ -20,10 +20,10 @@ scrape_configs:
     static_configs:
       - targets: ["benefits-service:8083"]
 
-  # Caché del catálogo de actividades (aciertos, fallos, invalidaciones).
+  # Caché y búsquedas de Booking, una serie por instancia (etiqueta instance).
   - job_name: booking-service
     static_configs:
-      - targets: ["booking-service:8082"]
+      - targets: ["booking-service:8082", "booking-service-2:8082"]
 
   # Indexado de clases en OpenSearch y retraso del índice.
   - job_name: booking-indexer

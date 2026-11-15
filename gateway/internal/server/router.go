@@ -37,6 +37,7 @@ func NewRouter(log *slog.Logger, corsOrigins []string, p *proxy.Proxy, checker *
 		if limiter != nil {
 			b.WriteString(metricsText(limiter.Metrics))
 		}
+		b.WriteString(p.MetricasBalanceo())
 		c.Data(http.StatusOK, "text/plain; version=0.0.4", []byte(b.String()))
 	})
 	r.GET("/api/v1/status", func(c *gin.Context) {

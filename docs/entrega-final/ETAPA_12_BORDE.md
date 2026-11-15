@@ -2,7 +2,7 @@
 
 **Estado al 11/11/2026:**
 - **Parte A, control de tráfico:** implementada y validada localmente.
-- **Parte B, balanceo de Booking:** pendiente, planificada después de la presentación
+- **Parte B, balanceo de Booking:** implementada y verificada el 15/11/2026 en el gateway (ADR-012 v3, D-96)
   grupal.
 
 El enunciado pide el «punto de entrada único con autenticación, direccionamiento y
@@ -85,23 +85,37 @@ test con Redis real corrió en Windows.
 - En la nube el límite general queda desactivado (D-79). El login sigue protegido por la
   cuota en PostgreSQL de Members y los partners por la cuota por integración de Benefits.
 
-## Parte B — Balanceo de Booking (pendiente)
+## Parte B — Balanceo de Booking (implementada el 15/11/2026)
 
-**Qué pide el enunciado (§2.3):**
-- dos o más instancias de un servicio;
-- reconocer una instancia no disponible;
-- poder comprobar la distribución y el estado de las instancias con la observabilidad.
+**Qué pide el enunciado (§2.3):** dos o más instancias de un servicio; reconocer una instancia no disponible; comprobar la distribución y el estado de las instancias con la observabilidad.
 
-**No exige umbrales de fallos consecutivos.**
+**Cambio de herramienta.** La documentación de Traefik v3.7 confirmó que su chequeo activo no tiene umbrales de fallos ni de éxitos consecutivos, así que no puede cumplir D-51 (3/2). El equipo eligió balancear en el gateway con la política aprobada sin cambios. Ver [ADR-012 v3](../adr/ADR-012-v3-balanceo-en-gateway.md) y D-96.
 
-**Plan propuesto:**
-- Dos instancias de `booking-service` detrás de Traefik, con igual peso y sin afinidad
-  (D-46).
-- Health check `GET /health/ready` cada 5 s con timeout de 2 s.
-- Instancia identificada en logs y métricas para mostrar la distribución.
-- Prueba de caída de una instancia.
+**Qué se hizo:**
 
-Traefik retira una instancia al primer health check fallido; por lo que se sabe, no
-tiene umbrales 3/2. Se confirmará con su documentación antes de implementar. Si se
-confirma, la opción propuesta es registrar una decisión que reemplace D-51, aceptando la
-mayor sensibilidad a demoras aisladas (flapping, teórico p. 87).
+- `booking-service` y `booking-service-2` en Compose, con la misma configuración (diagnóstico en `127.0.0.1:8082` y `127.0.0.1:8087`).
+- `gateway/internal/balance`: round-robin con igual peso y sin afinidad; chequeo de `/health/ready` cada 5 s con timeout de 2 s; sale tras 3 fallos seguidos y vuelve tras 2 éxitos seguidos.
+- Sin instancias elegibles, `503` con `Retry-After: 5` (`502 UNAVAILABLE` para partners).
+- Observabilidad: métricas `gateway_balancer_*` por instancia, sección «Balanceo de Booking» en Grafana, `booking-service-1` y `booking-service-2` en `/api/v1/status` y en la alerta `ServicioCaido`, y logs de retiro y reincorporación. Prometheus lee las métricas de las dos instancias.
+
+**Evidencia (15/11/2026, stack local):**
+
+| Prueba | Resultado |
+|---|---|
+| 100 solicitudes con las dos instancias sanas | 100 × 200; 50 a cada instancia; Prometheus registra lo mismo |
+| `docker kill` de `booking-service-2` a las 20:26:03,7 UTC, con una solicitud cada 200 ms | Retirada a las 20:26:15,1 (11,5 s). 296 de 300 solicitudes con 200; 3 × 502 y 1 × 504, todas antes del retiro |
+| Se reinicia a las 20:27:28,6 | Reincorporada a las 20:27:39,5 (10,9 s), sin errores |
+
+Las fallas durante la detección son el costo aceptado de no retirar por un fallo aislado (ADR-012 v2, consecuencias).
+
+**Cómo demostrarlo:**
+
+```bash
+docker kill gym-booking-service-2-1                    # caída abrupta
+# Grafana, «Balanceo de Booking»: la instancia 2 pasa a «Fuera» en 10 a 15 s
+# y la instancia 1 absorbe todo el tráfico
+docker compose --env-file .env -f deploy/docker-compose.yml start booking-service-2
+# vuelve a «En servicio» tras dos chequeos exitosos
+```
+
+Tests: `gateway/internal/balance/balance_test.go` y `gateway/internal/proxy/balance_test.go`.

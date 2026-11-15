@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| **Estado** | Aceptado como diseño inicial el 16/10/2026; implementación y evidencia pendientes |
+| **Estado** | Política vigente (3/2, 5 s/2 s). La herramienta (Traefik) fue reemplazada por el balanceo en el gateway: ver [ADR-012 v3](ADR-012-v3-balanceo-en-gateway.md) |
 | **Fecha** | 2026-10-16 |
 | **Decisión del TP** | D12 |
 | **Reemplaza** | [ADR-012](ADR-012-balanceo-booking.md) |

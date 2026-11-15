@@ -419,7 +419,7 @@ Inventario inicial del 09/11/2026 según la [etapa 0](ETAPA_0_LINEA_BASE.md#3-in
 | 9. Caché | Verificación técnica local cerrada el 10/11: catálogo de actividades en Redis medido A/B con control; pool del gateway corregido; 24 escenarios E2E | Revisión de otro integrante para integrar |
 | 10. Training y nutrición | Verificación técnica local cerrada el 10/11: planes, mediciones y consultas con MongoDB; autorización por asignación sin caché; 27 escenarios E2E | Revisión de otro integrante para integrar |
 | 11. Frontend completo | Validación funcional local cerrada el 11/11: cuatro roles y recorrido principal desde la interfaz, firma visual, móvil a 375 px | Revisión de otro integrante; logo y fotos oficiales |
-| 12. Borde y balanceo | Control de tráfico validado el 11/11 (tests con Redis real y stack local); balanceo pendiente | Confirmar soporte de Traefik para D-51 antes del balanceo |
+| 12. Borde y balanceo | Control de tráfico validado el 11/11; balanceo de Booking en el gateway validado el 15/11 (reparto 50/50 y caída provocada; D-96, ADR-012 v3) | — |
 | 13. Capacidad externa | Implementada y validada el 11/11 contra el MELT real con la clave: 100 puntos MELT por asistencia desde Benefits, `202` con enlace de registro, test de contrato y tarjeta del alumno | Demostrar el registro en MELT en vivo |
 | 14. Observabilidad final | Pendiente | Flujos integrados |
 | 15. Nube | Resuelta con Vercel (D-75); falta publicar el PR #14 | Acceso a la cuenta de Vercel |
