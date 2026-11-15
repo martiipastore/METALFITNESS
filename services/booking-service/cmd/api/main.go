@@ -81,6 +81,7 @@ func run(cfg config.Config, log *slog.Logger) error {
 		checks = append(checks, health.Check{Name: "opensearch", Fn: indice.Ping, Partial: true})
 	}
 	var cache *bookingredis.Actividades
+	var cacheClases *bookingredis.Clases
 	if cfg.CacheEnabled {
 		if !cfg.Enabled {
 			return errors.New("la caché requiere BOOKING_ENABLED=true")
@@ -88,6 +89,7 @@ func run(cfg config.Config, log *slog.Logger) error {
 		client := goredis.NewClient(&goredis.Options{Addr: cfg.RedisAddr, Password: cfg.RedisPassword, DialTimeout: cfg.CacheTimeout, ReadTimeout: cfg.CacheTimeout, WriteTimeout: cfg.CacheTimeout, MaxRetries: -1})
 		defer client.Close()
 		cache = &bookingredis.Actividades{Client: client, TTL: cfg.CacheTTL, Timeout: cfg.CacheTimeout, Metricas: &bookingredis.Metricas{}}
+		cacheClases = &bookingredis.Clases{Client: client, Retencion: cfg.CacheClasesRetencion, Timeout: cfg.CacheTimeout, Metricas: &bookingredis.MetricasClases{}}
 		// ADR-007: Redis es parcial; sin él el catálogo se lee de PostgreSQL.
 		checks = append(checks, health.Check{Name: "redis", Fn: cache.Ping, Partial: true})
 	}
@@ -96,7 +98,8 @@ func run(cfg config.Config, log *slog.Logger) error {
 		router.GET("/metrics", func(c *gin.Context) {
 			m := cache.Metricas
 			c.Data(200, "text/plain; version=0.0.4", []byte(fmt.Sprintf("activities_cache_hits_total %d\nactivities_cache_misses_total %d\nactivities_cache_errors_total %d\nactivities_cache_invalidations_total %d\nactivities_cache_redis_operations_total %d\nactivities_cache_redis_seconds_total %.6f\n",
-				m.Aciertos.Load(), m.Fallos.Load(), m.Errores.Load(), m.Invalidaciones.Load(), m.Operaciones.Load(), float64(m.MicrosegundosRedis.Load())/1e6)))
+				m.Aciertos.Load(), m.Fallos.Load(), m.Errores.Load(), m.Invalidaciones.Load(), m.Operaciones.Load(), float64(m.MicrosegundosRedis.Load())/1e6)+
+				metricasClases(cacheClases.Metricas)))
 		})
 	}
 	if cfg.Enabled {
@@ -121,7 +124,8 @@ func run(cfg config.Config, log *slog.Logger) error {
 		servicio := application.New(db, db, membersClient, reloj)
 		if cache != nil {
 			servicio.ConCache(cache)
-			log.Info("caché del catálogo de actividades habilitada")
+			servicio.ConCacheClases(cacheClases, db, cfg.CacheClasesFresco)
+			log.Info("caché del catálogo de actividades y de búsquedas de clases habilitada")
 		}
 		if indice != nil {
 			servicio.ConBusqueda(indice, db)
@@ -136,6 +140,16 @@ func run(cfg config.Config, log *slog.Logger) error {
 		Handler:         router,
 		ShutdownTimeout: cfg.ShutdownTimeout,
 	})
+}
+
+// metricasClases expone la caché de búsquedas de clases y el origen de cada
+// respuesta de GET /classes (ADR-007 v2), en formato de texto de Prometheus.
+func metricasClases(m *bookingredis.MetricasClases) string {
+	o := &bookinghttp.OrigenesBusqueda
+	return fmt.Sprintf("classes_cache_hits_total %d\nclasses_cache_misses_total %d\nclasses_cache_errors_total %d\nclasses_cache_invalidations_total %d\n"+
+		"classes_search_responses_total{origen=\"fuente\"} %d\nclasses_search_responses_total{origen=\"cache\"} %d\nclasses_search_responses_total{origen=\"cache_vencida\"} %d\nclasses_search_unmarked_total %d\n",
+		m.Aciertos.Load(), m.Faltantes.Load(), m.Errores.Load(), m.Invalidaciones.Load(),
+		o.Fuente.Load(), o.Cache.Load(), o.CacheVencida.Load(), o.SinMarcas.Load())
 }
 
 // cerrarClases ejecuta periódicamente el cierre automático de clases terminadas,

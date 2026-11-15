@@ -68,6 +68,15 @@ export interface Pagina<T> {
   tamano: number;
 }
 
+/** GET /classes: la página informa de dónde salió y si lleva las marcas del alumno. */
+export interface PaginaClases extends Pagina<Clase> {
+  /** Cuándo se consultó la fuente; en una copia guardada, su antigüedad. */
+  consultado_en: string;
+  origen: 'fuente' | 'cache' | 'cache_vencida';
+  /** false si no se pudo confirmar "ya reservada" (base no disponible). */
+  marcas_disponibles: boolean;
+}
+
 const ZONE = 'America/Argentina/Buenos_Aires';
 const dateFormat = new Intl.DateTimeFormat('es-AR', { timeZone: ZONE, weekday: 'short', day: '2-digit', month: '2-digit' });
 const timeFormat = new Intl.DateTimeFormat('es-AR', { timeZone: ZONE, hour: '2-digit', minute: '2-digit', hour12: false });

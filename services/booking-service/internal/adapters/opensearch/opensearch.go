@@ -52,12 +52,14 @@ type documento struct {
 	Disponibles     int       `json:"disponibles"`
 	Estado          string    `json:"estado"`
 	Version         int64     `json:"version"`
+	// Texto reúne actividad y profesor para la búsqueda parcial ("zum" → Zumba).
+	Texto string `json:"texto"`
 }
 
 func aDocumento(c domain.Clase) documento {
 	return documento{ID: c.ID, ActividadID: c.ActividadID, ActividadNombre: c.ActividadNombre, Musculacion: c.Musculacion, Inicio: c.Inicio.UTC(), Fin: c.Fin.UTC(),
 		Fecha: c.Fecha(), HoraInicio: c.HoraInicio(), ProfesorID: c.ProfesorID, ProfesorNombre: c.ProfesorNombre, Capacidad: c.Capacidad, Ocupacion: c.Ocupacion,
-		Disponibles: c.Disponibles(), Estado: c.Estado, Version: c.Version}
+		Disponibles: c.Disponibles(), Estado: c.Estado, Version: c.Version, Texto: c.ActividadNombre + " " + c.ProfesorNombre}
 }
 
 func (d documento) clase() domain.Clase {
@@ -65,8 +67,13 @@ func (d documento) clase() domain.Clase {
 		ProfesorID: d.ProfesorID, ProfesorNombre: d.ProfesorNombre, Capacidad: d.Capacidad, Ocupacion: d.Ocupacion, Estado: d.Estado, Version: d.Version}
 }
 
-// Mapping estricto: un campo inesperado es un error, no un tipo adivinado.
-const mapping = `{"settings":{"number_of_shards":1,"number_of_replicas":0},"mappings":{"dynamic":"strict","properties":{` +
+// Mapping estricto: un campo inesperado es un error, no un tipo adivinado. El
+// campo texto se analiza (teórico, clase 5 §2.2): tokenización estándar,
+// minúsculas y sin tildes; index_prefixes indexa los comienzos de cada palabra
+// para que la consulta por prefijo no recorra todos los términos.
+const mapping = `{"settings":{"number_of_shards":1,"number_of_replicas":0,"analysis":{"analyzer":{"texto":{"type":"custom","tokenizer":"standard","filter":["lowercase","asciifolding"]}}}},` +
+	`"mappings":{"dynamic":"strict","properties":{` +
+	`"texto":{"type":"text","analyzer":"texto","index_prefixes":{"min_chars":1,"max_chars":10}},` +
 	`"id":{"type":"keyword"},"actividad_id":{"type":"keyword"},"actividad_nombre":{"type":"keyword"},"musculacion":{"type":"boolean"},` +
 	`"inicio":{"type":"date"},"fin":{"type":"date"},"fecha":{"type":"keyword"},"hora_inicio":{"type":"keyword"},` +
 	`"profesor_id":{"type":"keyword"},"profesor_nombre":{"type":"keyword"},"capacidad":{"type":"integer"},"ocupacion":{"type":"integer"},` +
@@ -129,6 +136,27 @@ func (c *Client) Ping(ctx context.Context) error {
 	return err
 }
 
+// Vigente indica si el índice detrás del alias ya tiene el campo texto. Un
+// índice anterior a la búsqueda parcial se reconstruye con Reindexar.
+func (c *Client) Vigente(ctx context.Context) (bool, error) {
+	var out map[string]struct {
+		Mappings map[string]any `json:"mappings"`
+	}
+	status, err := c.do(ctx, http.MethodGet, "/"+Alias+"/_mapping/field/texto", nil, &out)
+	if err != nil {
+		return false, err
+	}
+	if status != 200 {
+		return false, fmt.Errorf("leer mapping: HTTP %d", status)
+	}
+	for _, indice := range out {
+		if len(indice.Mappings) == 0 {
+			return false, nil
+		}
+	}
+	return len(out) > 0, nil
+}
+
 // Asegurar crea el primer índice con el alias si todavía no existe.
 func (c *Client) Asegurar(ctx context.Context, nombre string) error {
 	status, err := c.do(ctx, http.MethodHead, "/_alias/"+Alias, nil, nil)
@@ -158,6 +186,10 @@ func (c *Client) CrearIndice(ctx context.Context, nombre string) error {
 
 // Indexar escribe la versión con version_type=external: OpenSearch rechaza con
 // 409 una versión menor o igual a la guardada, que se trata como descartada.
+// El documento queda buscable en el próximo refresh periódico (1 s); el indexer
+// vuelve a invalidar la caché después de ese plazo (ADR-007 v2). Forzar el
+// refresh por documento (refresh=true o wait_for) se probó y se descartó: con
+// generaciones grandes el retraso subía a 10 o 25 s.
 func (c *Client) Indexar(ctx context.Context, cl domain.Clase) (bool, error) {
 	path := fmt.Sprintf("/%s/_doc/%s?version=%d&version_type=external", Alias, url.PathEscape(cl.ID), cl.Version)
 	status, err := c.do(ctx, http.MethodPut, path, aDocumento(cl), nil)
@@ -289,6 +321,11 @@ func (c *Client) Buscar(ctx context.Context, f domain.FiltroClases, now time.Tim
 	}
 	if f.Franja != "" {
 		filtros = append(filtros, map[string]any{"term": map[string]any{"hora_inicio": f.Franja}})
+	}
+	// Cada palabra ya normalizada (domain.PalabrasBusqueda) debe empezar alguna
+	// palabra del texto indexado; misma regla que la consulta de PostgreSQL.
+	for _, p := range f.Palabras {
+		filtros = append(filtros, map[string]any{"prefix": map[string]any{"texto": p}})
 	}
 	if f.SoloDisponibles {
 		filtros = append(filtros,

@@ -38,7 +38,10 @@ services:
       - "127.0.0.1:5432:5432"
     healthcheck:
       <<: *healthcheck
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d postgres"]
+      # Por TCP: en el primer arranque la imagen corre los scripts de init con un
+      # servidor temporal que solo escucha el socket local. Chequear el socket
+      # daba healthy antes de tiempo y los servicios fallaban al conectarse.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d postgres"]
 
   mongo:
     image: mongo:7
@@ -55,7 +58,10 @@ services:
       - "127.0.0.1:27017:27017"
     healthcheck:
       <<: *healthcheck
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      # Por la IP del contenedor, como se conectan los servicios: en el primer
+      # arranque los scripts de init corren con un mongod temporal que solo
+      # escucha 127.0.0.1 y el chequeo local daba healthy antes de tiempo.
+      test: ["CMD-SHELL", "mongosh --quiet --host \"$$(hostname -i)\" --eval \"db.adminCommand('ping').ok\""]
 
   redis:
     image: redis:7-alpine
@@ -71,6 +77,9 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    # Nombre de nodo fijo: RabbitMQ guarda los datos en mnesia/rabbit@<hostname>;
+    # con el hostname aleatorio de Docker, recrear el contenedor perdía las colas.
+    hostname: rabbitmq
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-gym}
@@ -83,7 +92,10 @@ services:
     healthcheck:
       <<: *healthcheck
       start_period: 20s
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      # Como el usuario rabbitmq, no como root: la imagen usa HOME=/var/lib/rabbitmq
+      # y, si el chequeo corría antes del arranque, creaba la .erlang.cookie con
+      # dueño root; el servidor no podía leerla (eacces) y se reiniciaba.
+      test: ["CMD", "gosu", "rabbitmq", "rabbitmq-diagnostics", "-q", "ping"]
 
   # Búsqueda de clases (etapa 8, ADR-014). Solo local, en loopback y sin el
   # plugin de seguridad: el acceso pasa siempre por booking-service/indexer.
@@ -107,7 +119,7 @@ services:
       start_period: 60s
       test: ["CMD-SHELL", "curl -fs http://127.0.0.1:9200/_cluster/health >/dev/null"]
 
-  # Mock del contrato público de partners (docs/contracts/benefits-api.v1.yaml).
+  # Mock del contrato público de partners (docs/contracts/benefits-api.v2.yaml).
   benefits-mock:
     extends:
       file: docker-compose.mock.yml
@@ -115,7 +127,7 @@ services:
     container_name: gym-benefits-mock
     healthcheck:
       <<: *healthcheck
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4010/v1/benefits',{headers:{'X-API-Key':'healthcheck'}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4010/v2/accounts/healthcheck/balance',{headers:{'X-API-Key':'healthcheck'}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
 
   # Observabilidad del flujo mínimo; puertos OTLP solo dentro de Compose.
   jaeger:
@@ -230,6 +242,8 @@ services:
       BOOKING_SEARCH_ENABLED: ${BOOKING_SEARCH_ENABLED:-false}
       BOOKING_OPENSEARCH_URL: http://opensearch:9200
       BOOKING_CACHE_ENABLED: ${BOOKING_CACHE_ENABLED:-false}
+      BOOKING_CACHE_CLASES_FRESCO: ${BOOKING_CACHE_CLASES_FRESCO:-30s}
+      BOOKING_CACHE_CLASES_RETENCION: ${BOOKING_CACHE_CLASES_RETENCION:-30m}
       BOOKING_REDIS_ADDR: redis:6379
       BOOKING_REDIS_PASSWORD: ${REDIS_PASSWORD}
       GYM_INTERNAL_SERVICE_KEY: ${GYM_INTERNAL_SERVICE_KEY:-}
@@ -255,6 +269,10 @@ services:
       BOOKING_AMQP_URL: amqp://${RABBITMQ_USER:-gym}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       BOOKING_OPENSEARCH_URL: http://opensearch:9200
       BOOKING_DB_DSN: postgres://booking_user:${BOOKING_DB_PASSWORD}@postgres:5432/booking_db?sslmode=disable
+      # ADR-007 v2: el indexer invalida la caché de búsquedas al aplicar cambios.
+      BOOKING_CACHE_ENABLED: ${BOOKING_CACHE_ENABLED:-false}
+      BOOKING_REDIS_ADDR: redis:6379
+      BOOKING_REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
       - "127.0.0.1:8086:8086"
     depends_on:

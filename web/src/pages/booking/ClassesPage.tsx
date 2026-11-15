@@ -1,21 +1,28 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useSession } from '../../auth/session';
+import { useConfirm } from '../../components/ConfirmDialog';
 import { EmptyState, Notice, NoticeState, PageHeading } from '../../components/PageParts';
-import { Actividad, Clase, CLASS_STATES, day, errorText, newIdempotencyKey, occupancy, Pagina, range, todayPlus } from './types';
+import { Actividad, Clase, CLASS_STATES, day, errorText, newIdempotencyKey, occupancy, PaginaClases, range, time, todayPlus } from './types';
 
 // Clases disponibles y reserva (booking.v1, HU-13 y HU-14). El administrador usa
 // la misma búsqueda y entra al detalle de cada clase. La reserva se valida
 // siempre en el backend.
 const PAGE_SIZE = 20;
+// Espera desde la última tecla antes de buscar: "zum" consulta una vez, no tres.
+const TYPING_DELAY_MS = 300;
+// La lista se vuelve a consultar sola: un cambio de cupos o una clase nueva del
+// administrador aparece sin que el alumno tenga que buscar de nuevo.
+const REFRESH_MS = 30_000;
 
 export function ClassesPage() {
   const { authRequest, user } = useSession();
+  const [dialog, confirm] = useConfirm();
   const [activities, setActivities] = useState<Actividad[]>([]);
-  const initial = { desde: todayPlus(), hasta: todayPlus(7), actividad: '', soloDisponibles: false };
+  const initial = { texto: '', desde: todayPlus(), hasta: todayPlus(7), actividad: '', soloDisponibles: false };
   const [filters, setFilters] = useState(initial);
   const [applied, setApplied] = useState(initial);
   const [page, setPage] = useState(1);
-  const [data, setData] = useState<Pagina<Clase> | null>(null);
+  const [data, setData] = useState<PaginaClases | null>(null);
   const [notice, setNotice] = useState<NoticeState | null>(null);
   const [busy, setBusy] = useState('');
 
@@ -27,10 +34,11 @@ export function ClassesPage() {
 
   const load = useCallback(async () => {
     const params = new URLSearchParams({ fecha_desde: applied.desde, fecha_hasta: applied.hasta, pagina: String(page), tamano: String(PAGE_SIZE) });
+    if (applied.texto.trim()) params.set('q', applied.texto.trim());
     if (applied.actividad) params.set('actividad_id', applied.actividad);
     if (applied.soloDisponibles) params.set('solo_disponibles', 'true');
     try {
-      const res = await authRequest<Pagina<Clase>>(`/api/v1/classes?${params.toString()}`);
+      const res = await authRequest<PaginaClases>(`/api/v1/classes?${params.toString()}`);
       setData(res.data);
     } catch (error) {
       setNotice({ tone: 'error', text: errorText(error, 'No se pudieron cargar las clases.') });
@@ -40,6 +48,31 @@ export function ClassesPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Actualización sola: cada 30 s con la pestaña visible y al volver a ella.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'visible') void load();
+    };
+    const timer = window.setInterval(refresh, REFRESH_MS);
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+    };
+  }, [load]);
+
+  // Búsqueda mientras se escribe: el texto se aplica solo, sin tocar "Buscar".
+  useEffect(() => {
+    if (filters.texto === applied.texto) return;
+    const timer = window.setTimeout(() => {
+      setPage(1);
+      setApplied((prev) => ({ ...prev, texto: filters.texto }));
+    }, TYPING_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [filters.texto, applied.texto]);
 
   function search(event: FormEvent) {
     event.preventDefault();
@@ -73,19 +106,50 @@ export function ClassesPage() {
     }
   }
 
+  // Cupos de una clase (HU-08, RN-10): el backend rechaza bajarlos por debajo
+  // de la ocupación o superar el tope de la actividad.
+  async function changeCapacity(c: Clase) {
+    const value = await confirm({
+      title: `Cupos de ${c.actividad.nombre}`,
+      message: `${day(c.inicio)}, ${range(c)}. Hay ${c.ocupacion} reservas: los cupos no pueden quedar por debajo de eso ni superar el tope de la actividad.`,
+      confirmLabel: 'Guardar cupos',
+      input: { label: 'Cupos', type: 'number', initial: String(c.capacidad), min: Math.max(1, c.ocupacion), max: 50 },
+    });
+    if (value === null) return;
+    setBusy(c.id);
+    setNotice(null);
+    try {
+      await authRequest(`/api/v1/classes/${c.id}/capacity`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ capacidad: Number(value) }),
+      });
+      setNotice({ tone: 'success', text: `Cupos actualizados: ${c.actividad.nombre} del ${day(c.inicio)} ahora tiene ${value}. Los alumnos lo ven en unos segundos.` });
+      await load();
+    } catch (error) {
+      setNotice({ tone: 'error', text: errorText(error, 'No se pudieron cambiar los cupos.') });
+    } finally {
+      setBusy('');
+    }
+  }
+
   const student = user?.role === 'ALUMNO';
   const pages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
   const activeName = activities.find((a) => a.id === applied.actividad)?.nombre;
-  const filtered = applied.actividad !== '' || applied.soloDisponibles || applied.desde !== initial.desde || applied.hasta !== initial.hasta;
+  const filtered = applied.texto.trim() !== '' || applied.actividad !== '' || applied.soloDisponibles || applied.desde !== initial.desde || applied.hasta !== initial.hasta;
 
   return (
     <main className="page admin-page">
+      {dialog}
       {student ? (
         <PageHeading eyebrow="Agenda de entrenamiento" title="Clases" description="Elegí actividad y fechas, mirá cuántos lugares quedan y reservá en un paso." index="02" />
       ) : (
         <PageHeading eyebrow="Agenda operativa" title="Clases" description="Consultá la programación, revisá la ocupación y abrí el detalle de cada clase." index="03" />
       )}
       <form className="filters admin-toolbar-panel" onSubmit={search} aria-label="Filtros de clases">
+        <label className="filters-search">Buscar
+          <input type="search" placeholder="Ej.: zum, funcional o el nombre del profesor" maxLength={60} value={filters.texto} onChange={(e) => setFilters({ ...filters, texto: e.target.value })} />
+        </label>
         <label>Desde <input type="date" value={filters.desde} onChange={(e) => setFilters({ ...filters, desde: e.target.value })} required /></label>
         <label>Hasta <input type="date" value={filters.hasta} onChange={(e) => setFilters({ ...filters, hasta: e.target.value })} required /></label>
         <label>Actividad
@@ -100,6 +164,7 @@ export function ClassesPage() {
       {filtered && (
         <p className="active-filters">
           <span>Filtros activos:</span>
+          {applied.texto.trim() && <b>“{applied.texto.trim()}”</b>}
           <b>{applied.desde} → {applied.hasta}</b>
           {activeName && <b>{activeName}</b>}
           {applied.soloDisponibles && <b>Solo con lugar</b>}
@@ -107,10 +172,16 @@ export function ClassesPage() {
         </p>
       )}
       <Notice key={notice?.text} notice={notice} />
+      {data?.origen === 'cache_vencida' && (
+        <Notice notice={{ tone: 'info', text: `Mostramos la última búsqueda guardada, de las ${time(data.consultado_en)}, porque el sistema de clases no responde. La reserva se confirma siempre con la disponibilidad real.` }} />
+      )}
+      {student && data?.marcas_disponibles === false && (
+        <Notice notice={{ tone: 'info', text: 'No pudimos verificar tus reservas en este momento. Si ya reservaste una clase, el sistema no te deja duplicarla.' }} />
+      )}
       {data === null ? (
         notice?.tone !== 'error' && <div className="dashboard-skeleton" aria-label="Cargando clases" />
       ) : data.items.length === 0 ? (
-        <EmptyState title="Sin clases para esos filtros">Probá con otras fechas, otra actividad o sin “Solo con lugar”.</EmptyState>
+        <EmptyState title="Sin clases para esos filtros">Probá con otro texto, otras fechas, otra actividad o sin “Solo con lugar”.</EmptyState>
       ) : student ? (
         <ol className="class-grid" aria-label="Clases encontradas">
           {data.items.map((c) => <ClassCard key={c.id} clase={c} busy={busy} onReserve={() => void reserve(c)} />)}
@@ -129,7 +200,10 @@ export function ClassesPage() {
                 <td data-label="Profesor">{c.profesor.nombre}</td>
                 <td data-label="Ocupación">{occupancy(c)}</td>
                 <td data-label="Estado">{CLASS_STATES[c.estado]}</td>
-                <td><a href={`#/admin/clases/${c.id}`}>Ver detalle</a></td>
+                <td>
+                  {c.estado === 'PROGRAMADA' && <><button type="button" disabled={busy !== ''} onClick={() => void changeCapacity(c)}>{busy === c.id ? 'Guardando…' : 'Cupos'}</button>{' '}</>}
+                  <a href={`#/admin/clases/${c.id}`}>Ver detalle</a>
+                </td>
               </tr>
             ))}
           </tbody>

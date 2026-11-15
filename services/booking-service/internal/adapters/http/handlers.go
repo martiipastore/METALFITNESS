@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -234,4 +235,39 @@ func pagina[T any](items []T, total, pagina, tamano int) gin.H {
 
 func replay(c *gin.Context, r bool) {
 	c.Header("Idempotent-Replayed", strconv.FormatBool(r))
+}
+
+// MetricasOrigen cuenta de dónde salió cada respuesta de GET /classes y cuántas
+// salieron sin la marca "ya reservada" (ADR-007 v2). cmd/api las expone.
+type MetricasOrigen struct {
+	Fuente, Cache, CacheVencida, SinMarcas atomic.Int64
+}
+
+// OrigenesBusqueda son los contadores del proceso.
+var OrigenesBusqueda MetricasOrigen
+
+func (m *MetricasOrigen) contar(p domain.PaginaClases) {
+	switch p.Origen {
+	case domain.OrigenCache:
+		m.Cache.Add(1)
+	case domain.OrigenCacheVencida:
+		m.CacheVencida.Add(1)
+	default:
+		m.Fuente.Add(1)
+	}
+	if !p.MarcasDisponibles {
+		m.SinMarcas.Add(1)
+	}
+}
+
+// origenCabecera traduce el origen a X-Cache para verlo desde el navegador o curl.
+func origenCabecera(origen string) string {
+	switch origen {
+	case domain.OrigenCache:
+		return "HIT"
+	case domain.OrigenCacheVencida:
+		return "STALE"
+	default:
+		return "MISS"
+	}
 }

@@ -151,6 +151,12 @@ func (d *DB) GuardarClases(ctx context.Context, actor string, clases []domain.Cl
 const claseCols = `c.id::text, c.actividad_id::text, a.nombre, a.musculacion, coalesce(c.horario_id::text,''), c.inicio, c.fin, c.profesor_id::text, c.profesor_nombre, c.capacidad, c.ocupacion, c.estado, c.version`
 const claseFrom = ` FROM clases c JOIN actividades a ON a.id=c.actividad_id`
 
+// textoBuscable es el nombre de la actividad y del profesor en minúsculas, sin
+// tildes y con las palabras separadas por un espacio, precedido de un espacio.
+// Cada palabra buscada debe empezar alguna palabra (domain.PalabrasBusqueda);
+// es la misma regla que aplica el campo texto del índice de OpenSearch.
+const textoBuscable = `(' ' || regexp_replace(translate(lower(a.nombre || ' ' || c.profesor_nombre), 'áéíóúüñàèìòù', 'aeiouunaeiou'), '[^a-z0-9]+', ' ', 'g'))`
+
 // reservadaPorMi marca "ya reservada" para el alumno del parámetro indicado (CA-13.4).
 func reservadaPorMi(param int) string {
 	p := "$" + strconv.Itoa(param)
@@ -169,8 +175,9 @@ func (d *DB) BuscarClases(ctx context.Context, f domain.FiltroClases, alumnoID s
 		  AND ($4::text = '' OR c.actividad_id = NULLIF($4::text,'')::uuid)
 		  AND ($5::text = '' OR to_char(c.inicio AT TIME ZONE 'America/Argentina/Buenos_Aires','HH24:MI') = $5::text)
 		  AND (NOT $6::boolean OR (c.estado='PROGRAMADA' AND c.inicio > now() AND c.ocupacion < c.capacidad))
+		  AND NOT EXISTS (SELECT 1 FROM unnest(coalesce($9::text[], '{}')) AS w(p) WHERE `+textoBuscable+` NOT LIKE '% ' || w.p || '%')
 		ORDER BY c.inicio, c.id LIMIT $7 OFFSET $8`,
-		alumnoID, f.Desde, f.Hasta, f.ActividadID, f.Franja, f.SoloDisponibles, f.Tamano, (f.Pagina-1)*f.Tamano)
+		alumnoID, f.Desde, f.Hasta, f.ActividadID, f.Franja, f.SoloDisponibles, f.Tamano, (f.Pagina-1)*f.Tamano, f.Palabras)
 	if err != nil {
 		return out, err
 	}

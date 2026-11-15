@@ -119,6 +119,17 @@ de `.env`. La integración con MELT queda apagada hasta cargar en `.env` la clav
 `BENEFITS_MELT_PARTNER_KEY` (la entrega MELT por privado) y
 `BENEFITS_MELT_ENABLED=true`.
 
+**Datos de prueba.** La base arranca vacía. Para tener profesores, una alumna con
+membresía y clases de las próximas dos semanas:
+
+```bash
+go run scripts/cargar-datos-demo.go
+```
+
+Imprime la contraseña de la alumna `alumna@gym.local` una sola vez; se puede correr
+de nuevo sin duplicar nada. Ver [CORRECCION_BUSQUEDA.md](docs/entrega-final/CORRECCION_BUSQUEDA.md)
+para demostrar la búsqueda.
+
 `make up` levanta el stack con el `.env` que tengas, sin generarlo ni reindexar.
 Collector y Jaeger se comprueban mediante la demostración de trazas. Para verificar:
 
@@ -131,8 +142,9 @@ Sin `make`: `docker compose --env-file .env -f deploy/docker-compose.yml up -d -
 
 | Comando | Qué hace |
 |---|---|
-| `make down` | Baja el stack (conserva los datos) |
-| `make clean` | Baja el stack y borra los volúmenes |
+| `make down` | Baja el stack completo, incluidos OpenSearch y Mailpit (conserva los datos) |
+| `make clean` | Baja el stack completo y borra los volúmenes; después, `make demo` arranca de cero |
+| `go run scripts/cargar-datos-demo.go` | Carga profesores, una alumna con membresía, horarios y clases de prueba |
 | `make logs s=api-gateway` | Logs en vivo (sin `s=`, de todos) |
 | `make ps` | Estado de los contenedores |
 | `make test` | Tests de todos los módulos Go (los de integración usan Docker con testcontainers) |

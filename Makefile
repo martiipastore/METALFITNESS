@@ -37,11 +37,13 @@ demo: ## Procedimiento único: crea .env con secretos propios, levanta TODO (bú
 	@echo "        tablero http://localhost:3000  ·  alertas http://localhost:9090/alerts  ·  trazas http://localhost:16686"
 	@echo "Administrador: admin@gym.local (contraseña MEMBERS_ADMIN_PASSWORD de .env)"
 
+# Con los perfiles de make demo: sin ellos, OpenSearch y Mailpit quedaban
+# corriendo y el índice y los correos viejos sobrevivían a un clean.
 down: env-check ## Baja el stack (conserva los datos)
-	$(COMPOSE) down
+	$(COMPOSE) --profile search --profile identity down
 
 clean: env-check ## Baja el stack y BORRA los volúmenes de datos
-	$(COMPOSE) down -v
+	$(COMPOSE) --profile search --profile identity down -v
 
 logs: env-check ## Logs en vivo (todos, o uno con: make logs s=api-gateway)
 	$(COMPOSE) logs -f $(s)

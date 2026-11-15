@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -61,6 +62,38 @@ type Servicio struct {
 	marcas ports.ReservasDelAlumno
 	// cache acelera el catálogo de actividades (etapa 9); nil = sin caché.
 	cache ports.CacheActividades
+	// cacheClases guarda páginas de búsqueda de clases (ADR-007 v2). Una copia
+	// más nueva que frescoClases se sirve sin consultar la fuente; una más vieja
+	// solo se sirve si la fuente no responde.
+	cacheClases  ports.CacheClases
+	frescoClases time.Duration
+}
+
+// ConCacheClases activa la caché de búsquedas de clases. marcas resuelve
+// "ya reservada" aparte, porque la copia compartida no depende del alumno.
+func (s *Servicio) ConCacheClases(c ports.CacheClases, marcas ports.ReservasDelAlumno, fresco time.Duration) *Servicio {
+	s.cacheClases, s.marcas, s.frescoClases = c, marcas, fresco
+	return s
+}
+
+// invalidarClases cambia la generación de la caché de búsquedas después de
+// confirmar una escritura que modifica clases. Si Redis no responde, la copia
+// vieja dura como máximo su vigencia (límite documentado en ADR-007 v2).
+func (s *Servicio) invalidarClases(ctx context.Context) {
+	if s.cacheClases != nil {
+		_ = s.cacheClases.InvalidarClases(ctx)
+	}
+}
+
+// claveBusqueda identifica una búsqueda por todos los parámetros que cambian
+// el resultado (teórico, clase 3 §3.2). No incluye al alumno.
+func claveBusqueda(f domain.FiltroClases) string {
+	disp := "0"
+	if f.SoloDisponibles {
+		disp = "1"
+	}
+	return huella(f.Desde.UTC().Format(time.RFC3339), f.Hasta.UTC().Format(time.RFC3339), strings.ToLower(f.ActividadID), f.Franja, disp,
+		strings.Join(f.Palabras, " "), strconv.Itoa(f.Pagina), strconv.Itoa(f.Tamano))
 }
 
 // ConCache activa cache-aside del catálogo de actividades (ADR-007, D-88). La
@@ -178,6 +211,7 @@ func (s *Servicio) ModificarActividad(ctx context.Context, a Actor, id string, n
 	})
 	if err == nil {
 		s.invalidarCatalogo(ctx)
+		s.invalidarClases(ctx) // el nombre de la actividad aparece en las clases
 	}
 	return modificada, err
 }
@@ -274,7 +308,11 @@ func (s *Servicio) GenerarClases(ctx context.Context, a Actor, desde, hasta stri
 		}
 		return 0, nil
 	}
-	return s.catalogo.GuardarClases(ctx, a.ID, clases)
+	creadas, err := s.catalogo.GuardarClases(ctx, a.ID, clases)
+	if err == nil && creadas > 0 {
+		s.invalidarClases(ctx)
+	}
+	return creadas, err
 }
 
 // ---- Clases (HU-08, HU-13, HU-21) ----
@@ -303,32 +341,104 @@ func (s *Servicio) BuscarClases(ctx context.Context, a Actor, f domain.FiltroCla
 	if err := f.ValidarProfundidad(); err != nil {
 		return domain.PaginaClases{}, err
 	}
+	palabras, err := domain.PalabrasBusqueda(f.Texto)
+	if err != nil {
+		return domain.PaginaClases{}, err
+	}
+	f.Palabras = palabras
 	alumno := ""
 	if a.Rol == RolAlumno {
 		alumno = a.ID
 	}
-	if s.indice == nil {
-		return s.catalogo.BuscarClases(ctx, f, alumno)
+	if s.indice == nil && s.cacheClases == nil {
+		// Etapa 4: PostgreSQL resuelve página y marcas en una sola consulta.
+		page, err := s.catalogo.BuscarClases(ctx, f, alumno)
+		page.ConsultadoEn, page.Origen, page.MarcasDisponibles = s.reloj.Ahora(), domain.OrigenFuente, true
+		return page, err
 	}
-	page, err := s.indice.Buscar(ctx, f, s.reloj.Ahora())
+	page, err := s.paginaClases(ctx, f)
 	if err != nil {
+		return domain.PaginaClases{}, err
+	}
+	s.marcar(ctx, alumno, &page)
+	return page, nil
+}
+
+// paginaClases aplica cache-aside con copia vencida ante falla (teórico, clase 3
+// §7.2 y §8.3): una copia fresca evita la fuente; si la fuente no responde se
+// sirve la última copia conocida, informando cuándo se consultó.
+func (s *Servicio) paginaClases(ctx context.Context, f domain.FiltroClases) (domain.PaginaClases, error) {
+	ahora := s.reloj.Ahora()
+	var (
+		copia      domain.PaginaClases
+		generacion string
+		hayCopia   bool
+		clave      string
+	)
+	if s.cacheClases != nil {
+		clave = claveBusqueda(f)
+		if c, g, ok, err := s.cacheClases.LeerClases(ctx, clave); err == nil {
+			copia, generacion, hayCopia = c, g, ok
+		}
+		if hayCopia && ahora.Sub(copia.ConsultadoEn) < s.frescoClases {
+			copia.Origen = domain.OrigenCache
+			return copia, nil
+		}
+	}
+	var page domain.PaginaClases
+	var err error
+	if s.indice != nil {
+		page, err = s.indice.Buscar(ctx, f, ahora)
+	} else {
+		page, err = s.catalogo.BuscarClases(ctx, f, "")
+	}
+	if err != nil {
+		if hayCopia {
+			copia.Origen = domain.OrigenCacheVencida
+			return copia, nil
+		}
 		return domain.PaginaClases{}, dependencia(err)
 	}
-	if alumno != "" && len(page.Items) > 0 {
-		ids := make([]string, len(page.Items))
-		for i, c := range page.Items {
-			ids[i] = c.ID
-		}
-		// CA-13.4: "ya reservada" es dato del alumno; se lee de la fuente vigente.
-		marcadas, err := s.marcas.ReservadasPor(ctx, alumno, ids)
-		if err != nil {
-			return domain.PaginaClases{}, dependencia(err)
-		}
-		for i := range page.Items {
-			page.Items[i].ReservadaPorMi = marcadas[page.Items[i].ID]
-		}
+	page.ConsultadoEn, page.Origen = ahora, domain.OrigenFuente
+	if generacion != "" {
+		_ = s.cacheClases.GuardarClases(ctx, generacion, clave, page)
 	}
 	return page, nil
+}
+
+// TiempoMaximoMarcas acota la consulta de "ya reservada". Con OpenSearch (2 s
+// como máximo) suma 2,8 s, dentro de los 3 s de lectura del gateway.
+const TiempoMaximoMarcas = 800 * time.Millisecond
+
+// marcar completa "ya reservada" para el alumno (CA-13.4) desde PostgreSQL. Si
+// la base no responde, la página sale igual con MarcasDisponibles=false: se
+// degrada la marca, no la búsqueda (teórico, clase 7 §6). La reserva vuelve a
+// validarse en la base y rechaza duplicados (RN-13).
+func (s *Servicio) marcar(ctx context.Context, alumno string, page *domain.PaginaClases) {
+	page.MarcasDisponibles = true
+	if alumno == "" || len(page.Items) == 0 || s.marcas == nil {
+		return
+	}
+	ids := make([]string, len(page.Items))
+	for i, c := range page.Items {
+		ids[i] = c.ID
+	}
+	// Presupuesto propio (teórico, clase 7 §2): con PostgreSQL detenido la
+	// conexión no se rechaza enseguida, espera hasta vencer. Sin límite, el
+	// gateway cortaba a los 3 s con 504 antes de que la marca pudiera degradarse.
+	ctx, cancel := context.WithTimeout(ctx, TiempoMaximoMarcas)
+	defer cancel()
+	marcadas, err := s.marcas.ReservadasPor(ctx, alumno, ids)
+	if err != nil {
+		page.MarcasDisponibles = false
+		return
+	}
+	// Copia propia: la página puede compartir memoria con la copia guardada en
+	// la caché, que nunca debe llevar las marcas de un alumno.
+	page.Items = append([]domain.Clase(nil), page.Items...)
+	for i := range page.Items {
+		page.Items[i].ReservadaPorMi = marcadas[page.Items[i].ID]
+	}
 }
 
 // DetalleClase devuelve la clase y, para el administrador o el profesor
@@ -392,9 +502,13 @@ func (s *Servicio) CambiarCapacidad(ctx context.Context, a Actor, id string, cap
 	if !patronUUID.MatchString(id) {
 		return domain.Clase{}, domain.ErrValidacion
 	}
-	return s.catalogo.CambiarCapacidad(ctx, a.ID, id, capacidad, func(c domain.Clase, act domain.Actividad) error {
+	clase, err := s.catalogo.CambiarCapacidad(ctx, a.ID, id, capacidad, func(c domain.Clase, act domain.Actividad) error {
 		return c.ValidarCapacidad(capacidad, act.CapacidadMaxima, s.reloj.Ahora())
 	})
+	if err == nil {
+		s.invalidarClases(ctx)
+	}
+	return clase, err
 }
 
 // CancelarClase aplica RN-32 y CA-08.3/4.
@@ -406,9 +520,13 @@ func (s *Servicio) CancelarClase(ctx context.Context, a Actor, id, motivo string
 	if !patronUUID.MatchString(id) || utf8.RuneCountInString(motivo) < 3 || utf8.RuneCountInString(motivo) > 200 {
 		return domain.Clase{}, domain.ErrValidacion
 	}
-	return s.catalogo.CancelarClase(ctx, a.ID, id, motivo, func(c domain.Clase) error {
+	clase, err := s.catalogo.CancelarClase(ctx, a.ID, id, motivo, func(c domain.Clase) error {
 		return c.ValidarCancelacion(s.reloj.Ahora())
 	})
+	if err == nil {
+		s.invalidarClases(ctx)
+	}
+	return clase, err
 }
 
 // ---- Reservas (HU-14 a HU-16) ----
@@ -442,9 +560,13 @@ func (s *Servicio) Reservar(ctx context.Context, a Actor, clave, claseID string)
 	if err = vigencia.ValidarParaReservar(clase.Fecha()); err != nil {
 		return domain.Reserva{}, false, err
 	}
-	return s.reservas.Reservar(ctx, op, claseID, func(c domain.Clase) error {
+	reserva, repetida, err := s.reservas.Reservar(ctx, op, claseID, func(c domain.Clase) error {
 		return c.ValidarReserva(s.reloj.Ahora())
 	})
+	if err == nil && !repetida {
+		s.invalidarClases(ctx) // cambió la ocupación
+	}
+	return reserva, repetida, err
 }
 
 // MisReservas lista las reservas del alumno (HU-16, CA-16.1).
@@ -481,12 +603,16 @@ func (s *Servicio) CancelarReserva(ctx context.Context, a Actor, clave, id strin
 	if a.Rol == RolAdministrador {
 		motivo = domain.MotivoCancelacionAdmin
 	}
-	return s.reservas.CancelarReserva(ctx, op, id, motivo, func(r domain.Reserva) (bool, error) {
+	reserva, repetida, err := s.reservas.CancelarReserva(ctx, op, id, motivo, func(r domain.Reserva) (bool, error) {
 		if a.Rol == RolAlumno && r.AlumnoID != a.ID {
 			return false, domain.ErrSinPermiso // CA-15.4
 		}
 		return r.ValidarCancelacion(s.reloj.Ahora())
 	})
+	if err == nil && !repetida {
+		s.invalidarClases(ctx) // liberó cupo
+	}
+	return reserva, repetida, err
 }
 
 // ---- Ingreso por DNI (HU-22, D-36 a D-39, D-82) ----
@@ -538,5 +664,9 @@ func (s *Servicio) RegistrarIngreso(ctx context.Context, a Actor, clave, dni str
 // CerrarClases es el proceso automático que finaliza clases y registra ausencias
 // (RN-38, CA-22.8). Lo invoca el cableado de cmd/api periódicamente.
 func (s *Servicio) CerrarClases(ctx context.Context) (int, int, error) {
-	return s.reservas.CerrarClases(ctx, s.reloj.Ahora())
+	clases, ausentes, err := s.reservas.CerrarClases(ctx, s.reloj.Ahora())
+	if err == nil && clases > 0 {
+		s.invalidarClases(ctx)
+	}
+	return clases, ausentes, err
 }

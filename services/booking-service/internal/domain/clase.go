@@ -128,7 +128,11 @@ type FiltroClases struct {
 	ActividadID     string
 	Franja          string // "HH:MM" de inicio, hora de Argentina
 	SoloDisponibles bool
-	Pagina, Tamano  int
+	// Texto es lo que escribió la persona; el caso de uso lo normaliza en
+	// Palabras con PalabrasBusqueda.
+	Texto          string
+	Palabras       []string
+	Pagina, Tamano int
 }
 
 // PaginaClases es un resultado paginado de clases.
@@ -137,7 +141,23 @@ type PaginaClases struct {
 	Total  int
 	Pagina int
 	Tamano int
+	// ConsultadoEn es cuándo se leyó la fuente (índice o PostgreSQL). Una copia
+	// de la caché conserva el instante original para informar su antigüedad.
+	ConsultadoEn time.Time
+	// Origen indica de dónde salió la página: OrigenFuente, OrigenCache o
+	// OrigenCacheVencida (copia vieja servida porque la fuente no responde).
+	Origen string
+	// MarcasDisponibles es false cuando no se pudo confirmar ReservadaPorMi
+	// (PostgreSQL caído): la página se muestra igual, pero sin esa marca.
+	MarcasDisponibles bool
 }
+
+// Origen de una página de clases (corrección de búsqueda del 13/11/2026).
+const (
+	OrigenFuente       = "fuente"
+	OrigenCache        = "cache"
+	OrigenCacheVencida = "cache_vencida"
+)
 
 // ParseFecha valida una fecha calendario AAAA-MM-DD en la zona del gimnasio.
 func ParseFecha(s string) (time.Time, error) {
