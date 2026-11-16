@@ -95,6 +95,23 @@ func confiable(secret string) gin.HandlerFunc {
 	}
 }
 
+// soloServicios admite únicamente llamadas de otros servicios con la clave
+// interna (members, D-99); no hay identidad de usuario en estas rutas.
+func soloServicios(secret string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Cache-Control", "no-store")
+		if len(secret) < 32 || len(c.Request.Header.Values("X-Internal-Service-Key")) != 1 ||
+			subtle.ConstantTimeCompare([]byte(secret), []byte(c.GetHeader("X-Internal-Service-Key"))) != 1 {
+			problem.Write(c, problem.New(401, "NO_AUTENTICADO", "No autorizado", "Ingresá para acceder."))
+			return
+		}
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 4*time.Second)
+		defer cancel()
+		c.Request = c.Request.WithContext(ctx)
+		c.Next()
+	}
+}
+
 func decodificar(c *gin.Context, out any) bool {
 	if c.ContentType() != "application/json" || len(c.Request.URL.Query()) != 0 {
 		return false

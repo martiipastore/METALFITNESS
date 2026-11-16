@@ -464,6 +464,13 @@ func run() {
 		stopBooking := startBinary(directory, "booking", "./services/booking-service/cmd/api", bookingEnv)
 		defer func() { stopBooking() }()
 		ready("http://" + address)
+		if *withAttendance {
+			// CA-02.3 (D-99): Members consulta la agenda del profesor en Booking.
+			// Booking arranca después de Members, así que se reinicia con su URL.
+			membersEnv["MEMBERS_BOOKING_URLS"] = "http://" + address
+			pauseMembers()
+			resumeMembers()
+		}
 		gatewayEnv["GATEWAY_BOOKING_URL"] = "http://" + address
 		search = searchFixture{bookingURL: "http://" + address, prefix: prefix, directory: directory, amqpURL: bookingEnv["BOOKING_AMQP_URL"], bookingDSN: bookingEnv["BOOKING_DB_DSN"]}
 		// Etapa 8: la búsqueda se activa recién en searchFlow, después de que las
@@ -885,6 +892,28 @@ func revocationFlow(base, mailURL, password, today string, sql func(string, stri
 	eventually("reserva cancelada por usuario.desactivado", func() bool { return state(r3) == "CANCELADA/alumno dado de baja" })
 	ensure(occupancy(first) == after1, "La baja no liberó el cupo")
 	mark("bajas_alumno_dado_de_baja_cancela_reservas_futuras_RN34")
+
+	// CA-02.3 (D-99): el profesor de las clases de Funcional no se da de baja.
+	status, rejected := request(base, "POST", "/api/v1/users/"+professor+"/deactivate", admin(""), map[string]string{"motivo": "Deja el gimnasio"})
+	ensure(status == 409 && rejected["code"] == "PROFESOR_CON_CLASES_FUTURAS", fmt.Sprintf("Profesor con clases dado de baja: HTTP %d %v", status, rejected["code"]))
+	ensure(sql("members_db", "SELECT estado FROM usuarios WHERE id='"+professor+"';") == "ACTIVO", "El rechazo cambió el estado del profesor")
+	// Un profesor con un horario pero sin clases generadas sí se da de baja, y
+	// desde entonces la generación saltea su horario.
+	status, person := request(base, "POST", "/api/v1/users", admin(""), map[string]string{"rol": "PROFESOR", "nombre": "Persona", "apellido": "Sin clases", "dni": "30111777", "email": "revocation-prof@example.test", "fecha_nacimiento": "1990-01-01"})
+	ensure(status == 201, "No crea profesor sin clases")
+	idle := person["id"].(string)
+	later := day.AddDate(0, 0, 1)
+	laterWeekday := int(later.Weekday())
+	if laterWeekday == 0 {
+		laterWeekday = 7
+	}
+	status, _ = request(base, "POST", "/api/v1/activities/"+activity+"/schedules", admin(""), map[string]any{"dia_semana": laterWeekday, "inicio": "07:00", "duracion_minutos": 60, "profesor_id": idle, "capacidad": 5})
+	ensure(status == 201, "No crea horario del profesor sin clases")
+	status, _ = request(base, "POST", "/api/v1/users/"+idle+"/deactivate", admin(""), map[string]string{"motivo": "Deja el gimnasio"})
+	ensure(status == 200, "No da de baja a un profesor sin clases futuras")
+	status, _ = request(base, "POST", "/api/v1/classes/generate", admin(""), map[string]string{"desde": later.Format(time.DateOnly), "hasta": later.Format(time.DateOnly)})
+	ensure(status == 200 && sql("booking_db", "SELECT count(*) FROM clases WHERE profesor_id='"+idle+"';") == "0", "Se generaron clases de un profesor dado de baja")
+	mark("bajas_profesor_con_clases_rechazado_y_sin_clases_nuevas_CA02_3")
 }
 
 // RN-05/ADR-005: dependencias reales y fallas aisladas; no usa el stack habitual.

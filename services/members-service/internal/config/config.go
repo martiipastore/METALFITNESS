@@ -18,6 +18,7 @@ type Config struct {
 	JWTPrivateKey                                        string
 	PublicURL                                            string
 	BenefitsURL                                          string
+	BookingURLs                                          string // instancias de booking por coma (CA-02.3, D-99); vacío: sin verificación
 	SMTPHost, SMTPPort, SMTPFrom, SMTPUser, SMTPPassword string
 	SMTPAllowPlaintext                                   bool
 	// Administrador inicial: se crea una sola vez si se configura (users.v1).
@@ -43,6 +44,7 @@ func Load() (Config, error) {
 		JWTPrivateKey:           l.String("MEMBERS_JWT_PRIVATE_KEY", ""),
 		PublicURL:               l.String("MEMBERS_PUBLIC_URL", "http://localhost:5173"),
 		BenefitsURL:             l.String("MEMBERS_BENEFITS_URL", "http://benefits-service:8083"),
+		BookingURLs:             l.String("MEMBERS_BOOKING_URLS", ""),
 		SMTPHost:                l.String("MEMBERS_SMTP_HOST", "mailpit"),
 		SMTPPort:                l.String("MEMBERS_SMTP_PORT", "1025"),
 		SMTPFrom:                l.String("MEMBERS_SMTP_FROM", "gimnasio@gym.local"),

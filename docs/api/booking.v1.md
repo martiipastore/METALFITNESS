@@ -114,6 +114,15 @@ Errores de reservar y cancelar (catálogo de ARCHITECTURE §12.1):
 | 200 | — | Cancelar una reserva ya cancelada informa `estado: CANCELADA` sin cambios (CA-15.2) |
 | 503 | `DEPENDENCIA_NO_DISPONIBLE` | Members no confirma la membresía: falla cerrada, no se reserva (ADR-005 v2) |
 
+### Agenda de un profesor (interno, D-99)
+
+`GET /internal/v1/profesores/{id}/agenda` con `X-Internal-Service-Key`, sin identidad de
+usuario: `{"clases_programadas": n}`, las clases futuras PROGRAMADA del profesor. La usa
+members antes de darlo de baja (CA-02.3). El gateway no expone rutas `internal`.
+
+La generación de clases (`POST /classes/generate`) saltea los horarios cuyo profesor ya
+no está activo en members; si members no responde, la generación falla con 503.
+
 ### Bajas que llegan desde Members (D-98)
 
 Booking consume `membresia.cancelada` (cola `booking.membresia-cancelada`) y
