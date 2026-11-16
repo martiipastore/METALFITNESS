@@ -82,6 +82,7 @@ La pantalla de Clases suma la vista **Semana**, junto a **Lista** (la elección 
 - Cada clase es un bloque con hora, actividad, profesor, barra de ocupación y lugares libres. El alumno reserva desde el bloque; el administrador entra al detalle. Los filtros de texto, actividad y «Solo con lugar» siguen funcionando, y los **cupos en vivo** (D-103) también se ven en la grilla.
 - **Color por actividad, de la gama de la página:** seis tonos (lima, oliva, amarillo, arena, salvia y oliva profundo), asignados por orden alfabético para que sean estables, con una leyenda. El rojo queda reservado para errores. El tono marca el borde, la barra y un fondo tenue; la actividad y los lugares siempre se leen como texto, no solo por el color (DISENO §4). El tono más oscuro, usado también en la hora, tiene un contraste de alrededor de 4,8:1.
 - La semana se pide completa (páginas de 100) aunque tenga más clases que una página.
+- La pantalla de Clases (lista y semana) no muestra clases de **actividades inactivas**: una actividad inactiva no tiene clases futuras reservadas (CA-06.3) y su historial sigue en «Mis reservas». Así, la actividad de prueba del test de carga no aparece en la agenda.
 
 Verificado con `tsc` y el build; la revisión visual en el navegador queda pendiente.
 

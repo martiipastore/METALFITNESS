@@ -55,6 +55,9 @@ export function ClassesPage() {
   const { authRequest, user } = useSession();
   const [dialog, confirm] = useConfirm();
   const [activities, setActivities] = useState<Actividad[]>([]);
+  // Actividades inactivas: sus clases no se muestran (una actividad inactiva no
+  // tiene clases futuras reservadas, CA-06.3; el historial queda en Mis reservas).
+  const [inactivas, setInactivas] = useState<Set<string>>(new Set());
   const initial = { texto: '', desde: todayPlus(), hasta: todayPlus(7), actividad: '', soloDisponibles: false };
   const [filters, setFilters] = useState(initial);
   const [applied, setApplied] = useState(initial);
@@ -71,7 +74,10 @@ export function ClassesPage() {
 
   useEffect(() => {
     authRequest<{ items: Actividad[] }>('/api/v1/activities')
-      .then((res) => setActivities(res.data.items.filter((a) => a.activa)))
+      .then((res) => {
+        setActivities(res.data.items.filter((a) => a.activa));
+        setInactivas(new Set(res.data.items.filter((a) => !a.activa).map((a) => a.id)));
+      })
       .catch(() => setActivities([]));
   }, [authRequest]);
 
@@ -116,7 +122,8 @@ export function ClassesPage() {
     }
   }
 
-  const tones = useMemo(() => activityTones([...activities.map((a) => a.nombre), ...(data?.items.map((c) => c.actividad.nombre) ?? [])]), [activities, data]);
+  const visibles = useMemo(() => (data ? data.items.filter((c) => !inactivas.has(c.actividad.id)) : []), [data, inactivas]);
+  const tones = useMemo(() => activityTones([...activities.map((a) => a.nombre), ...visibles.map((c) => c.actividad.nombre)]), [activities, visibles]);
 
   useEffect(() => {
     void load();
@@ -290,12 +297,12 @@ export function ClassesPage() {
       {data === null ? (
         notice?.tone !== 'error' && <div className="dashboard-skeleton" aria-label="Cargando clases" />
       ) : vista === 'semana' ? (
-        <WeekView monday={monday} classes={data.items} tones={tones} student={student} busy={busy} pulses={pulsos} onReserve={(c) => void reserve(c)} />
-      ) : data.items.length === 0 ? (
+        <WeekView monday={monday} classes={visibles} tones={tones} student={student} busy={busy} pulses={pulsos} onReserve={(c) => void reserve(c)} />
+      ) : visibles.length === 0 ? (
         <EmptyState title="Sin clases para esos filtros">Probá con otro texto, otras fechas, otra actividad o sin “Solo con lugar”.</EmptyState>
       ) : student ? (
         <ol className="class-grid" aria-label="Clases encontradas">
-          {data.items.map((c) => <ClassCard key={c.id} clase={c} busy={busy} pulse={pulsos[c.id] === true} onReserve={() => void reserve(c)} />)}
+          {visibles.map((c) => <ClassCard key={c.id} clase={c} busy={busy} pulse={pulsos[c.id] === true} onReserve={() => void reserve(c)} />)}
         </ol>
       ) : (
         <table className="data-table responsive-table">
@@ -303,7 +310,7 @@ export function ClassesPage() {
             <tr><th>Día</th><th>Horario</th><th>Actividad</th><th>Profesor</th><th>Ocupación</th><th>Estado</th><th><span className="sr-only">Acciones</span></th></tr>
           </thead>
           <tbody>
-            {data.items.map((c) => (
+            {visibles.map((c) => (
               <tr key={c.id} className={pulsos[c.id] ? 'live-pulse' : undefined}>
                 <td data-label="Día">{day(c.inicio)}</td>
                 <td data-label="Horario">{range(c)}</td>
