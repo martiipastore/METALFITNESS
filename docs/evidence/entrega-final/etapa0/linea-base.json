@@ -1,0 +1,173 @@
+{
+    "entorno":  {
+                    "fecha_utc":  "2026-11-16T14:53:47.4910308Z",
+                    "commit":  "1db9725",
+                    "rama":  "feature/entrega-final-calidad",
+                    "go":  "go version go1.26.1 windows/amd64",
+                    "docker":  "29.9.3",
+                    "node":  "v22.18.0"
+                },
+    "resumen":  {
+                    "total":  26,
+                    "fallas":  0,
+                    "omitidos":  0
+                },
+    "chequeos":  [
+                     {
+                         "chequeo":  "go vet pkg",
+                         "estado":  "OK",
+                         "segundos":  4.9,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go test pkg",
+                         "estado":  "OK",
+                         "segundos":  24.3,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go vet gateway",
+                         "estado":  "OK",
+                         "segundos":  2.9,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go test gateway",
+                         "estado":  "OK",
+                         "segundos":  16.3,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go vet services/members-service",
+                         "estado":  "OK",
+                         "segundos":  6.2,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go test services/members-service",
+                         "estado":  "OK",
+                         "segundos":  46.5,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go vet services/booking-service",
+                         "estado":  "OK",
+                         "segundos":  3,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go test services/booking-service",
+                         "estado":  "OK",
+                         "segundos":  151.2,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go vet services/benefits-service",
+                         "estado":  "OK",
+                         "segundos":  18,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go test services/benefits-service",
+                         "estado":  "OK",
+                         "segundos":  45.2,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go vet services/training-service",
+                         "estado":  "OK",
+                         "segundos":  3.9,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go test services/training-service",
+                         "estado":  "OK",
+                         "segundos":  19.8,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go vet services/notification-worker",
+                         "estado":  "OK",
+                         "segundos":  5.7,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "go test services/notification-worker",
+                         "estado":  "OK",
+                         "segundos":  63,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "inyector de resiliencia (tests y vet)",
+                         "estado":  "OK",
+                         "segundos":  10.4,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "diagnostico de pool (vet)",
+                         "estado":  "OK",
+                         "segundos":  1.7,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "ejecutor E2E (vet)",
+                         "estado":  "OK",
+                         "segundos":  1.7,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "ejecutor de carga D13 (vet)",
+                         "estado":  "OK",
+                         "segundos":  1.1,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "jornada de fallas (vet)",
+                         "estado":  "OK",
+                         "segundos":  1.6,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "frontend npm ci",
+                         "estado":  "OK",
+                         "segundos":  21.4,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "frontend tsc + build",
+                         "estado":  "OK",
+                         "segundos":  64,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "Spectral docs/contracts/benefits-api.v2.yaml",
+                         "estado":  "OK",
+                         "segundos":  116,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "Spectral docs/contracts/benefits-api.v1.yaml",
+                         "estado":  "OK",
+                         "segundos":  9.6,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "docker compose config",
+                         "estado":  "OK",
+                         "segundos":  0.9,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "E2E identidad y membresias (14 escenarios)",
+                         "estado":  "OK",
+                         "segundos":  266.5,
+                         "detalle":  ""
+                     },
+                     {
+                         "chequeo":  "E2E reservas, mensajeria, puntos y bajas (36 escenarios)",
+                         "estado":  "OK",
+                         "segundos":  483,
+                         "detalle":  ""
+                     }
+                 ]
+}

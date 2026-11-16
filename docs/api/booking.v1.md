@@ -114,6 +114,28 @@ Errores de reservar y cancelar (catálogo de ARCHITECTURE §12.1):
 | 200 | — | Cancelar una reserva ya cancelada informa `estado: CANCELADA` sin cambios (CA-15.2) |
 | 503 | `DEPENDENCIA_NO_DISPONIBLE` | Members no confirma la membresía: falla cerrada, no se reserva (ADR-005 v2) |
 
+### Cupos en vivo (D-103, ADR-023)
+
+`GET /classes/stream`, cualquier rol autenticado, sin parámetros. Responde
+`text/event-stream` y mantiene la conexión abierta:
+
+```text
+retry: 3000
+: conectado
+
+event: ocupacion
+data: {"clase_id":"…","ocupacion":12,"capacidad":20,"estado":"PROGRAMADA","version":57}
+
+: latido
+```
+
+- Un evento `ocupacion` por cada cambio de una clase (reserva, cancelación, cupos, cancelación de la clase, bajas, cierre). Sin datos de personas. `version` crece por clase: el cliente ignora un evento con versión menor o igual a la que ya tiene.
+- Un comentario `: latido` cada 15 s mantiene viva la conexión.
+- A los 10 minutos el servidor envía `event: fin` y cierra; el cliente se reconecta.
+- Con 500 conexiones abiertas en la instancia responde `503 DEPENDENCIA_NO_DISPONIBLE` con `Retry-After: 30`.
+- Requiere `BOOKING_MESSAGING_ENABLED`. El navegador no puede usar `EventSource` porque necesita enviar el JWT: usa `fetch` y lee el cuerpo.
+- El stream solo informa; reservar sigue validando el cupo en PostgreSQL.
+
 ### Agenda de un profesor (interno, D-99)
 
 `GET /internal/v1/profesores/{id}/agenda` con `X-Internal-Service-Key`, sin identidad de

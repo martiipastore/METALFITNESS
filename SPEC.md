@@ -134,7 +134,7 @@ El enunciado (§7) permite hasta dos desafíos adicionales, anunciados en la Ent
 | Desafío | Alcance | Estado |
 |---|---|---|
 | Tests e2e de los flujos del §11 | Recorrer con Playwright, desde la web, los criterios E2E del §11 | Anunciado; no implementado |
-| Ocupación de clases en tiempo real | Actualizar la ocupación mostrada mediante Server-Sent Events a través del gateway | Anunciado; depende de booking, todavía no implementado |
+| Ocupación de clases en tiempo real | Actualizar la ocupación mostrada mediante Server-Sent Events a través del gateway | Implementado el 16/11/2026 (ADR-023, D-103): la pantalla de Clases muestra los cupos en vivo, con alrededor de 1 s de retraso |
 
 Playwright y Server-Sent Events son herramientas adicionales: su justificación se registrará en un ADR al implementarlas, según la restricción académica del equipo.
 

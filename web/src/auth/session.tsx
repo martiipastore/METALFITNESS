@@ -3,7 +3,7 @@
 // vencer, la persona vuelve a ingresar. El rol que ve el frontend solo decide la
 // navegación; el gateway y cada servicio vuelven a autorizar (RN-30).
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ApiError, ApiResponse, request } from '../api/client';
+import { ApiError, ApiResponse, request, stream } from '../api/client';
 
 export type Role = 'ADMINISTRADOR' | 'PROFESOR' | 'NUTRICIONISTA' | 'ALUMNO';
 
@@ -35,6 +35,8 @@ interface SessionApi {
   logout(): Promise<void>;
   /** Solicitud autenticada; un 401 cierra la sesión y vuelve a lanzar el error. */
   authRequest<T>(path: string, init?: AuthInit): Promise<ApiResponse<T>>;
+  /** Stream autenticado (Server-Sent Events); un 401 cierra la sesión. */
+  authStream(path: string, onEvent: (event: string, data: string) => void, signal: AbortSignal): Promise<void>;
 }
 
 const SessionContext = createContext<SessionApi | null>(null);
@@ -113,6 +115,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [session, expire]);
 
+  const authStream = useCallback(async (path: string, onEvent: (event: string, data: string) => void, signal: AbortSignal) => {
+    if (!session) {
+      throw new ApiError('Ingresá para continuar.', 401, null);
+    }
+    try {
+      await stream(path, { Authorization: `Bearer ${session.token}` }, onEvent, signal);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        expire('Tu sesión ya no es válida. Ingresá nuevamente.');
+      }
+      throw error;
+    }
+  }, [session, expire]);
+
   const value = useMemo<SessionApi>(() => ({
     user: session?.user ?? null,
     notice,
@@ -120,7 +136,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     authRequest,
-  }), [session, notice, login, logout, authRequest]);
+    authStream,
+  }), [session, notice, login, logout, authRequest, authStream]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

@@ -1,7 +1,8 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../../auth/session';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { EmptyState, Notice, NoticeState, PageHeading } from '../../components/PageParts';
+import { CambioOcupacion, EstadoEnVivo, useCuposEnVivo } from './live';
 import { Actividad, Clase, CLASS_STATES, day, errorText, newIdempotencyKey, occupancy, PaginaClases, range, time, todayPlus } from './types';
 
 // Clases disponibles y reserva (booking.v1, HU-13 y HU-14). El administrador usa
@@ -13,6 +14,22 @@ const TYPING_DELAY_MS = 300;
 // La lista se vuelve a consultar sola: un cambio de cupos o una clase nueva del
 // administrador aparece sin que el alumno tenga que buscar de nuevo.
 const REFRESH_MS = 30_000;
+// Cuánto dura el resaltado de una clase que cambió en vivo.
+const PULSE_MS = 1_400;
+
+/** Aplica un cambio en vivo si es más nuevo que lo que ya muestra la lista. */
+function aplicarCambio(c: Clase, cambio: CambioOcupacion): Clase {
+  const disponibles = Math.max(0, cambio.capacidad - cambio.ocupacion);
+  const futura = Date.parse(c.inicio) > Date.now();
+  return {
+    ...c,
+    ocupacion: cambio.ocupacion,
+    capacidad: cambio.capacidad,
+    estado: cambio.estado,
+    disponibles,
+    reservable: !c.reservada_por_mi && cambio.estado === 'PROGRAMADA' && futura && disponibles > 0,
+  };
+}
 
 export function ClassesPage() {
   const { authRequest, user } = useSession();
@@ -25,6 +42,9 @@ export function ClassesPage() {
   const [data, setData] = useState<PaginaClases | null>(null);
   const [notice, setNotice] = useState<NoticeState | null>(null);
   const [busy, setBusy] = useState('');
+  // Cupos en vivo (D-103): versión vista por clase y clases resaltadas.
+  const versiones = useRef(new Map<string, number>());
+  const [pulsos, setPulsos] = useState<Record<string, true>>({});
 
   useEffect(() => {
     authRequest<{ items: Actividad[] }>('/api/v1/activities')
@@ -49,7 +69,25 @@ export function ClassesPage() {
     void load();
   }, [load]);
 
+  const enVivo = useCuposEnVivo((cambio) => {
+    if ((versiones.current.get(cambio.clase_id) ?? 0) >= cambio.version) return;
+    versiones.current.set(cambio.clase_id, cambio.version);
+    let visible = false;
+    setData((prev) => {
+      if (!prev || !prev.items.some((c) => c.id === cambio.clase_id)) return prev;
+      visible = true;
+      return { ...prev, items: prev.items.map((c) => (c.id === cambio.clase_id ? aplicarCambio(c, cambio) : c)) };
+    });
+    if (!visible) return;
+    setPulsos((p) => ({ ...p, [cambio.clase_id]: true }));
+    window.setTimeout(() => setPulsos((p) => {
+      const { [cambio.clase_id]: _, ...resto } = p;
+      return resto;
+    }), PULSE_MS);
+  }, () => void load());
+
   // Actualización sola: cada 30 s con la pestaña visible y al volver a ella.
+  // Sigue como respaldo de los cupos en vivo.
   useEffect(() => {
     const refresh = () => {
       if (document.visibilityState === 'visible') void load();
@@ -171,6 +209,7 @@ export function ClassesPage() {
           <button type="button" className="button-secondary" onClick={clearFilters}>Limpiar filtros</button>
         </p>
       )}
+      <LiveStatus estado={enVivo} />
       <Notice key={notice?.text} notice={notice} />
       {data?.origen === 'cache_vencida' && (
         <Notice notice={{ tone: 'info', text: `Mostramos la última búsqueda guardada, de las ${time(data.consultado_en)}, porque el sistema de clases no responde. La reserva se confirma siempre con la disponibilidad real.` }} />
@@ -184,7 +223,7 @@ export function ClassesPage() {
         <EmptyState title="Sin clases para esos filtros">Probá con otro texto, otras fechas, otra actividad o sin “Solo con lugar”.</EmptyState>
       ) : student ? (
         <ol className="class-grid" aria-label="Clases encontradas">
-          {data.items.map((c) => <ClassCard key={c.id} clase={c} busy={busy} onReserve={() => void reserve(c)} />)}
+          {data.items.map((c) => <ClassCard key={c.id} clase={c} busy={busy} pulse={pulsos[c.id] === true} onReserve={() => void reserve(c)} />)}
         </ol>
       ) : (
         <table className="data-table responsive-table">
@@ -193,7 +232,7 @@ export function ClassesPage() {
           </thead>
           <tbody>
             {data.items.map((c) => (
-              <tr key={c.id}>
+              <tr key={c.id} className={pulsos[c.id] ? 'live-pulse' : undefined}>
                 <td data-label="Día">{day(c.inicio)}</td>
                 <td data-label="Horario">{range(c)}</td>
                 <td data-label="Actividad">{c.actividad.nombre}</td>
@@ -220,13 +259,23 @@ export function ClassesPage() {
   );
 }
 
-function ClassCard({ clase: c, busy, onReserve }: { clase: Clase; busy: string; onReserve: () => void }) {
+/** Indicador de la conexión en vivo; el texto lo leen los lectores de pantalla. */
+function LiveStatus({ estado }: { estado: EstadoEnVivo }) {
+  const texto = estado === 'en_vivo' ? 'Cupos en vivo' : estado === 'conectando' ? 'Conectando…' : 'Sin actualización en vivo: la lista se renueva cada 30 s';
+  return (
+    <p className={`live-status live-status-${estado}`} role="status" aria-live="polite">
+      <i aria-hidden="true" />{texto}
+    </p>
+  );
+}
+
+function ClassCard({ clase: c, busy, pulse, onReserve }: { clase: Clase; busy: string; pulse: boolean; onReserve: () => void }) {
   const ratio = c.capacidad > 0 ? Math.min(1, c.ocupacion / c.capacidad) : 1;
   const full = c.disponibles === 0 && c.estado === 'PROGRAMADA';
   const tone = c.reservada_por_mi ? 'mine' : full ? 'full' : c.reservable ? (c.disponibles <= 3 ? 'few' : 'open') : 'closed';
   const status = c.reservada_por_mi ? 'Ya reservada' : full ? 'Completa' : c.reservable ? `${c.disponibles} ${c.disponibles === 1 ? 'lugar libre' : 'lugares libres'}` : 'No disponible';
   return (
-    <li className={`class-card class-card-${tone}`}>
+    <li className={`class-card class-card-${tone}${pulse ? ' live-pulse' : ''}`}>
       <header>
         <time dateTime={c.inicio}><strong>{day(c.inicio)}</strong><span>{range(c)}</span></time>
         <span className="class-card-state">{c.reservada_por_mi ? '✓ ' : full ? '■ ' : ''}{status}</span>
