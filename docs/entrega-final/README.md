@@ -20,8 +20,14 @@ Esta carpeta reúne la planificación y las referencias propias de la presentaci
 | [ETAPA_9_CACHE.md](ETAPA_9_CACHE.md) | Caché del catálogo de actividades en Redis elegida y medida con la misma carga; corrección del pool del gateway; 24 escenarios E2E |
 | [ETAPA_10_TRAINING.md](ETAPA_10_TRAINING.md) | Planes de entrenamiento y alimenticios, mediciones inmutables y consultas nutricionales con MongoDB; autorización por asignación; 27 escenarios E2E |
 | [ETAPA_11_FRONTEND.md](ETAPA_11_FRONTEND.md) | Identidad visual en todas las pantallas, firma en movimiento, móvil y validación de los cuatro roles desde la interfaz |
-| [ETAPA_12_BORDE.md](ETAPA_12_BORDE.md) | Control de tráfico en el gateway (token bucket en Redis) validado; plan del balanceo de Booking |
-| [ETAPA_13_MELT.md](ETAPA_13_MELT.md) | Manual recibido de MELT, APIs, reglas del referido, pendientes y pruebas previstas; implementación reservada para la etapa 13 |
+| [ETAPA_12_BORDE.md](ETAPA_12_BORDE.md) | Control de tráfico en el gateway (token bucket en Redis) y balanceo de Booking en dos instancias con la política 3/2 |
+| [ETAPA_13_MELT.md](ETAPA_13_MELT.md) | Acreditación de 100 puntos en MELT por asistencia; corrección del proveedor pendiente |
+| [ETAPA_14_OBSERVABILIDAD.md](ETAPA_14_OBSERVABILIDAD.md) | Prometheus, tablero de Grafana y alertas |
+| [CUPONERA_CLUB.md](CUPONERA_CLUB.md) | Cuponera interna del Club (D-94) |
+| [CORRECCION_BUSQUEDA.md](CORRECCION_BUSQUEDA.md) | Correcciones de la cátedra: caché de búsquedas, búsqueda sin PostgreSQL y texto parcial (D-95) |
+| [CORRECCION_CRUD_CLASES.md](CORRECCION_CRUD_CLASES.md) | Pantallas de actividades, horarios y cupos del administrador |
+| [ARRANQUE_DOCKER.md](ARRANQUE_DOCKER.md) | Arranque confiable desde cero y healthchecks |
+| [CARGA_D13.md](CARGA_D13.md) | Carga del flujo principal: escalera hasta el límite, pico de reservas, caída de una instancia y análisis (D-97, ADR-013 v3) |
 
 ## Fuentes de verdad
 
