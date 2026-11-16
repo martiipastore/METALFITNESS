@@ -20,6 +20,7 @@ import (
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/httpserver"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/logger"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/messaging"
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 	bookingamqp "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/amqp"
 	bookinghttp "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/http"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/members"
@@ -56,6 +57,18 @@ func main() {
 func run(cfg config.Config, log *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	// D11: trazas OTLP si OTEL_EXPORTER_OTLP_ENDPOINT está definido.
+	shutdownTraces, err := telemetry.Setup(ctx, serviceName, log)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		flushCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+		defer cancel()
+		if err := shutdownTraces(flushCtx); err != nil {
+			log.Warn("no se completó el cierre de trazas")
+		}
+	}()
 
 	db, err := postgres.Open(ctx, cfg.DBDSN)
 	if err != nil {
@@ -138,7 +151,7 @@ func run(cfg config.Config, log *slog.Logger) error {
 		membersClient := members.Client{
 			URL:    cfg.MembersURL,
 			Secret: cfg.InternalServiceKey,
-			HTTP:   &http.Client{Timeout: cfg.MembersTimeout, Transport: correlation.Transport{}},
+			HTTP:   &http.Client{Timeout: cfg.MembersTimeout, Transport: correlation.Transport{Base: telemetry.Transport{}}},
 		}
 		servicio := application.New(db, db, membersClient, reloj)
 		if cache != nil {

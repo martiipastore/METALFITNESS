@@ -198,6 +198,7 @@ services:
       dockerfile: services/members-service/Dockerfile
     environment:
       <<: *go-env
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       MEMBERS_HTTP_ADDR: ":8081"
       MEMBERS_MESSAGING_ENABLED: ${MEMBERS_MESSAGING_ENABLED:-false}
       MEMBERS_AMQP_URL: amqp://${RABBITMQ_USER:-gym}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
@@ -240,6 +241,7 @@ services:
       dockerfile: services/booking-service/Dockerfile
     environment:
       <<: *go-env
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       BOOKING_HTTP_ADDR: ":8082"
       BOOKING_MESSAGING_ENABLED: ${BOOKING_MESSAGING_ENABLED:-false}
       BOOKING_AMQP_URL: amqp://${RABBITMQ_USER:-gym}:${RABBITMQ_PASSWORD}@rabbitmq:5672/

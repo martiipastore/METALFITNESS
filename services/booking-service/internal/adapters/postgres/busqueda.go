@@ -5,6 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/ports"
 )
@@ -17,6 +18,13 @@ var (
 // ReservadasPor marca las clases de una página que el alumno tiene CONFIRMADA
 // (CA-13.4). Es una consulta acotada a los ids de la página.
 func (d *DB) ReservadasPor(ctx context.Context, alumnoID string, claseIDs []string) (map[string]bool, error) {
+	ctx, fin := telemetry.StartClient(ctx, "postgresql", "booking.marcas")
+	m, err := d.reservadasPor(ctx, alumnoID, claseIDs)
+	fin(infra(err))
+	return m, err
+}
+
+func (d *DB) reservadasPor(ctx context.Context, alumnoID string, claseIDs []string) (map[string]bool, error) {
 	out := map[string]bool{}
 	rows, err := d.pool.Query(ctx, `SELECT clase_id::text FROM reservas WHERE alumno_id=$1 AND estado='CONFIRMADA' AND clase_id = ANY($2::uuid[])`, alumnoID, claseIDs)
 	if err != nil {

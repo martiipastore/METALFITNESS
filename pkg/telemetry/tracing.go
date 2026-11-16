@@ -3,9 +3,11 @@ package telemetry
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +45,18 @@ func Setup(ctx context.Context, service string, log *slog.Logger) (func(context.
 	return provider.Shutdown, nil
 }
 
+var (
+	// identificador: UUID, hexadecimal largo o número. Se reemplaza por {id}.
+	identificador = regexp.MustCompile(`^([0-9a-fA-F]{8}-[0-9a-fA-F-]{27}|[0-9a-fA-F]{16,}|[0-9]+)$`)
+	// palabra: segmento fijo de una ruta propia (bookings, check-ins, vigencia).
+	palabra = regexp.MustCompile(`^[a-z][a-z0-9-]{0,39}$`)
+)
+
 // Route evita URLs concretas, query strings e identificadores en los spans.
+// Cubre la API propia (/api/v1), la interna (/internal/v1) y las cuentas de la
+// API de partners; todo lo demás (health, métricas, rutas desconocidas) queda
+// fuera. Un segmento que no es una palabra fija se reemplaza por {id}, así nunca
+// llega a una traza un identificador, un código ni un dato del cliente.
 func Route(path string) string {
 	prefix := ""
 	if strings.HasPrefix(path, "/partner-api/") {
@@ -51,13 +64,33 @@ func Route(path string) string {
 		path = strings.TrimPrefix(path, prefix)
 	}
 	parts := strings.Split(path, "/")
-	if len(parts) == 5 && parts[1] == "v1" && parts[2] == "accounts" {
+	if len(parts) == 5 && (parts[1] == "v1" || parts[1] == "v2") && parts[2] == "accounts" {
 		switch parts[4] {
 		case "credits", "balance", "movements":
-			return prefix + "/v1/accounts/{externalUserId}/" + parts[4]
+			return prefix + "/" + parts[1] + "/accounts/{externalUserId}/" + parts[4]
 		}
 	}
-	return "unmatched"
+	if prefix != "" || len(parts) < 4 || parts[0] != "" || (parts[1] != "api" && parts[1] != "internal") || parts[2] != "v1" {
+		return "unmatched"
+	}
+	for i := 3; i < len(parts); i++ {
+		if identificador.MatchString(parts[i]) || !palabra.MatchString(parts[i]) {
+			parts[i] = "{id}"
+		}
+	}
+	return strings.Join(parts, "/")
+}
+
+// plantilla convierte la ruta registrada en Gin (/bookings/:id/cancel) al
+// formato de las trazas (/bookings/{id}/cancel).
+func plantilla(fullPath string) string {
+	parts := strings.Split(fullPath, "/")
+	for i, p := range parts {
+		if strings.HasPrefix(p, ":") {
+			parts[i] = "{" + strings.TrimPrefix(p, ":") + "}"
+		}
+	}
+	return strings.Join(parts, "/")
 }
 
 func method(value string) string {
@@ -76,6 +109,11 @@ func Middleware() gin.HandlerFunc {
 		if route == "unmatched" {
 			c.Next()
 			return
+		}
+		// La plantilla registrada es más precisa que la normalización; el proxy del
+		// gateway usa un comodín y conserva la ruta normalizada.
+		if full := c.FullPath(); full != "" && !strings.Contains(full, "*") {
+			route = plantilla(full)
 		}
 		parent := propagation.TraceContext{}.Extract(c.Request.Context(), propagation.HeaderCarrier(c.Request.Header))
 		remote := trace.SpanContextFromContext(parent).WithTraceState(trace.TraceState{})
@@ -123,4 +161,59 @@ func (t Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 		}
 	}
 	return response, err
+}
+
+// StartClient abre un span hacia una dependencia (postgresql, redis,
+// opensearch) con el nombre de la operación. No registra consultas, claves,
+// parámetros ni mensajes de error: solo el tipo de falla.
+func StartClient(ctx context.Context, system, operation string) (context.Context, func(error)) {
+	ctx, span := otel.Tracer("gym/"+system).Start(ctx, system+" "+operation,
+		trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attribute.String("db.system.name", system)))
+	return ctx, func(err error) {
+		defer span.End()
+		if err == nil {
+			return
+		}
+		kind := "error"
+		switch {
+		case errors.Is(err, context.DeadlineExceeded):
+			kind = "deadline_exceeded"
+		case errors.Is(err, context.Canceled):
+			kind = "canceled"
+		}
+		span.SetAttributes(attribute.String("error.type", kind))
+		span.SetStatus(codes.Error, kind)
+	}
+}
+
+// Traceparent devuelve el traceparent W3C del span actual, o "" si no hay
+// traza. Se guarda en el outbox para continuar la traza en el consumidor.
+func Traceparent(ctx context.Context) string {
+	if !trace.SpanContextFromContext(ctx).IsValid() {
+		return ""
+	}
+	carrier := propagation.MapCarrier{}
+	propagation.TraceContext{}.Inject(ctx, carrier)
+	return carrier["traceparent"]
+}
+
+// StartConsumer continúa, desde un mensaje, la traza que lo produjo. Un
+// traceparent vacío o inválido inicia una traza nueva. Nunca usa tracestate ni
+// baggage del mensaje.
+func StartConsumer(ctx context.Context, traceparent, name string) (context.Context, func(error)) {
+	parent := propagation.TraceContext{}.Extract(ctx, propagation.MapCarrier{"traceparent": traceparent})
+	remote := trace.SpanContextFromContext(parent).WithTraceState(trace.TraceState{})
+	if remote.IsValid() {
+		parent = trace.ContextWithRemoteSpanContext(ctx, remote)
+	} else {
+		parent = ctx
+	}
+	ctx, span := otel.Tracer("gym/amqp").Start(parent, name+" process", trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithAttributes(attribute.String("messaging.system", "rabbitmq"), attribute.String("messaging.destination.name", name)))
+	return ctx, func(err error) {
+		defer span.End()
+		if err != nil {
+			span.SetStatus(codes.Error, "mensaje no procesado")
+		}
+	}
 }

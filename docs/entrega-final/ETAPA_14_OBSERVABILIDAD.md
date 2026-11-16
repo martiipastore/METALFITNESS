@@ -59,8 +59,9 @@ pasa a CAÍDO y la alerta se dispara. Después, `docker start gym-training-servi
 
 ## 5. Qué queda fuera (defensa individual o deuda)
 
-- **Trazas:** siguen solo en gateway y Benefits (etapa 4 de Entrega 2). Members,
-  Booking y el paso por RabbitMQ no propagan `traceparent`.
+- **Trazas:** resuelto el 15/11/2026 (D-101): gateway, Booking, Members y Benefits
+  exportan trazas, también a través de RabbitMQ. Ver [TRAZAS.md](TRAZAS.md). Quedan sin
+  traza Training y notification-worker.
 - **Logs:** sin Loki. Los logs JSON con `correlation_id` se consultan con
   `make logs s=<servicio>`.
 - **Métricas de Members y training:** no exponen `/metrics` propios. Su

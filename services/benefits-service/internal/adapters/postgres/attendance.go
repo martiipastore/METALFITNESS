@@ -11,7 +11,9 @@ import (
 // El callback aplica las reglas del dominio sobre el saldo bloqueado. Todos los
 // créditos HTTP y eventos comparten SELECT FOR UPDATE sobre la misma cuenta.
 func (d *DB) AplicarHecho(ctx context.Context, h domain.HechoBooking, fingerprint string, apply func(domain.CuentaBeneficios) (domain.CuentaBeneficios, domain.MovimientoPuntos, error), envio *domain.EnvioMelt) (err error) {
-	defer func() { err = storageError(err) }()
+	// D11: el consumidor continúa la traza del ingreso; este span mide el ledger.
+	ctx, finish := startDB(ctx, "postgres.aplicar_hecho_booking")
+	defer func() { err = storageError(err); finish(err) }()
 	tx, err := d.pool.Begin(ctx)
 	if err != nil {
 		return err

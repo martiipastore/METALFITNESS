@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
 )
 
@@ -169,6 +170,13 @@ func claseDestinos(c *domain.Clase) []any {
 
 // BuscarClases filtra y pagina por inicio e id (HU-13, ADR-014).
 func (d *DB) BuscarClases(ctx context.Context, f domain.FiltroClases, alumnoID string) (domain.PaginaClases, error) {
+	ctx, fin := telemetry.StartClient(ctx, "postgresql", "booking.buscar_clases")
+	p, err := d.buscarClases(ctx, f, alumnoID)
+	fin(infra(err))
+	return p, err
+}
+
+func (d *DB) buscarClases(ctx context.Context, f domain.FiltroClases, alumnoID string) (domain.PaginaClases, error) {
 	out := domain.PaginaClases{Items: []domain.Clase{}, Pagina: f.Pagina, Tamano: f.Tamano}
 	rows, err := d.pool.Query(ctx, `SELECT `+claseCols+reservadaPorMi(1)+`, count(*) OVER()`+claseFrom+`
 		WHERE c.inicio >= $2 AND c.inicio < $3

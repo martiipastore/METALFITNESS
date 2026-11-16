@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -96,4 +97,57 @@ func TestSetupDisabledAndRoute(t *testing.T) {
 	}
 	require.Equal(t, "/v1/accounts/{externalUserId}/credits", telemetry.Route("/v1/accounts/secret/credits"))
 	require.False(t, strings.Contains(telemetry.Route("/partner-api/v1/accounts/secret/movements"), "secret"))
+}
+
+// D11: la API propia y la interna generan spans con la ruta como plantilla,
+// nunca con identificadores, códigos ni datos del cliente.
+func TestRouteNormalizaRutasPropias(t *testing.T) {
+	casos := map[string]string{
+		"/api/v1/classes": "/api/v1/classes",
+		"/api/v1/bookings/0b6f4c1e-2a3d-4e5f-8a9b-0c1d2e3f4a5b/cancel":       "/api/v1/bookings/{id}/cancel",
+		"/internal/v1/alumnos/0b6f4c1e-2a3d-4e5f-8a9b-0c1d2e3f4a5b/vigencia": "/internal/v1/alumnos/{id}/vigencia",
+		"/api/v1/memberships/types/MENSUAL":                                  "/api/v1/memberships/types/{id}",
+		"/api/v1/users/martina@example.test":                                 "/api/v1/users/{id}",
+		"/partner-api/v2/accounts/private-user/balance":                      "/partner-api/v2/accounts/{externalUserId}/balance",
+		"/partner-api/v2/registrations":                                      "unmatched",
+		"/api/v2/classes":                                                    "unmatched",
+		"/metrics":                                                           "unmatched",
+	}
+	for path, esperado := range casos {
+		require.Equal(t, esperado, telemetry.Route(path), path)
+	}
+}
+
+// ARCHITECTURE §11: el consumidor continúa la traza del productor desde el
+// traceparent del sobre; uno inválido inicia una traza nueva.
+func TestTraceparentCruzaElBroker(t *testing.T) {
+	exporter := tracetest.NewInMemoryExporter()
+	provider := trace.NewTracerProvider(trace.WithSyncer(exporter), trace.WithSampler(trace.AlwaysSample()))
+	previous := otel.GetTracerProvider()
+	otel.SetTracerProvider(provider)
+	t.Cleanup(func() {
+		otel.SetTracerProvider(previous)
+		require.NoError(t, provider.Shutdown(context.Background()))
+	})
+	ctx, productor := otel.Tracer("test").Start(context.Background(), "POST /api/v1/check-ins")
+	tp := telemetry.Traceparent(ctx)
+	productor.End()
+	require.Regexp(t, `^00-[0-9a-f]{32}-[0-9a-f]{16}-01$`, tp)
+	require.Empty(t, telemetry.Traceparent(context.Background()))
+
+	cctx, fin := telemetry.StartConsumer(context.Background(), tp, "asistencia.registrada")
+	_, db := telemetry.StartClient(cctx, "postgresql", "aplicar")
+	db(nil)
+	fin(nil)
+	spans := exporter.GetSpans()
+	require.Len(t, spans, 3)
+	for _, s := range spans {
+		require.Equal(t, productor.SpanContext().TraceID(), s.SpanContext.TraceID(), s.Name)
+	}
+	require.Equal(t, productor.SpanContext().SpanID(), spans[2].Parent.SpanID(), "el consumidor es hijo del productor")
+
+	_, fin = telemetry.StartConsumer(context.Background(), "basura", "asistencia.registrada")
+	fin(errors.New("x"))
+	nuevo := exporter.GetSpans()[3]
+	require.NotEqual(t, productor.SpanContext().TraceID(), nuevo.SpanContext.TraceID())
 }

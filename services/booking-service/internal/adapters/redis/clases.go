@@ -10,6 +10,10 @@ import (
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/ports"
@@ -104,6 +108,14 @@ func nueva() string {
 }
 
 func (c *Clases) LeerClases(ctx context.Context, clave string) (domain.PaginaClases, string, bool, error) {
+	ctx, fin := telemetry.StartClient(ctx, "redis", "clases.leer")
+	p, g, ok, err := c.leerClases(ctx, clave)
+	trace.SpanFromContext(ctx).SetAttributes(attribute.Bool("cache.hit", ok))
+	fin(err)
+	return p, g, ok, err
+}
+
+func (c *Clases) leerClases(ctx context.Context, clave string) (domain.PaginaClases, string, bool, error) {
 	ctx, cancel := c.ctx(ctx)
 	defer cancel()
 	g, err := c.generacion(ctx)
@@ -130,6 +142,14 @@ func (c *Clases) LeerClases(ctx context.Context, clave string) (domain.PaginaCla
 
 // LeerUltimaClases lee la última copia de la clave sin importar la generación.
 func (c *Clases) LeerUltimaClases(ctx context.Context, clave string) (domain.PaginaClases, bool, error) {
+	ctx, fin := telemetry.StartClient(ctx, "redis", "clases.leer_ultima")
+	p, ok, err := c.leerUltimaClases(ctx, clave)
+	trace.SpanFromContext(ctx).SetAttributes(attribute.Bool("cache.hit", ok))
+	fin(err)
+	return p, ok, err
+}
+
+func (c *Clases) leerUltimaClases(ctx context.Context, clave string) (domain.PaginaClases, bool, error) {
 	ctx, cancel := c.ctx(ctx)
 	defer cancel()
 	raw, err := c.Client.Get(ctx, prefijoUltima+clave).Bytes()
@@ -157,6 +177,13 @@ func desdeCopia(raw []byte) (domain.PaginaClases, bool) {
 }
 
 func (c *Clases) GuardarClases(ctx context.Context, generacion, clave string, p domain.PaginaClases) error {
+	ctx, fin := telemetry.StartClient(ctx, "redis", "clases.guardar")
+	err := c.guardarClases(ctx, generacion, clave, p)
+	fin(err)
+	return err
+}
+
+func (c *Clases) guardarClases(ctx context.Context, generacion, clave string, p domain.PaginaClases) error {
 	copia := paginaCopia{Items: make([]claseCopia, 0, len(p.Items)), Total: p.Total, Pagina: p.Pagina, Tamano: p.Tamano, ConsultadoEn: p.ConsultadoEn.UTC()}
 	for _, i := range p.Items {
 		copia.Items = append(copia.Items, claseCopia{ID: i.ID, ActividadID: i.ActividadID, ActividadNombre: i.ActividadNombre, Musculacion: i.Musculacion, HorarioID: i.HorarioID,
