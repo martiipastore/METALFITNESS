@@ -3,12 +3,12 @@ package repository
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
 	"time"
 
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/migracion"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/members-service/internal/model"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/members-service/migrations"
 	"github.com/jackc/pgx/v5"
@@ -35,11 +35,11 @@ func (p *Postgres) Migrate(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		hash := fmt.Sprintf("%x", sha256.Sum256(data))
+		hash := migracion.Huella(data)
 		var old string
 		err = tx.QueryRow(ctx, `SELECT huella FROM schema_migrations WHERE version=$1`, file).Scan(&old)
 		if err == nil {
-			if old != hash {
+			if !migracion.Coincide(old, data) {
 				return fmt.Errorf("migración modificada: %s", file)
 			}
 			continue

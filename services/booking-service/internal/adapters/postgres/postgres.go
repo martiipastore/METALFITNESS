@@ -4,7 +4,6 @@ package postgres
 
 import (
 	"context"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -13,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/migracion"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/migrations"
 )
@@ -65,11 +65,11 @@ func (d *DB) Migrate(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			hash := fmt.Sprintf("%x", sha256.Sum256(data))
+			hash := migracion.Huella(data)
 			var old string
 			err = tx.QueryRow(ctx, `SELECT huella FROM schema_migrations WHERE version=$1`, file).Scan(&old)
 			if err == nil {
-				if old != hash {
+				if !migracion.Coincide(old, data) {
 					return fmt.Errorf("migración modificada: %s", file)
 				}
 				continue

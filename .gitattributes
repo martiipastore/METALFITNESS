@@ -6,6 +6,10 @@
 Makefile text eol=lf
 Dockerfile text eol=lf
 *.conf text eol=lf
+# Migraciones SQL: el mismo contenido en todas las máquinas. La huella de cada
+# migración aplicada se compara con LF o CRLF (pkg/migracion), así que las bases
+# creadas antes de esta regla siguen arrancando.
+*.sql text eol=lf
 *.docx binary
 *.pdf binary
 *.go text eol=lf

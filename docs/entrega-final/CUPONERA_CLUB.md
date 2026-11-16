@@ -97,7 +97,7 @@ con el build y el contrato, no con capturas.
 - Revisión de otro integrante y prueba manual de las dos pantallas.
 - Sincronizar el Word de decisiones (`scripts/sync-club-docs.ps1`), bloqueado desde la
   etapa 8 por una tabla de columnas incompatibles.
-- Riesgo detectado al probar en Windows, que no depende de esta etapa: con
+- (Resuelto el 16/11/2026, ver ARRANQUE_DOCKER.md §2.3.) Riesgo detectado al probar en Windows, que no depende de esta etapa: con
   `core.autocrlf=true`, Git puede reescribir las migraciones `.sql` con CRLF al cambiar
   de rama, y Benefits rechaza la migración por "modificada después de aplicarse". Se
   propone que el equipo decida entre fijar `*.sql text eol=lf` en `.gitattributes` o

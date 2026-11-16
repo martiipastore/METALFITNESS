@@ -114,7 +114,7 @@ Los cinco problemas comparten una causa de fondo. Cada pieza estaba probada por 
 | Trazas de Members y Booking y propagación por el outbox, para reconstruir una reserva durante una falla con una sola traza (L-26) | Hecho el 15/11/2026 (D-101): un ingreso por DNI y sus puntos se ven en una traza de gateway, Booking, Members, RabbitMQ y Benefits |
 | Caída del proveedor externo (MELT) en la jornada | Pendiente de la corrección del grupo proveedor |
 | Login con Members caído responde 502 o 504 según el momento | Aceptado: los dos indican que el servicio no respondió. Se documenta en lugar de unificarlo en el gateway |
-| Healthcheck de MongoDB con `mongosh` (consume CPU, CARGA_D13 §5.4) | Pendiente; no afectó la jornada |
+| Healthcheck de MongoDB con `mongosh` (consume CPU, CARGA_D13 §5.4) | Hecho el 16/11/2026: chequeo TCP, de 61 % a 5 % de CPU en reposo; arranque desde cero verificado (ARRANQUE_DOCKER.md §2.2) |
 
 ## 9. Límites del ejercicio
 

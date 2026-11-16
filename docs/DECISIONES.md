@@ -180,6 +180,7 @@ Referencias a páginas del PDF de 149 páginas aportado por el equipo. Se distin
 
 | Fecha | Cambio |
 |---|---|
+| 16/11/2026 | Healthcheck de MongoDB por TCP (de 61 % a 5 % de CPU en reposo) y migraciones `.sql` con LF fijo en `.gitattributes` más huella tolerante a CRLF (`pkg/migracion`). Arranque desde cero verificado dos veces. Sin decisión nueva: ver docs/entrega-final/ARRANQUE_DOCKER.md §2.2 y §2.3. |
 | 15/11/2026 | Se agrega D-101: trazas de Booking, Members y Benefits en Jaeger y propagación de `traceparent` por el outbox de Booking. Word sin sincronizar. |
 | 15/11/2026 | Se agrega D-100: correcciones encontradas en la jornada de fallas (última copia de búsqueda, PostgreSQL parcial en Booking, timeout de chequeo de 1 s, login 503, alerta ServicioDegradado). Word sin sincronizar. |
 | 15/11/2026 | Se agrega D-99: no se da de baja a un profesor con clases futuras (Members consulta la agenda a Booking) y la generación saltea horarios de profesores inactivos. Código `PROFESOR_CON_CLASES_FUTURAS`. Word sin sincronizar. |

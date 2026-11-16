@@ -61,7 +61,9 @@ services:
       # Por la IP del contenedor, como se conectan los servicios: en el primer
       # arranque los scripts de init corren con un mongod temporal que solo
       # escucha 127.0.0.1 y el chequeo local daba healthy antes de tiempo.
-      test: ["CMD-SHELL", "mongosh --quiet --host \"$$(hostname -i)\" --eval \"db.adminCommand('ping').ok\""]
+      # Chequeo TCP en lugar de mongosh: mongosh arranca Node.js cada 5 s y
+      # consumía en reposo un 60 % de CPU en promedio (CARGA_D13 §5.4).
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/$$(hostname -i)/27017'"]
 
   redis:
     image: redis:7-alpine
