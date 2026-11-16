@@ -28,6 +28,19 @@ El chequeo ahora solo comprueba que el puerto AMQP acepte conexiones: `bash -c "
 
 Verificado con el stack levantado (contenedor `healthy` y sin reinicios durante el test de carga). La verificación de arranque desde cero de la sección 3 se hizo con el chequeo anterior y conviene repetirla con este.
 
+### 2.2 Chequeo de MongoDB por TCP (16/11/2026)
+
+El chequeo con `mongosh` arrancaba un proceso de Node.js cada 5 s: MongoDB promediaba **61 % de CPU en reposo** (picos de 133 %) y ensuciaba las mediciones de carga (CARGA_D13 §5.4). Ahora el chequeo abre una conexión TCP al puerto 27017 en la IP del contenedor (`bash -c 'echo > /dev/tcp/$(hostname -i)/27017'`). Conserva la corrección del problema 4: durante el init, el `mongod` temporal solo escucha 127.0.0.1, así que el chequeo no da sano antes de tiempo. Medido después del cambio: **5 % de CPU en reposo** (máximo 22 %).
+
+### 2.3 Fin de línea de las migraciones (16/11/2026)
+
+Con `core.autocrlf=true`, Git escribía los `.sql` con CRLF en Windows y con LF en Linux. Cada servicio guarda una huella de las migraciones aplicadas y no arranca si el archivo cambia, así que cambiar de rama o de máquina podía dejar a Booking, Members o Benefits sin arrancar. Ahora:
+
+- `.gitattributes` fija `*.sql text eol=lf`: todas las máquinas ven el mismo contenido.
+- `pkg/migracion` calcula la huella con LF y acepta la huella guardada con LF, con CRLF o del archivo tal cual. Las bases creadas antes de esta regla, en Windows o en Linux, siguen arrancando, y un cambio real del contenido se sigue rechazando. Lo usan los tres servicios con migraciones, con tests propios.
+
+Verificado contra las bases locales existentes, con huellas CRLF y LF: Booking, Members y Benefits arrancaron con los archivos en LF.
+
 ## 3. Verificación
 
 El 14/11/2026, partiendo de Docker sin contenedores ni volúmenes, se corrió `make clean` seguido de `make demo` cuatro veces seguidas con las cuatro correcciones aplicadas. En todas, `make demo` terminó sin errores, con los 17 contenedores que tienen healthcheck en `healthy` y **ningún reinicio**. Jaeger y el OTel Collector no tienen healthcheck.
@@ -35,6 +48,8 @@ El 14/11/2026, partiendo de Docker sin contenedores ni volúmenes, se corrió `m
 Antes de las correcciones, el arranque desde cero fallaba en la mayoría de los intentos. Con solo la corrección de RabbitMQ, falló una de cuatro corridas por la carrera de PostgreSQL (problema 3).
 
 Al apagar y volver a prender PostgreSQL y OpenSearch, el sistema vuelve solo a `ready` en unos 30 s, el tiempo de arranque de OpenSearch.
+
+El 16/11/2026, con los chequeos TCP de RabbitMQ y MongoDB, se repitió el arranque desde cero dos veces en un proyecto aislado (`docker compose -p gymverif`, volúmenes nuevos, sin tocar los datos del proyecto `gym`): `up --wait` terminó sin errores en 153 y 176 s, con los 18 contenedores que tienen chequeo en `healthy` y ningún reinicio.
 
 ## 4. Cómo arrancar de cero
 

@@ -27,6 +27,7 @@ Esta carpeta reúne la planificación y las referencias propias de la presentaci
 | [CORRECCION_BUSQUEDA.md](CORRECCION_BUSQUEDA.md) | Correcciones de la cátedra: caché de búsquedas, búsqueda sin PostgreSQL y texto parcial (D-95) |
 | [CORRECCION_CRUD_CLASES.md](CORRECCION_CRUD_CLASES.md) | Pantallas de actividades, horarios y cupos del administrador |
 | [ARRANQUE_DOCKER.md](ARRANQUE_DOCKER.md) | Arranque confiable desde cero y healthchecks |
+| [TRAZAS.md](TRAZAS.md) | Trazas de gateway, Booking, Members y Benefits en Jaeger, también a través de RabbitMQ (D-101) |
 | [BAJAS_RESERVAS.md](BAJAS_RESERVAS.md) | Bajas de membresía y de alumnos que cancelan reservas futuras y liberan cupos (RN-04, RN-34, D-98) |
 | [CARGA_D13.md](CARGA_D13.md) | Carga del flujo principal: escalera hasta el límite, pico de reservas, caída de una instancia y análisis (D-97, ADR-013 v3) |
 

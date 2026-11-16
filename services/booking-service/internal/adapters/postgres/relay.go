@@ -13,7 +13,7 @@ import (
 // Las caídas después de publicar pueden repetir event_id; nunca se marca antes.
 func (d *DB) PublicarOutbox(ctx context.Context, bus *messaging.Session) error {
 	return d.tx(ctx, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx, `SELECT event_id::text,event_type,event_version,occurred_at,COALESCE(correlation_id,''),data FROM outbox WHERE publicado_en IS NULL ORDER BY occurred_at,event_id LIMIT 100 FOR UPDATE SKIP LOCKED`)
+		rows, err := tx.Query(ctx, `SELECT event_id::text,event_type,event_version,occurred_at,COALESCE(correlation_id,''),COALESCE(traceparent,''),data FROM outbox WHERE publicado_en IS NULL ORDER BY occurred_at,event_id LIMIT 100 FOR UPDATE SKIP LOCKED`)
 		if err != nil {
 			return err
 		}
@@ -24,13 +24,13 @@ func (d *DB) PublicarOutbox(ctx context.Context, bus *messaging.Session) error {
 			Occurred    time.Time       `json:"occurred_at"`
 			Correlation string          `json:"correlation_id"`
 			Producer    string          `json:"producer"`
-			Traceparent string          `json:"traceparent"`
+			Traceparent string          `json:"traceparent,omitempty"`
 			Data        json.RawMessage `json:"data"`
 		}
 		var events []event
 		for rows.Next() {
 			var e event
-			if err = rows.Scan(&e.ID, &e.Type, &e.Version, &e.Occurred, &e.Correlation, &e.Data); err != nil {
+			if err = rows.Scan(&e.ID, &e.Type, &e.Version, &e.Occurred, &e.Correlation, &e.Traceparent, &e.Data); err != nil {
 				rows.Close()
 				return err
 			}

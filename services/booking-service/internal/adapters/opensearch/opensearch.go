@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/ports"
 )
@@ -314,6 +315,13 @@ func (c *Client) Eliminar(ctx context.Context, indice string) error {
 // PostgreSQL de la etapa 4: rango de inicio [desde, hasta), actividad, hora de
 // inicio local, disponibilidad; orden inicio asc e id como desempate (ADR-014).
 func (c *Client) Buscar(ctx context.Context, f domain.FiltroClases, now time.Time) (domain.PaginaClases, error) {
+	ctx, fin := telemetry.StartClient(ctx, "opensearch", "clases.buscar")
+	p, err := c.buscar(ctx, f, now)
+	fin(err)
+	return p, err
+}
+
+func (c *Client) buscar(ctx context.Context, f domain.FiltroClases, now time.Time) (domain.PaginaClases, error) {
 	out := domain.PaginaClases{Items: []domain.Clase{}, Pagina: f.Pagina, Tamano: f.Tamano}
 	filtros := []any{map[string]any{"range": map[string]any{"inicio": map[string]any{"gte": f.Desde.UTC().Format(time.RFC3339), "lt": f.Hasta.UTC().Format(time.RFC3339)}}}}
 	if f.ActividadID != "" {

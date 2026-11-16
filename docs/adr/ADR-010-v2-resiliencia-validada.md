@@ -13,7 +13,7 @@
 
 La política inicial ya aprobada conserva 4 s para autenticación y operación de Benefits, dentro de 5 s del Gateway. Una respuesta perdida puede corresponder a una transacción confirmada; el error de transporte no determina rollback.
 
-Se mantienen las alternativas y su elección: presupuesto y cancelación, recuperación explícita con la misma clave y sin reintentos de escrituras a nivel de aplicación en Gateway. No se agrega circuit breaker al flujo inicial. Las llamadas a otros servicios y al futuro proveedor conservan su alcance pendiente.
+Se mantienen las alternativas y su elección: presupuesto y cancelación, recuperación explícita con la misma clave y sin reintentos de escrituras a nivel de aplicación en Gateway. No se agrega circuit breaker al flujo inicial. Las llamadas a otros servicios y al futuro proveedor conservan su alcance pendiente. (16/11/2026, D-102: se agregó un circuit breaker en las llamadas de Booking y Training a Members, junto con el timeout y el reintento que fijaba ADR-005 v2; el flujo de partners de Benefits no cambia.)
 
 ## Decisión que se mantiene
 

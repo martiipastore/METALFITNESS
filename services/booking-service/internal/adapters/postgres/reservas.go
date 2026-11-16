@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/correlation"
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/ports"
 )
@@ -44,7 +46,16 @@ func (d *DB) Previa(ctx context.Context, op ports.Operacion, destino any) (bool,
 // idempotente ejecuta fn una sola vez por actor y clave: serializa la misma clave
 // (OPERACION_EN_CURSO si otra solicitud la está procesando), devuelve el resultado
 // guardado si ya existía y guarda el nuevo en la misma transacción que el efecto.
+// idempotente mide la transacción completa (bloqueos, validaciones y commit)
+// en un span con el tipo de operación; ver tracing.go.
 func idempotente[T any](ctx context.Context, d *DB, op ports.Operacion, fn func(pgx.Tx) (T, error)) (T, bool, error) {
+	ctx, fin := telemetry.StartClient(ctx, "postgresql", "booking."+strings.ToLower(op.Tipo))
+	out, replay, err := idempotenteSinTraza(ctx, d, op, fn)
+	fin(infra(err))
+	return out, replay, err
+}
+
+func idempotenteSinTraza[T any](ctx context.Context, d *DB, op ports.Operacion, fn func(pgx.Tx) (T, error)) (T, bool, error) {
 	var out T
 	replay := false
 	err := d.tx(ctx, func(tx pgx.Tx) error {
@@ -147,6 +158,13 @@ func (d *DB) Reservar(ctx context.Context, op ports.Operacion, claseID string, v
 // elegir, o llega después y encuentra la revocación. La deduplicación, la
 // revocación y las cancelaciones van en una sola transacción (CLAUDE.md regla 7).
 func (d *DB) Revocar(ctx context.Context, r domain.Revocacion, ahora time.Time, elegir func([]domain.Reserva) ([]string, error)) (int, bool, error) {
+	ctx, fin := telemetry.StartClient(ctx, "postgresql", "booking.revocar")
+	n, repetido, err := d.revocar(ctx, r, ahora, elegir)
+	fin(infra(err))
+	return n, repetido, err
+}
+
+func (d *DB) revocar(ctx context.Context, r domain.Revocacion, ahora time.Time, elegir func([]domain.Reserva) ([]string, error)) (int, bool, error) {
 	canceladas, repetido := 0, false
 	err := d.tx(ctx, func(tx pgx.Tx) error {
 		if err := bloquearAlumno(ctx, tx, r.AlumnoID); err != nil {
@@ -289,7 +307,7 @@ func (d *DB) RegistrarIngreso(ctx context.Context, op ports.Operacion, alumnoID 
 		if err != nil {
 			return ingreso, err
 		}
-		if _, err = tx.Exec(ctx, `INSERT INTO outbox(event_type, occurred_at, correlation_id, agregado_id, data) VALUES('asistencia.registrada',$1,NULLIF($2,''),$3,$4)`, now, correlation.FromContext(ctx), r.ID, data); err != nil {
+		if _, err = tx.Exec(ctx, `INSERT INTO outbox(event_type, occurred_at, correlation_id, traceparent, agregado_id, data) VALUES('asistencia.registrada',$1,NULLIF($2,''),NULLIF($3,''),$4,$5)`, now, correlation.FromContext(ctx), telemetry.Traceparent(ctx), r.ID, data); err != nil {
 			return ingreso, err
 		}
 		ingresoEn := now

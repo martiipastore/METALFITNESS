@@ -84,7 +84,7 @@ Cada falla se identificó sin entrar a los contenedores:
 - **Las alertas de Prometheus** avisan del servicio afectado: `ServicioCaido`, `ServicioDegradado` (nueva), `MetricasNoDisponibles` y `MensajesEnDLQ`.
 - **Los logs JSON** llevan `correlation_id`. Por ejemplo, el log `instancia retirada del balanceo` del gateway explicó el problema 3, y los `servicio sin instancias disponibles` permitieron contar las solicitudes afectadas.
 
-Todavía no hay trazas de Members ni de Booking (L-26): una reserva se reconstruye con logs por `correlation_id` y métricas, no con una traza completa.
+Durante la jornada todavía no había trazas de Members ni de Booking: una reserva se reconstruía con logs por `correlation_id` y métricas. Se agregaron después, como acción de este postmortem (D-101, [TRAZAS.md](entrega-final/TRAZAS.md)).
 
 ## 6. Problemas encontrados, causa y respuesta
 
@@ -111,10 +111,10 @@ Los cinco problemas comparten una causa de fondo. Cada pieza estaba probada por 
 |---|---|
 | Problemas 1 a 5 (D-100) | Corregidos, con tests y verificados en la tercera corrida |
 | Jornada reproducible (`tests/resilience/jornada.go`) para repetir antes de la defensa y después de cada cambio de infraestructura | Hecho |
-| Trazas de Members y Booking y propagación por el outbox, para reconstruir una reserva durante una falla con una sola traza (L-26) | Pendiente; siguiente paso |
+| Trazas de Members y Booking y propagación por el outbox, para reconstruir una reserva durante una falla con una sola traza (L-26) | Hecho el 15/11/2026 (D-101): un ingreso por DNI y sus puntos se ven en una traza de gateway, Booking, Members, RabbitMQ y Benefits |
 | Caída del proveedor externo (MELT) en la jornada | Pendiente de la corrección del grupo proveedor |
 | Login con Members caído responde 502 o 504 según el momento | Aceptado: los dos indican que el servicio no respondió. Se documenta en lugar de unificarlo en el gateway |
-| Healthcheck de MongoDB con `mongosh` (consume CPU, CARGA_D13 §5.4) | Pendiente; no afectó la jornada |
+| Healthcheck de MongoDB con `mongosh` (consume CPU, CARGA_D13 §5.4) | Hecho el 16/11/2026: chequeo TCP, de 61 % a 5 % de CPU en reposo; arranque desde cero verificado (ARRANQUE_DOCKER.md §2.2) |
 
 ## 9. Límites del ejercicio
 

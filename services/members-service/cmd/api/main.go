@@ -20,6 +20,7 @@ import (
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/httpserver"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/logger"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/messaging"
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/members-service/internal/config"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/members-service/internal/handler"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/members-service/internal/repository"
@@ -44,6 +45,18 @@ func main() {
 func run(cfg config.Config, log *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	// D11: trazas OTLP si OTEL_EXPORTER_OTLP_ENDPOINT está definido.
+	shutdownTraces, err := telemetry.Setup(ctx, serviceName, log)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		flushCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+		defer cancel()
+		if err := shutdownTraces(flushCtx); err != nil {
+			log.Warn("no se completó el cierre de trazas")
+		}
+	}()
 
 	db, err := repository.NewPostgres(ctx, cfg.DBDSN)
 	if err != nil {
@@ -76,14 +89,14 @@ func run(cfg config.Config, log *slog.Logger) error {
 		if err := db.Migrate(ctx); err != nil {
 			return err
 		}
-		identity, err := service.NewIdentity(db, repository.BenefitsHTTP{URL: cfg.BenefitsURL, Secret: cfg.ServiceKey, Client: &http.Client{Timeout: 4 * time.Second}}, repository.SMTP{Host: cfg.SMTPHost, Port: cfg.SMTPPort, From: cfg.SMTPFrom, Username: cfg.SMTPUser, Password: cfg.SMTPPassword, AllowPlaintext: cfg.SMTPAllowPlaintext}, cfg.ActivationKey, cfg.PublicURL, signer)
+		identity, err := service.NewIdentity(db, repository.BenefitsHTTP{URL: cfg.BenefitsURL, Secret: cfg.ServiceKey, Client: &http.Client{Timeout: 4 * time.Second, Transport: telemetry.Transport{}}}, repository.SMTP{Host: cfg.SMTPHost, Port: cfg.SMTPPort, From: cfg.SMTPFrom, Username: cfg.SMTPUser, Password: cfg.SMTPPassword, AllowPlaintext: cfg.SMTPAllowPlaintext}, cfg.ActivationKey, cfg.PublicURL, signer)
 		if err != nil {
 			return err
 		}
 		handler.RegisterIdentity(router, identity, cfg.ServiceKey)
 		people := service.NewPeople(db, identity, nil)
 		if cfg.BookingURLs != "" {
-			people.WithAgenda(repository.BookingHTTP{URLs: strings.Split(cfg.BookingURLs, ","), Secret: cfg.ServiceKey, Client: &http.Client{Timeout: 2 * time.Second, Transport: correlation.Transport{}}})
+			people.WithAgenda(repository.BookingHTTP{URLs: strings.Split(cfg.BookingURLs, ","), Secret: cfg.ServiceKey, Client: &http.Client{Timeout: 2 * time.Second, Transport: correlation.Transport{Base: telemetry.Transport{}}}})
 		} else {
 			log.Warn("sin MEMBERS_BOOKING_URLS: la baja de profesores no verifica clases futuras")
 		}

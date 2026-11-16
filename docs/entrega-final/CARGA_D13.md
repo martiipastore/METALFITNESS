@@ -112,5 +112,5 @@ Además, es una sola corrida en una notebook con k6 en el mismo equipo. Los núm
 ## 7. Pendientes
 
 - Revisión del equipo de ADR-013 v3 y de los costos, que son del 16/10/2026.
-- Chequeo liviano de MongoDB y nueva verificación del arranque desde cero.
+- ~~Chequeo liviano de MongoDB y nueva verificación del arranque desde cero.~~ Hecho el 16/11/2026 (ARRANQUE_DOCKER.md §2.2). Conviene repetir la medición sin ese ruido.
 - Repetir la medición con k6 en otro equipo, para separar el límite del gateway del límite de la notebook.

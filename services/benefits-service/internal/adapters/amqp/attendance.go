@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/benefits-service/internal/domain"
 	"time"
 )
@@ -17,14 +18,15 @@ type Adapter struct {
 	EventType string
 }
 
-func (a Adapter) Handle(ctx context.Context, body []byte) error {
+func (a Adapter) Handle(ctx context.Context, body []byte) (err error) {
 	var e struct {
-		ID       string    `json:"event_id"`
-		Type     string    `json:"event_type"`
-		Version  int       `json:"event_version"`
-		Producer string    `json:"producer"`
-		Occurred time.Time `json:"occurred_at"`
-		Data     struct {
+		Traceparent string    `json:"traceparent"`
+		ID          string    `json:"event_id"`
+		Type        string    `json:"event_type"`
+		Version     int       `json:"event_version"`
+		Producer    string    `json:"producer"`
+		Occurred    time.Time `json:"occurred_at"`
+		Data        struct {
 			Asistencia string `json:"asistencia_id"`
 			Reserva    string `json:"reserva_id"`
 			Alumno     string `json:"alumno_id"`
@@ -38,6 +40,9 @@ func (a Adapter) Handle(ctx context.Context, body []byte) error {
 	if len(body) > 64<<10 || json.Unmarshal(body, &e) != nil || e.Version != 1 || e.Producer != "booking-service" || e.Type != a.EventType {
 		return domain.ErrOperacionInvalida
 	}
+	// D11: continúa la traza del ingreso que generó el evento (ARCHITECTURE §11).
+	ctx, fin := telemetry.StartConsumer(ctx, e.Traceparent, a.EventType)
+	defer func() { fin(err) }()
 	h := domain.HechoBooking{EventoID: e.ID, AlumnoID: e.Data.Alumno, ReservaID: e.Data.Reserva, ClaseID: e.Data.Clase, OcurridoEn: e.Occurred}
 	switch e.Type {
 	case "asistencia.registrada":
