@@ -66,6 +66,13 @@ consulta con `prefix` por palabra. PostgreSQL aplica la misma regla, así que el
 depende de qué fuente responde. Si el índice existente no tiene el campo, el indexer lo
 reconstruye al arrancar con el reindexado por alias de D-87, sin pausa para las búsquedas.
 
+## Hallazgos de la jornada de fallas (15/11/2026, D-100)
+
+La jornada final (`tests/resilience/jornada.go`, `docs/POSTMORTEM.md`) encontró dos casos en que la búsqueda no respondía sin su fuente, aunque la regla de arriba lo prometía:
+
+- **Copia inalcanzable tras una escritura.** Con OpenSearch caído y PostgreSQL arriba, cada reserva o cancelación cambia la generación, así que la copia vigente deja de leerse y la búsqueda respondía 503. Ahora cada copia se guarda también como «última conocida» de su clave, fuera de las generaciones y con la misma retención. Solo se sirve, como `cache_vencida`, cuando la fuente falla.
+- **Instancias retiradas con PostgreSQL caído.** PostgreSQL era una dependencia crítica de Booking: su `/health/ready` daba `not_ready`, el balanceador (ADR-012 v3) retiraba las dos instancias y el gateway respondía 503 a todo. Cuando la caché de búsquedas u OpenSearch están activos, PostgreSQL pasa a ser **parcial** en Booking: la instancia informa `degraded`, sigue en el balanceo, la búsqueda responde desde la caché y reservar falla cerrado con 503 desde el propio Booking.
+
 ## Lo que no cambia
 
 - La caché sigue sin decidir cupos, permisos ni reservas (ADR-007, RN-14).

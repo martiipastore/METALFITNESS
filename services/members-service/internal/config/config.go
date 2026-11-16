@@ -58,7 +58,7 @@ func Load() (Config, error) {
 		DBDSN:                   l.Required("MEMBERS_DB_DSN"),
 		LogLevel:                l.String("LOG_LEVEL", "info"),
 		ShutdownTimeout:         l.Duration("SHUTDOWN_TIMEOUT", 10*time.Second),
-		HealthTimeout:           l.Duration("HEALTH_CHECK_TIMEOUT", 2*time.Second),
+		HealthTimeout:           l.Duration("HEALTH_CHECK_TIMEOUT", time.Second),
 		WorkerInterval:          l.Duration("MEMBERS_WORKER_INTERVAL", 2*time.Second),
 	}
 	return cfg, l.Err()

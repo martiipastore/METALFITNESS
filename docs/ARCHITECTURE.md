@@ -482,7 +482,7 @@ Esta separación evita confundir autenticación con autorización: un JWT o una 
 
 **Implementado en etapa 4:** flujo mínimo Gateway → Benefits → PostgreSQL, middleware/transporte HTTP y spans manuales del repositorio; logs JSON con correlation_id/trace_id/span_id; OTLP → Collector → Jaeger local en memoria. Evidencia en [ETAPA_4_OBSERVABILIDAD.md](entrega-2/ETAPA_4_OBSERVABILIDAD.md). No se usan otelgin/otelhttp en esta primera versión: la instrumentación manual restringe los atributos exportados. La tabla siguiente conserva el diseño objetivo.
 
-**Implementado en la etapa 14 (11/11/2026, D-93):** Prometheus lee los `/metrics` del gateway (requests por clase de respuesta, duración y estado de cada servicio), Benefits (eventos y envíos a MELT), Booking (caché), booking-indexer (retraso del índice), notification-worker y RabbitMQ (mensajes por cola y DLQ). Grafana aprovisiona el tablero «Metal Fitness — recorrido y salud» (`127.0.0.1:3000`). Tres alertas: `ServicioCaido`, `MensajesEnDLQ` y `MetricasNoDisponibles`. Siguen pendientes las trazas de Members y Booking, la traza a través del broker y Loki. Ver [ETAPA_14_OBSERVABILIDAD.md](entrega-final/ETAPA_14_OBSERVABILIDAD.md).
+**Implementado en la etapa 14 (11/11/2026, D-93):** Prometheus lee los `/metrics` del gateway (requests por clase de respuesta, duración y estado de cada servicio), Benefits (eventos y envíos a MELT), Booking (caché), booking-indexer (retraso del índice), notification-worker y RabbitMQ (mensajes por cola y DLQ). Grafana aprovisiona el tablero «Metal Fitness — recorrido y salud» (`127.0.0.1:3000`). Tres alertas: `ServicioCaido`, `MensajesEnDLQ` y `MetricasNoDisponibles`; la jornada de fallas agregó `ServicioDegradado` (D-100). Siguen pendientes las trazas de Members y Booking, la traza a través del broker y Loki. Ver [ETAPA_14_OBSERVABILIDAD.md](entrega-final/ETAPA_14_OBSERVABILIDAD.md).
 
 | Señal | Instrumentación | Pipeline | Visualización |
 |---|---|---|---|
@@ -592,7 +592,7 @@ Una dependencia es **crítica** cuando el proceso no puede cumplir su responsabi
 | Proceso | Dependencias críticas | Dependencias parciales |
 |---|---|---|
 | members-service | PostgreSQL | RabbitMQ, Redis y booking-service (solo para dar de baja a un profesor, D-99) |
-| booking-service | PostgreSQL | members-service, OpenSearch, RabbitMQ y Redis |
+| booking-service | Ninguna con la caché de búsquedas u OpenSearch activos; PostgreSQL si no hay ninguno de los dos | PostgreSQL (con caché u OpenSearch: la búsqueda sigue y reservar falla cerrado con 503, D-100), members-service, OpenSearch, RabbitMQ y Redis |
 | booking-indexer | RabbitMQ y OpenSearch | PostgreSQL, usado solo para reindexado completo |
 | benefits-service | PostgreSQL | members-service, RabbitMQ y Redis |
 | training-service | MongoDB | members-service |

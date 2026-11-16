@@ -396,6 +396,11 @@ func (s *Servicio) paginaClases(ctx context.Context, f domain.FiltroClases) (dom
 		page, err = s.catalogo.BuscarClases(ctx, f, "")
 	}
 	if err != nil {
+		if !hayCopia && s.cacheClases != nil {
+			// Una escritura reciente cambió la generación: la última copia conocida,
+			// de cualquier generación, es mejor que un error (jornada, D-95).
+			copia, hayCopia, _ = s.cacheClases.LeerUltimaClases(ctx, clave)
+		}
 		if hayCopia {
 			copia.Origen = domain.OrigenCacheVencida
 			return copia, nil

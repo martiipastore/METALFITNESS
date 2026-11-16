@@ -76,6 +76,11 @@ type CacheActividades interface {
 type CacheClases interface {
 	LeerClases(ctx context.Context, clave string) (copia domain.PaginaClases, generacion string, encontrado bool, err error)
 	GuardarClases(ctx context.Context, generacion, clave string, copia domain.PaginaClases) error
+	// LeerUltimaClases devuelve la última copia guardada para la clave, de
+	// cualquier generación. Solo se usa si la fuente no responde: una escritura
+	// cambia la generación y deja inalcanzable la copia vigente, pero la última
+	// conocida sigue siendo mejor que un error (hallazgo de la jornada, D-95).
+	LeerUltimaClases(ctx context.Context, clave string) (copia domain.PaginaClases, encontrado bool, err error)
 	InvalidacionClases
 }
 

@@ -1,0 +1,303 @@
+[
+  {
+    "falla": {
+      "nombre": "OpenSearch caído",
+      "contenedor": "gym-opensearch-1",
+      "esperado": "Búsqueda servida desde la caché (fresca o vencida); reservas normales; clase.actualizada espera en RabbitMQ",
+      "diseno": "ADR-014, ADR-007 v2, D-95"
+    },
+    "detenida": "2026-11-16T00:26:51.2471578-03:00",
+    "iniciada": "2026-11-16T00:27:54.2826983-03:00",
+    "lista": "2026-11-16T00:28:48.3102213-03:00",
+    "recuperacion_s": 54.027523,
+    "por_operacion": {
+      "busqueda": {
+        "200": 36
+      },
+      "cancelacion": {
+        "200": 16
+      },
+      "login": {
+        "200": 4
+      },
+      "reserva": {
+        "201": 16
+      }
+    },
+    "origen_busqueda": {
+      "cache": 1,
+      "cache_vencida": 35
+    },
+    "busquedas_sin_marcas": 0,
+    "deteccion_estado": "2026-11-16T00:26:53.2436214-03:00",
+    "alertas": [
+      {
+        "t": "2026-11-16T00:27:06.2854252-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-indexer"
+      },
+      {
+        "t": "2026-11-16T00:27:26.2989794-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "firing",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-indexer"
+      }
+    ],
+    "outbox_pendiente_max": 2,
+    "outbox_pendiente_final": 0,
+    "logs_warn_error": {
+      "api-gateway": 108,
+      "booking-indexer": 3
+    }
+  },
+  {
+    "falla": {
+      "nombre": "PostgreSQL caído",
+      "contenedor": "gym-postgres-1",
+      "esperado": "Búsqueda con la copia de Redis y marcas_disponibles=false; reservar y login fallan cerrados con 503",
+      "diseno": "ADR-007 v2, D-95, ADR-005 v2"
+    },
+    "detenida": "2026-11-16T00:29:19.375088-03:00",
+    "iniciada": "2026-11-16T00:30:23.7139382-03:00",
+    "lista": "2026-11-16T00:30:25.5477699-03:00",
+    "recuperacion_s": 1.8338317,
+    "por_operacion": {
+      "busqueda": {
+        "200": 18,
+        "503 DEPENDENCIA_NO_DISPONIBLE": 73
+      },
+      "login": {
+        "500 ERROR_INTERNO": 2,
+        "504 TIMEOUT": 3
+      },
+      "reserva": {
+        "503 DEPENDENCIA_NO_DISPONIBLE": 16
+      }
+    },
+    "origen_busqueda": {
+      "cache": 15,
+      "fuente": 3
+    },
+    "busquedas_sin_marcas": 12,
+    "primera_falla": "2026-11-16T00:29:21.2436395-03:00",
+    "deteccion_estado": "2026-11-16T00:29:21.2436395-03:00",
+    "alertas": [
+      {
+        "t": "2026-11-16T00:29:36.2515656-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-service-1"
+      },
+      {
+        "t": "2026-11-16T00:29:36.2515656-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-service-2"
+      },
+      {
+        "t": "2026-11-16T00:29:36.2515656-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=benefits-service"
+      },
+      {
+        "t": "2026-11-16T00:29:36.2515656-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=members-service"
+      },
+      {
+        "t": "2026-11-16T00:29:56.2536986-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "firing",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-service-1"
+      },
+      {
+        "t": "2026-11-16T00:29:56.2536986-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "firing",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-service-2"
+      },
+      {
+        "t": "2026-11-16T00:29:56.2536986-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "firing",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=benefits-service"
+      },
+      {
+        "t": "2026-11-16T00:29:56.2536986-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "firing",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=members-service"
+      }
+    ],
+    "outbox_pendiente_max": 2,
+    "outbox_pendiente_final": 0,
+    "logs_warn_error": {
+      "api-gateway": 265,
+      "booking-service": 23,
+      "booking-service-2": 23,
+      "members-service": 36
+    }
+  },
+  {
+    "falla": {
+      "nombre": "RabbitMQ caído",
+      "contenedor": "gym-rabbitmq-1",
+      "esperado": "Reservas y búsqueda normales; el outbox acumula y se vacía al volver el broker",
+      "diseno": "ADR-005 v2, regla 6"
+    },
+    "detenida": "2026-11-16T00:30:56.0716812-03:00",
+    "iniciada": "2026-11-16T00:31:59.6325428-03:00",
+    "lista": "2026-11-16T00:32:27.0041491-03:00",
+    "recuperacion_s": 27.3716063,
+    "por_operacion": {
+      "busqueda": {
+        "200": 127
+      },
+      "cancelacion": {
+        "200": 16
+      },
+      "login": {
+        "200": 4
+      },
+      "reserva": {
+        "201": 16
+      }
+    },
+    "origen_busqueda": {
+      "cache": 71,
+      "fuente": 56
+    },
+    "busquedas_sin_marcas": 0,
+    "deteccion_estado": "2026-11-16T00:30:57.2435448-03:00",
+    "alertas": [
+      {
+        "t": "2026-11-16T00:31:16.264883-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=notification-worker"
+      },
+      {
+        "t": "2026-11-16T00:31:16.264883-03:00",
+        "nombre": "MetricasNoDisponibles",
+        "estado": "pending",
+        "labels": "instance=rabbitmq:15692,job=rabbitmq"
+      },
+      {
+        "t": "2026-11-16T00:31:36.251908-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "firing",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=notification-worker"
+      },
+      {
+        "t": "2026-11-16T00:32:16.2576329-03:00",
+        "nombre": "MetricasNoDisponibles",
+        "estado": "firing",
+        "labels": "instance=rabbitmq:15692,job=rabbitmq"
+      }
+    ],
+    "outbox_pendiente_max": 46,
+    "outbox_pendiente_final": 0,
+    "logs_warn_error": {
+      "api-gateway": 71,
+      "benefits-service": 80,
+      "booking-indexer": 41,
+      "booking-service": 155,
+      "booking-service-2": 155,
+      "members-service": 69
+    }
+  },
+  {
+    "falla": {
+      "nombre": "Redis caído",
+      "contenedor": "gym-redis-1",
+      "esperado": "Login falla cerrado (503); el resto sigue sin límite de tráfico; la búsqueda va a la fuente",
+      "diseno": "D-91, ADR-007"
+    },
+    "detenida": "2026-11-16T00:32:57.6180648-03:00",
+    "iniciada": "2026-11-16T00:33:58.4554567-03:00",
+    "lista": "2026-11-16T00:34:00.0511345-03:00",
+    "recuperacion_s": 1.5956778,
+    "por_operacion": {
+      "busqueda": {
+        "200": 123
+      },
+      "cancelacion": {
+        "200": 16
+      },
+      "login": {
+        "503 DEPENDENCIA_NO_DISPONIBLE": 4
+      },
+      "reserva": {
+        "201": 16
+      }
+    },
+    "origen_busqueda": {
+      "cache": 1,
+      "fuente": 122
+    },
+    "busquedas_sin_marcas": 0,
+    "primera_falla": "2026-11-16T00:33:06.2435578-03:00",
+    "deteccion_estado": "2026-11-16T00:32:59.2434363-03:00",
+    "alertas": null,
+    "outbox_pendiente_max": 2,
+    "outbox_pendiente_final": 0,
+    "logs_warn_error": {
+      "api-gateway": 162
+    }
+  },
+  {
+    "falla": {
+      "nombre": "Members caído",
+      "contenedor": "gym-members-service-1",
+      "esperado": "Reservar falla cerrado (503); búsqueda normal; login no disponible",
+      "diseno": "ADR-005 v2, ADR-007"
+    },
+    "detenida": "2026-11-16T00:34:30.5562381-03:00",
+    "iniciada": "2026-11-16T00:35:31.1898576-03:00",
+    "lista": "2026-11-16T00:35:34.742673-03:00",
+    "recuperacion_s": 3.5528154,
+    "por_operacion": {
+      "busqueda": {
+        "200": 37
+      },
+      "login": {
+        "502 DEPENDENCIA_NO_DISPONIBLE": 2,
+        "504 TIMEOUT": 2
+      },
+      "reserva": {
+        "503 DEPENDENCIA_NO_DISPONIBLE": 12
+      }
+    },
+    "origen_busqueda": {
+      "cache": 27,
+      "fuente": 10
+    },
+    "busquedas_sin_marcas": 0,
+    "primera_falla": "2026-11-16T00:34:36.2441753-03:00",
+    "deteccion_estado": "2026-11-16T00:34:31.2440413-03:00",
+    "alertas": [
+      {
+        "t": "2026-11-16T00:34:46.2518916-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=members-service"
+      },
+      {
+        "t": "2026-11-16T00:35:06.2485718-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "firing",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=members-service"
+      }
+    ],
+    "outbox_pendiente_max": 2,
+    "outbox_pendiente_final": 1,
+    "logs_warn_error": {
+      "api-gateway": 54,
+      "booking-service": 8,
+      "booking-service-2": 4
+    }
+  }
+]

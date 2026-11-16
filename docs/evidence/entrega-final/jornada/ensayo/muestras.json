@@ -1,0 +1,2692 @@
+[
+  {
+    "t": "2026-11-16T00:14:10.4740561-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 30.797
+  },
+  {
+    "t": "2026-11-16T00:14:10.9743977-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 49.057
+  },
+  {
+    "t": "2026-11-16T00:14:11.4741919-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 3.978
+  },
+  {
+    "t": "2026-11-16T00:14:11.9741878-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 24.429
+  },
+  {
+    "t": "2026-11-16T00:14:12.4744159-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 2.774
+  },
+  {
+    "t": "2026-11-16T00:14:12.9743336-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 2.957
+  },
+  {
+    "t": "2026-11-16T00:14:13.4774533-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 14.133
+  },
+  {
+    "t": "2026-11-16T00:14:13.9855303-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 5.869
+  },
+  {
+    "t": "2026-11-16T00:14:13.9855303-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 327.175
+  },
+  {
+    "t": "2026-11-16T00:14:14.3127054-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 49.647
+  },
+  {
+    "t": "2026-11-16T00:14:14.4743576-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 21.211
+  },
+  {
+    "t": "2026-11-16T00:14:14.9740119-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 16.743
+  },
+  {
+    "t": "2026-11-16T00:14:15.4745906-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 13.618
+  },
+  {
+    "t": "2026-11-16T00:14:15.9812374-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 3.053
+  },
+  {
+    "t": "2026-11-16T00:14:16.4742778-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 85.133
+  },
+  {
+    "t": "2026-11-16T00:14:16.9742265-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 11.948
+  },
+  {
+    "t": "2026-11-16T00:14:17.4745002-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 35.445
+  },
+  {
+    "t": "2026-11-16T00:14:17.9831267-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 4.91
+  },
+  {
+    "t": "2026-11-16T00:14:17.9831267-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 21.173
+  },
+  {
+    "t": "2026-11-16T00:14:18.0043005-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 10.416
+  },
+  {
+    "t": "2026-11-16T00:14:18.4741796-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 19.183
+  },
+  {
+    "t": "2026-11-16T00:14:18.9744841-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 13.709
+  },
+  {
+    "t": "2026-11-16T00:14:19.4740466-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 9.995
+  },
+  {
+    "t": "2026-11-16T00:14:19.9856675-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "fuente",
+    "marcas": true,
+    "latencia_ms": 13.799
+  },
+  {
+    "t": "2026-11-16T00:14:20.474133-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.734
+  },
+  {
+    "t": "2026-11-16T00:14:20.9743827-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.67
+  },
+  {
+    "t": "2026-11-16T00:14:21.4746299-03:00",
+    "op": "busqueda",
+    "status": 200,
+    "origen": "cache",
+    "marcas": true,
+    "latencia_ms": 7.299
+  },
+  {
+    "t": "2026-11-16T00:14:22.0476005-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.904
+  },
+  {
+    "t": "2026-11-16T00:14:22.0476005-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 376.317
+  },
+  {
+    "t": "2026-11-16T00:14:22.4740754-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 19.257
+  },
+  {
+    "t": "2026-11-16T00:14:22.4239176-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 238.77
+  },
+  {
+    "t": "2026-11-16T00:14:22.9747171-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.741
+  },
+  {
+    "t": "2026-11-16T00:14:23.474222-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 14.203
+  },
+  {
+    "t": "2026-11-16T00:14:23.9744703-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 2020.232
+  },
+  {
+    "t": "2026-11-16T00:14:24.9762107-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 3018.716
+  },
+  {
+    "t": "2026-11-16T00:14:27.9949272-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 102.06
+  },
+  {
+    "t": "2026-11-16T00:14:27.9949272-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 2012.752
+  },
+  {
+    "t": "2026-11-16T00:14:31.5392657-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 20.047
+  },
+  {
+    "t": "2026-11-16T00:14:31.5593133-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 18.299
+  },
+  {
+    "t": "2026-11-16T00:14:31.5776124-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 39.257
+  },
+  {
+    "t": "2026-11-16T00:14:31.5392657-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 2006.863
+  },
+  {
+    "t": "2026-11-16T00:14:35.4693342-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 27.317
+  },
+  {
+    "t": "2026-11-16T00:14:35.496652-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 11.857
+  },
+  {
+    "t": "2026-11-16T00:14:35.4693342-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 2004.865
+  },
+  {
+    "t": "2026-11-16T00:14:39.9861678-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 22.307
+  },
+  {
+    "t": "2026-11-16T00:14:39.974338-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 4033.672
+  },
+  {
+    "t": "2026-11-16T00:14:44.0080104-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 29.766
+  },
+  {
+    "t": "2026-11-16T00:14:44.0080104-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 1114.273
+  },
+  {
+    "t": "2026-11-16T00:14:47.25742-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.496
+  },
+  {
+    "t": "2026-11-16T00:14:47.25742-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 31.535
+  },
+  {
+    "t": "2026-11-16T00:14:47.2889551-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 17.22
+  },
+  {
+    "t": "2026-11-16T00:14:47.4741081-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.235
+  },
+  {
+    "t": "2026-11-16T00:14:47.9959402-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 13.438
+  },
+  {
+    "t": "2026-11-16T00:14:48.4740297-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 10.506
+  },
+  {
+    "t": "2026-11-16T00:14:48.9741382-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.161
+  },
+  {
+    "t": "2026-11-16T00:14:49.4755039-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 11.998
+  },
+  {
+    "t": "2026-11-16T00:14:50.0146199-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 42.254
+  },
+  {
+    "t": "2026-11-16T00:14:50.0146199-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 95.676
+  },
+  {
+    "t": "2026-11-16T00:14:50.1102964-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 84.188
+  },
+  {
+    "t": "2026-11-16T00:14:50.4747502-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.535
+  },
+  {
+    "t": "2026-11-16T00:14:50.9758215-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 14.632
+  },
+  {
+    "t": "2026-11-16T00:14:51.4785929-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 258.037
+  },
+  {
+    "t": "2026-11-16T00:14:52.1557507-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 90.433
+  },
+  {
+    "t": "2026-11-16T00:14:52.4756496-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 16.803
+  },
+  {
+    "t": "2026-11-16T00:14:52.9747901-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 10.75
+  },
+  {
+    "t": "2026-11-16T00:14:53.4742227-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.546
+  },
+  {
+    "t": "2026-11-16T00:14:54.0064313-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 364.262
+  },
+  {
+    "t": "2026-11-16T00:14:54.0059166-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 834.945
+  },
+  {
+    "t": "2026-11-16T00:14:54.6165091-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 341.412
+  },
+  {
+    "t": "2026-11-16T00:14:54.990705-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 92.03
+  },
+  {
+    "t": "2026-11-16T00:14:54.8408623-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 461.353
+  },
+  {
+    "t": "2026-11-16T00:14:55.4783703-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 32.352
+  },
+  {
+    "t": "2026-11-16T00:14:56.0742559-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 48.698
+  },
+  {
+    "t": "2026-11-16T00:14:54.9862731-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 1230.634
+  },
+  {
+    "t": "2026-11-16T00:14:56.4743844-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 16.664
+  },
+  {
+    "t": "2026-11-16T00:14:56.9744233-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 51.374
+  },
+  {
+    "t": "2026-11-16T00:14:57.474997-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.376
+  },
+  {
+    "t": "2026-11-16T00:14:57.984589-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 42.821
+  },
+  {
+    "t": "2026-11-16T00:14:57.9832336-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 499.106
+  },
+  {
+    "t": "2026-11-16T00:14:58.4754014-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 14.06
+  },
+  {
+    "t": "2026-11-16T00:14:58.48234-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 66.212
+  },
+  {
+    "t": "2026-11-16T00:14:58.9740893-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 122.113
+  },
+  {
+    "t": "2026-11-16T00:14:59.4824777-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.78
+  },
+  {
+    "t": "2026-11-16T00:14:59.9826754-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 66.023
+  },
+  {
+    "t": "2026-11-16T00:15:00.4787425-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 88.711
+  },
+  {
+    "t": "2026-11-16T00:15:00.9927971-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 77.93
+  },
+  {
+    "t": "2026-11-16T00:15:01.4794415-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 12.896
+  },
+  {
+    "t": "2026-11-16T00:15:02.089583-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 43.524
+  },
+  {
+    "t": "2026-11-16T00:15:02.089583-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 255.217
+  },
+  {
+    "t": "2026-11-16T00:15:02.3448008-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 94.163
+  },
+  {
+    "t": "2026-11-16T00:15:02.4747687-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 38.009
+  },
+  {
+    "t": "2026-11-16T00:15:02.9758113-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 125.419
+  },
+  {
+    "t": "2026-11-16T00:15:03.4766741-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 22.044
+  },
+  {
+    "t": "2026-11-16T00:15:03.9931982-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 16.611
+  },
+  {
+    "t": "2026-11-16T00:15:04.4766477-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 19.113
+  },
+  {
+    "t": "2026-11-16T00:15:04.975344-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 28.509
+  },
+  {
+    "t": "2026-11-16T00:15:05.4744924-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.734
+  },
+  {
+    "t": "2026-11-16T00:15:05.9895058-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 22.591
+  },
+  {
+    "t": "2026-11-16T00:15:05.9895058-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 120.869
+  },
+  {
+    "t": "2026-11-16T00:15:06.110375-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 45.819
+  },
+  {
+    "t": "2026-11-16T00:15:06.4754235-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 34.156
+  },
+  {
+    "t": "2026-11-16T00:15:06.9756343-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 119.17
+  },
+  {
+    "t": "2026-11-16T00:15:07.4746404-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 9.37
+  },
+  {
+    "t": "2026-11-16T00:15:07.9807429-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.444
+  },
+  {
+    "t": "2026-11-16T00:15:08.4739971-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.048
+  },
+  {
+    "t": "2026-11-16T00:15:08.974859-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 15.286
+  },
+  {
+    "t": "2026-11-16T00:15:09.4751223-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 104.458
+  },
+  {
+    "t": "2026-11-16T00:15:10.0612228-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 13.679
+  },
+  {
+    "t": "2026-11-16T00:15:10.474579-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 32.929
+  },
+  {
+    "t": "2026-11-16T00:15:09.9741378-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 671.569
+  },
+  {
+    "t": "2026-11-16T00:15:10.6457073-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 115.825
+  },
+  {
+    "t": "2026-11-16T00:15:09.9753814-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 874.637
+  },
+  {
+    "t": "2026-11-16T00:15:10.9743259-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.368
+  },
+  {
+    "t": "2026-11-16T00:15:11.4745253-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 4.854
+  },
+  {
+    "t": "2026-11-16T00:15:11.974352-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.911
+  },
+  {
+    "t": "2026-11-16T00:15:12.5010874-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 206.335
+  },
+  {
+    "t": "2026-11-16T00:15:12.9756155-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 120.188
+  },
+  {
+    "t": "2026-11-16T00:15:13.4745192-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 43.243
+  },
+  {
+    "t": "2026-11-16T00:15:13.9876382-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 25.877
+  },
+  {
+    "t": "2026-11-16T00:15:13.9876382-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 77.285
+  },
+  {
+    "t": "2026-11-16T00:15:14.0649239-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 31.692
+  },
+  {
+    "t": "2026-11-16T00:15:14.4741251-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.353
+  },
+  {
+    "t": "2026-11-16T00:15:14.9860493-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 25.546
+  },
+  {
+    "t": "2026-11-16T00:15:15.48019-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 69.732
+  },
+  {
+    "t": "2026-11-16T00:15:15.997844-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 97.571
+  },
+  {
+    "t": "2026-11-16T00:15:16.48308-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 100.745
+  },
+  {
+    "t": "2026-11-16T00:15:16.989407-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 20.698
+  },
+  {
+    "t": "2026-11-16T00:15:17.477431-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.828
+  },
+  {
+    "t": "2026-11-16T00:15:18.1010608-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 14.309
+  },
+  {
+    "t": "2026-11-16T00:15:18.1004925-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 144.984
+  },
+  {
+    "t": "2026-11-16T00:15:18.2454768-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 126.224
+  },
+  {
+    "t": "2026-11-16T00:15:18.4756019-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 27.329
+  },
+  {
+    "t": "2026-11-16T00:15:18.974478-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.425
+  },
+  {
+    "t": "2026-11-16T00:15:19.4743855-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 23.891
+  },
+  {
+    "t": "2026-11-16T00:15:19.9745812-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.194
+  },
+  {
+    "t": "2026-11-16T00:15:20.474503-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 15.102
+  },
+  {
+    "t": "2026-11-16T00:15:20.9746323-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 4.436
+  },
+  {
+    "t": "2026-11-16T00:15:21.474383-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 4.051
+  },
+  {
+    "t": "2026-11-16T00:15:21.974101-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 262.572
+  },
+  {
+    "t": "2026-11-16T00:15:21.974101-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 403.065
+  },
+  {
+    "t": "2026-11-16T00:15:22.4742622-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 26.669
+  },
+  {
+    "t": "2026-11-16T00:15:22.3771668-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 314.672
+  },
+  {
+    "t": "2026-11-16T00:15:22.9744221-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 15.659
+  },
+  {
+    "t": "2026-11-16T00:15:23.474432-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 11.575
+  },
+  {
+    "t": "2026-11-16T00:15:24.0219363-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 21.49
+  },
+  {
+    "t": "2026-11-16T00:15:24.4935335-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 63.211
+  },
+  {
+    "t": "2026-11-16T00:15:24.9811907-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 76.152
+  },
+  {
+    "t": "2026-11-16T00:15:25.4797176-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 40.26
+  },
+  {
+    "t": "2026-11-16T00:15:24.9768184-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 1249.389
+  },
+  {
+    "t": "2026-11-16T00:15:26.128431-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 99.903
+  },
+  {
+    "t": "2026-11-16T00:15:26.128431-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 153.318
+  },
+  {
+    "t": "2026-11-16T00:15:26.281749-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 156.017
+  },
+  {
+    "t": "2026-11-16T00:15:26.4741966-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 17.754
+  },
+  {
+    "t": "2026-11-16T00:15:26.9743823-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.041
+  },
+  {
+    "t": "2026-11-16T00:15:27.4745623-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 4.902
+  },
+  {
+    "t": "2026-11-16T00:15:27.9912648-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 14.026
+  },
+  {
+    "t": "2026-11-16T00:15:28.4743879-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 20.664
+  },
+  {
+    "t": "2026-11-16T00:15:28.9743723-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 9.112
+  },
+  {
+    "t": "2026-11-16T00:15:29.4800481-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 17.167
+  },
+  {
+    "t": "2026-11-16T00:15:30.2695053-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 36.485
+  },
+  {
+    "t": "2026-11-16T00:15:30.2695053-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 100.718
+  },
+  {
+    "t": "2026-11-16T00:15:30.4796067-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 13.161
+  },
+  {
+    "t": "2026-11-16T00:15:30.3702242-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 141.481
+  },
+  {
+    "t": "2026-11-16T00:15:30.9744317-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 57.981
+  },
+  {
+    "t": "2026-11-16T00:15:31.474401-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.74
+  },
+  {
+    "t": "2026-11-16T00:15:31.9758347-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 25.255
+  },
+  {
+    "t": "2026-11-16T00:15:32.4745171-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.23
+  },
+  {
+    "t": "2026-11-16T00:15:32.9740666-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 32.153
+  },
+  {
+    "t": "2026-11-16T00:15:33.4740572-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 4.861
+  },
+  {
+    "t": "2026-11-16T00:15:33.9768648-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.291
+  },
+  {
+    "t": "2026-11-16T00:15:33.9748697-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 87.846
+  },
+  {
+    "t": "2026-11-16T00:15:34.062716-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 196.316
+  },
+  {
+    "t": "2026-11-16T00:15:34.4743005-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.781
+  },
+  {
+    "t": "2026-11-16T00:15:34.9745137-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 11.862
+  },
+  {
+    "t": "2026-11-16T00:15:35.4746198-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.262
+  },
+  {
+    "t": "2026-11-16T00:15:35.9744386-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.717
+  },
+  {
+    "t": "2026-11-16T00:15:36.4740517-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.104
+  },
+  {
+    "t": "2026-11-16T00:15:36.9742143-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 15.216
+  },
+  {
+    "t": "2026-11-16T00:15:37.4744241-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.171
+  },
+  {
+    "t": "2026-11-16T00:15:37.9822386-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 17.172
+  },
+  {
+    "t": "2026-11-16T00:15:37.9822386-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 274.986
+  },
+  {
+    "t": "2026-11-16T00:15:38.2572251-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 121.068
+  },
+  {
+    "t": "2026-11-16T00:15:38.4745763-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.133
+  },
+  {
+    "t": "2026-11-16T00:15:38.9744188-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.953
+  },
+  {
+    "t": "2026-11-16T00:15:39.4744934-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 3.738
+  },
+  {
+    "t": "2026-11-16T00:15:39.9746271-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 48.828
+  },
+  {
+    "t": "2026-11-16T00:15:40.4741414-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 56.211
+  },
+  {
+    "t": "2026-11-16T00:15:39.9746271-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 770.006
+  },
+  {
+    "t": "2026-11-16T00:15:40.9742492-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 28.564
+  },
+  {
+    "t": "2026-11-16T00:15:41.4743994-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.027
+  },
+  {
+    "t": "2026-11-16T00:15:41.9741044-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 10.641
+  },
+  {
+    "t": "2026-11-16T00:15:41.9741044-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 484.786
+  },
+  {
+    "t": "2026-11-16T00:15:42.4743876-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 1.181
+  },
+  {
+    "t": "2026-11-16T00:15:42.9740769-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 4.096
+  },
+  {
+    "t": "2026-11-16T00:15:42.4588906-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 646.727
+  },
+  {
+    "t": "2026-11-16T00:15:43.4743487-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.842
+  },
+  {
+    "t": "2026-11-16T00:15:43.9743364-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 9.884
+  },
+  {
+    "t": "2026-11-16T00:15:44.4741139-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 16.345
+  },
+  {
+    "t": "2026-11-16T00:15:44.97432-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.43
+  },
+  {
+    "t": "2026-11-16T00:15:45.4745393-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 12.514
+  },
+  {
+    "t": "2026-11-16T00:15:45.9837755-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.996
+  },
+  {
+    "t": "2026-11-16T00:15:45.9743526-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 65.874
+  },
+  {
+    "t": "2026-11-16T00:15:46.0402275-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 29.935
+  },
+  {
+    "t": "2026-11-16T00:15:46.4745154-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.37
+  },
+  {
+    "t": "2026-11-16T00:15:46.9741119-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.428
+  },
+  {
+    "t": "2026-11-16T00:15:47.474398-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.145
+  },
+  {
+    "t": "2026-11-16T00:15:47.9861258-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 4.897
+  },
+  {
+    "t": "2026-11-16T00:15:48.4741386-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.257
+  },
+  {
+    "t": "2026-11-16T00:15:48.9741964-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.044
+  },
+  {
+    "t": "2026-11-16T00:15:49.4744031-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.438
+  },
+  {
+    "t": "2026-11-16T00:15:49.9860181-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 12.802
+  },
+  {
+    "t": "2026-11-16T00:15:49.985394-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 363.476
+  },
+  {
+    "t": "2026-11-16T00:15:50.4742298-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 60.352
+  },
+  {
+    "t": "2026-11-16T00:15:50.3488706-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 459.258
+  },
+  {
+    "t": "2026-11-16T00:15:50.9757556-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.476
+  },
+  {
+    "t": "2026-11-16T00:15:51.4746812-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.455
+  },
+  {
+    "t": "2026-11-16T00:15:52.0322679-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 16.888
+  },
+  {
+    "t": "2026-11-16T00:15:52.4955021-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 237.43
+  },
+  {
+    "t": "2026-11-16T00:15:52.9756026-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 145.225
+  },
+  {
+    "t": "2026-11-16T00:15:53.4769906-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 298.792
+  },
+  {
+    "t": "2026-11-16T00:15:54.0488828-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 466.413
+  },
+  {
+    "t": "2026-11-16T00:15:54.5152965-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 95.453
+  },
+  {
+    "t": "2026-11-16T00:15:54.0483738-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 677.917
+  },
+  {
+    "t": "2026-11-16T00:15:54.7262914-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 302.609
+  },
+  {
+    "t": "2026-11-16T00:15:54.9898593-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 89.484
+  },
+  {
+    "t": "2026-11-16T00:15:55.47673-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.636
+  },
+  {
+    "t": "2026-11-16T00:15:55.9748171-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 130.384
+  },
+  {
+    "t": "2026-11-16T00:15:56.4862619-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 22.006
+  },
+  {
+    "t": "2026-11-16T00:15:54.9753823-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 1573.387
+  },
+  {
+    "t": "2026-11-16T00:15:56.9751757-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 12.656
+  },
+  {
+    "t": "2026-11-16T00:15:57.4751228-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.315
+  },
+  {
+    "t": "2026-11-16T00:15:58.0100445-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 21.661
+  },
+  {
+    "t": "2026-11-16T00:15:58.0100445-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 63.383
+  },
+  {
+    "t": "2026-11-16T00:15:58.073428-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 134.515
+  },
+  {
+    "t": "2026-11-16T00:15:58.4743658-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 11.101
+  },
+  {
+    "t": "2026-11-16T00:15:58.9741499-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 37.607
+  },
+  {
+    "t": "2026-11-16T00:15:59.4745191-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 32.356
+  },
+  {
+    "t": "2026-11-16T00:16:00.0004605-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 22.876
+  },
+  {
+    "t": "2026-11-16T00:16:00.4747516-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 13.175
+  },
+  {
+    "t": "2026-11-16T00:16:00.9742229-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.094
+  },
+  {
+    "t": "2026-11-16T00:16:01.4745292-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 9.957
+  },
+  {
+    "t": "2026-11-16T00:16:02.0053364-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 22.333
+  },
+  {
+    "t": "2026-11-16T00:16:02.0048258-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 192.548
+  },
+  {
+    "t": "2026-11-16T00:16:02.1973745-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 68.59
+  },
+  {
+    "t": "2026-11-16T00:16:02.4745714-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.233
+  },
+  {
+    "t": "2026-11-16T00:16:02.9746047-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 11.068
+  },
+  {
+    "t": "2026-11-16T00:16:03.4756644-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 13.502
+  },
+  {
+    "t": "2026-11-16T00:16:03.9754577-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 29.462
+  },
+  {
+    "t": "2026-11-16T00:16:04.4740347-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 15.825
+  },
+  {
+    "t": "2026-11-16T00:16:04.9744574-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 10.035
+  },
+  {
+    "t": "2026-11-16T00:16:05.4740775-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.3
+  },
+  {
+    "t": "2026-11-16T00:16:05.974041-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.947
+  },
+  {
+    "t": "2026-11-16T00:16:05.974041-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 198.18
+  },
+  {
+    "t": "2026-11-16T00:16:06.1722217-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 77.164
+  },
+  {
+    "t": "2026-11-16T00:16:06.4746849-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 10.548
+  },
+  {
+    "t": "2026-11-16T00:16:06.9744846-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.295
+  },
+  {
+    "t": "2026-11-16T00:16:07.4742734-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.221
+  },
+  {
+    "t": "2026-11-16T00:16:07.9831293-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.844
+  },
+  {
+    "t": "2026-11-16T00:16:08.4743133-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.277
+  },
+  {
+    "t": "2026-11-16T00:16:08.9961572-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 207.39
+  },
+  {
+    "t": "2026-11-16T00:16:09.4785762-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 227.518
+  },
+  {
+    "t": "2026-11-16T00:16:09.9930412-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 632.995
+  },
+  {
+    "t": "2026-11-16T00:16:12.3444255-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 78.234
+  },
+  {
+    "t": "2026-11-16T00:16:09.9920392-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 2518.26
+  },
+  {
+    "t": "2026-11-16T00:16:12.4772276-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 91.229
+  },
+  {
+    "t": "2026-11-16T00:16:12.5102992-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 189.233
+  },
+  {
+    "t": "2026-11-16T00:16:12.9750633-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 19.934
+  },
+  {
+    "t": "2026-11-16T00:16:10.0136853-03:00",
+    "op": "login",
+    "status": 504,
+    "code": "TIMEOUT",
+    "latencia_ms": 3313.469
+  },
+  {
+    "t": "2026-11-16T00:16:13.4743396-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.427
+  },
+  {
+    "t": "2026-11-16T00:16:13.9750065-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.974
+  },
+  {
+    "t": "2026-11-16T00:16:13.9750065-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 188.238
+  },
+  {
+    "t": "2026-11-16T00:16:14.1632449-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 86.03
+  },
+  {
+    "t": "2026-11-16T00:16:14.4754986-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 36.888
+  },
+  {
+    "t": "2026-11-16T00:16:14.974894-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 15.767
+  },
+  {
+    "t": "2026-11-16T00:16:15.4745665-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 12.341
+  },
+  {
+    "t": "2026-11-16T00:16:15.9766211-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 48.822
+  },
+  {
+    "t": "2026-11-16T00:16:16.4746966-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.958
+  },
+  {
+    "t": "2026-11-16T00:16:16.9779105-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 30.823
+  },
+  {
+    "t": "2026-11-16T00:16:17.475002-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.007
+  },
+  {
+    "t": "2026-11-16T00:16:17.9747469-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 24.271
+  },
+  {
+    "t": "2026-11-16T00:16:17.9747469-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 159.568
+  },
+  {
+    "t": "2026-11-16T00:16:18.1343149-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 156.495
+  },
+  {
+    "t": "2026-11-16T00:16:18.474342-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.041
+  },
+  {
+    "t": "2026-11-16T00:16:18.9742116-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.294
+  },
+  {
+    "t": "2026-11-16T00:16:19.4742451-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 15.383
+  },
+  {
+    "t": "2026-11-16T00:16:19.9893683-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 14.153
+  },
+  {
+    "t": "2026-11-16T00:16:20.4750307-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 43.199
+  },
+  {
+    "t": "2026-11-16T00:16:20.974563-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 9.759
+  },
+  {
+    "t": "2026-11-16T00:16:21.4742259-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 9.425
+  },
+  {
+    "t": "2026-11-16T00:16:21.9859875-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.365
+  },
+  {
+    "t": "2026-11-16T00:16:21.9859875-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 57.375
+  },
+  {
+    "t": "2026-11-16T00:16:22.0433632-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 58.853
+  },
+  {
+    "t": "2026-11-16T00:16:22.474077-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 56.882
+  },
+  {
+    "t": "2026-11-16T00:16:22.9741281-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 44.714
+  },
+  {
+    "t": "2026-11-16T00:16:23.4741807-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 29.405
+  },
+  {
+    "t": "2026-11-16T00:16:24.0240207-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 31.689
+  },
+  {
+    "t": "2026-11-16T00:16:24.4754681-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.004
+  },
+  {
+    "t": "2026-11-16T00:16:24.9775805-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 30.773
+  },
+  {
+    "t": "2026-11-16T00:16:25.4769477-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 19.814
+  },
+  {
+    "t": "2026-11-16T00:16:24.9763899-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 653.067
+  },
+  {
+    "t": "2026-11-16T00:16:25.9864349-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 25.204
+  },
+  {
+    "t": "2026-11-16T00:16:25.9864349-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 92.167
+  },
+  {
+    "t": "2026-11-16T00:16:26.078602-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 25.188
+  },
+  {
+    "t": "2026-11-16T00:16:26.4745989-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.147
+  },
+  {
+    "t": "2026-11-16T00:16:26.9742771-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 33.074
+  },
+  {
+    "t": "2026-11-16T00:16:27.4769027-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 32.646
+  },
+  {
+    "t": "2026-11-16T00:16:27.9748811-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 16.529
+  },
+  {
+    "t": "2026-11-16T00:16:28.4745953-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.442
+  },
+  {
+    "t": "2026-11-16T00:16:28.9749255-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 36.669
+  },
+  {
+    "t": "2026-11-16T00:16:29.4744148-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 27.697
+  },
+  {
+    "t": "2026-11-16T00:16:30.1445287-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 117.4
+  },
+  {
+    "t": "2026-11-16T00:16:30.1414909-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 300.819
+  },
+  {
+    "t": "2026-11-16T00:16:30.4742098-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 19.205
+  },
+  {
+    "t": "2026-11-16T00:16:30.4423107-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 66.395
+  },
+  {
+    "t": "2026-11-16T00:16:30.9741475-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.335
+  },
+  {
+    "t": "2026-11-16T00:16:31.474316-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 6.494
+  },
+  {
+    "t": "2026-11-16T00:16:32.137975-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 91.518
+  },
+  {
+    "t": "2026-11-16T00:16:32.4789327-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 34.291
+  },
+  {
+    "t": "2026-11-16T00:16:32.9748057-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.576
+  },
+  {
+    "t": "2026-11-16T00:16:33.4741837-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.059
+  },
+  {
+    "t": "2026-11-16T00:16:33.9849474-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.373
+  },
+  {
+    "t": "2026-11-16T00:16:33.9844319-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 45.986
+  },
+  {
+    "t": "2026-11-16T00:16:34.0304181-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 34.595
+  },
+  {
+    "t": "2026-11-16T00:16:34.4742836-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 86.229
+  },
+  {
+    "t": "2026-11-16T00:16:34.976104-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 206.988
+  },
+  {
+    "t": "2026-11-16T00:16:35.4876944-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 81.37
+  },
+  {
+    "t": "2026-11-16T00:16:36.0674813-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 38.047
+  },
+  {
+    "t": "2026-11-16T00:16:36.4787206-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 138.164
+  },
+  {
+    "t": "2026-11-16T00:16:36.9742462-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 41.507
+  },
+  {
+    "t": "2026-11-16T00:16:37.4748863-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 57.019
+  },
+  {
+    "t": "2026-11-16T00:16:38.0345786-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 34.266
+  },
+  {
+    "t": "2026-11-16T00:16:38.0345786-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 182.417
+  },
+  {
+    "t": "2026-11-16T00:16:38.216996-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 47.31
+  },
+  {
+    "t": "2026-11-16T00:16:38.4741002-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 14.485
+  },
+  {
+    "t": "2026-11-16T00:16:38.9797555-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 15.05
+  },
+  {
+    "t": "2026-11-16T00:16:39.4742891-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.045
+  },
+  {
+    "t": "2026-11-16T00:16:40.0403347-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 63.687
+  },
+  {
+    "t": "2026-11-16T00:16:40.5080161-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 83.069
+  },
+  {
+    "t": "2026-11-16T00:16:40.975969-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 9.688
+  },
+  {
+    "t": "2026-11-16T00:16:39.9890218-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 1223.561
+  },
+  {
+    "t": "2026-11-16T00:16:41.4776993-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 34.249
+  },
+  {
+    "t": "2026-11-16T00:16:41.9740912-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 32.042
+  },
+  {
+    "t": "2026-11-16T00:16:41.9740912-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 218.764
+  },
+  {
+    "t": "2026-11-16T00:16:42.1945914-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 72.582
+  },
+  {
+    "t": "2026-11-16T00:16:42.4744893-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 9.017
+  },
+  {
+    "t": "2026-11-16T00:16:42.9741865-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 19.597
+  },
+  {
+    "t": "2026-11-16T00:16:43.4743167-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 7.887
+  },
+  {
+    "t": "2026-11-16T00:16:44.0000146-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 26.615
+  },
+  {
+    "t": "2026-11-16T00:16:44.4742544-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.202
+  },
+  {
+    "t": "2026-11-16T00:16:44.9757796-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.421
+  },
+  {
+    "t": "2026-11-16T00:16:45.4835572-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 18.383
+  },
+  {
+    "t": "2026-11-16T00:16:45.9949227-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 30.692
+  },
+  {
+    "t": "2026-11-16T00:16:46.4741479-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 71.268
+  },
+  {
+    "t": "2026-11-16T00:16:45.9944117-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 648.587
+  },
+  {
+    "t": "2026-11-16T00:16:46.9740048-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 24.372
+  },
+  {
+    "t": "2026-11-16T00:16:46.6429987-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 357.18
+  },
+  {
+    "t": "2026-11-16T00:16:47.474802-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 17.203
+  },
+  {
+    "t": "2026-11-16T00:16:47.9811576-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 13.547
+  },
+  {
+    "t": "2026-11-16T00:16:48.4744341-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 5.243
+  },
+  {
+    "t": "2026-11-16T00:16:48.9745522-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 12.946
+  },
+  {
+    "t": "2026-11-16T00:16:49.4742523-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 8.047
+  },
+  {
+    "t": "2026-11-16T00:16:49.9932798-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 28.461
+  },
+  {
+    "t": "2026-11-16T00:16:49.9932798-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 97.313
+  },
+  {
+    "t": "2026-11-16T00:16:50.0905936-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 20.71
+  },
+  {
+    "t": "2026-11-16T00:16:50.4740534-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 10.993
+  },
+  {
+    "t": "2026-11-16T00:16:50.9743116-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 2014.992
+  },
+  {
+    "t": "2026-11-16T00:16:53.4438761-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 93.484
+  },
+  {
+    "t": "2026-11-16T00:16:53.5373605-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 56.821
+  },
+  {
+    "t": "2026-11-16T00:16:53.9750586-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 97.596
+  },
+  {
+    "t": "2026-11-16T00:16:53.9750586-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 490.746
+  },
+  {
+    "t": "2026-11-16T00:16:54.4658048-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 88.33
+  },
+  {
+    "t": "2026-11-16T00:16:54.4748714-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 125.693
+  },
+  {
+    "t": "2026-11-16T00:16:54.9740664-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 43.938
+  },
+  {
+    "t": "2026-11-16T00:16:55.4754725-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 70.047
+  },
+  {
+    "t": "2026-11-16T00:16:55.9745961-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 40.896
+  },
+  {
+    "t": "2026-11-16T00:16:54.9825741-03:00",
+    "op": "login",
+    "status": 200,
+    "latencia_ms": 1086.804
+  },
+  {
+    "t": "2026-11-16T00:16:56.474154-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 322.642
+  },
+  {
+    "t": "2026-11-16T00:16:56.9758551-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 232.114
+  },
+  {
+    "t": "2026-11-16T00:16:57.4744102-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 75.044
+  },
+  {
+    "t": "2026-11-16T00:16:57.97456-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 264.191
+  },
+  {
+    "t": "2026-11-16T00:16:57.97456-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 438.363
+  },
+  {
+    "t": "2026-11-16T00:16:58.4742508-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 320.722
+  },
+  {
+    "t": "2026-11-16T00:16:58.412923-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 764.102
+  },
+  {
+    "t": "2026-11-16T00:16:58.9741793-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 1470.211
+  },
+  {
+    "t": "2026-11-16T00:17:00.7406466-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 562.988
+  },
+  {
+    "t": "2026-11-16T00:17:01.3036352-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 278.131
+  },
+  {
+    "t": "2026-11-16T00:17:01.5817667-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 175.479
+  },
+  {
+    "t": "2026-11-16T00:17:02.4980465-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 99.719
+  },
+  {
+    "t": "2026-11-16T00:17:02.5977659-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 104.611
+  },
+  {
+    "t": "2026-11-16T00:17:02.4969861-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 475.212
+  },
+  {
+    "t": "2026-11-16T00:17:02.9743354-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 56.881
+  },
+  {
+    "t": "2026-11-16T00:17:02.9721987-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 171.477
+  },
+  {
+    "t": "2026-11-16T00:17:06.4151217-03:00",
+    "op": "busqueda",
+    "status": 503,
+    "code": "DEPENDENCIA_NO_DISPONIBLE",
+    "latencia_ms": 359.88
+  },
+  {
+    "t": "2026-11-16T00:17:06.5510069-03:00",
+    "op": "reserva",
+    "status": 201,
+    "latencia_ms": 279.953
+  },
+  {
+    "t": "2026-11-16T00:17:06.83096-03:00",
+    "op": "cancelacion",
+    "status": 200,
+    "latencia_ms": 71.152
+  }
+]

@@ -1,0 +1,64 @@
+[
+  {
+    "falla": {
+      "nombre": "OpenSearch caído",
+      "contenedor": "gym-opensearch-1",
+      "esperado": "Búsqueda servida desde la caché (fresca o vencida); reservas normales; clase.actualizada espera en RabbitMQ",
+      "diseno": "ADR-014, ADR-007 v2, D-95"
+    },
+    "detenida": "2026-11-16T00:14:19.9746273-03:00",
+    "iniciada": "2026-11-16T00:14:44.3217846-03:00",
+    "lista": "2026-11-16T00:16:53.3997332-03:00",
+    "recuperacion_s": 129.0779486,
+    "por_operacion": {
+      "busqueda": {
+        "200": 2,
+        "503 DEPENDENCIA_NO_DISPONIBLE": 11
+      },
+      "cancelacion": {
+        "200": 5
+      },
+      "login": {
+        "200": 2
+      },
+      "reserva": {
+        "201": 5
+      }
+    },
+    "origen_busqueda": {
+      "cache": 1,
+      "fuente": 1
+    },
+    "busquedas_sin_marcas": 0,
+    "primera_falla": "2026-11-16T00:14:20.474133-03:00",
+    "deteccion_estado": "2026-11-16T00:14:21.9742559-03:00",
+    "alertas": [
+      {
+        "t": "2026-11-16T00:14:34.9824782-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-indexer"
+      },
+      {
+        "t": "2026-11-16T00:14:55.4570364-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "firing",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-indexer"
+      },
+      {
+        "t": "2026-11-16T00:14:55.4570364-03:00",
+        "nombre": "ServicioCaido",
+        "estado": "pending",
+        "labels": "instance=api-gateway:8080,job=api-gateway,service=booking-service-2"
+      }
+    ],
+    "outbox_pendiente_max": 2,
+    "outbox_pendiente_final": 0,
+    "logs_warn_error": {
+      "api-gateway": 467,
+      "booking-indexer": 1,
+      "booking-service": 146,
+      "booking-service-2": 129
+    }
+  }
+]

@@ -10,7 +10,7 @@
 | Pieza | Dónde | Qué hace |
 |---|---|---|
 | Prometheus v2.55.1 | `deploy/prometheus/prometheus.yml` · `127.0.0.1:9090` | Lee cada 5 a 10 s el `/metrics` del gateway, Benefits, Booking, el indexer, notification-worker y RabbitMQ. Retención de 2 días. |
-| Alertas | `deploy/prometheus/alertas.yml` | `ServicioCaido`, `MensajesEnDLQ` y `MetricasNoDisponibles`. Las evalúa Prometheus; se ven en `/alerts` y en el tablero. No hay Alertmanager: en local solo se muestran. |
+| Alertas | `deploy/prometheus/alertas.yml` | `ServicioCaido`, `MensajesEnDLQ`, `MetricasNoDisponibles` y, desde el 15/11/2026, `ServicioDegradado` (D-100). Las evalúa Prometheus; se ven en `/alerts` y en el tablero. No hay Alertmanager: en local solo se muestran. |
 | Grafana 11.3.0 | `deploy/grafana/` · `127.0.0.1:3000` | La fuente de datos y el tablero se cargan solos al arrancar. El tablero es la página de inicio y se ve sin iniciar sesión (rol Viewer). El administrador usa `GRAFANA_ADMIN_PASSWORD` del `.env`. |
 | Métricas del gateway | `gateway/internal/server/metrics.go` | `gateway_http_requests_total` y `gateway_http_request_seconds_sum` por clase de respuesta (tasa, errores y duración del método RED). `gateway_upstream_up`, `_degraded` y `_latency_seconds` por servicio, con el mismo chequeo de `/api/v1/status`. `/metrics` responde siempre, con o sin limitador. |
 | Métricas de MELT | `services/benefits-service/internal/application/melt.go` | `melt_envios_intentos_total{resultado}`: acreditado, pendiente_registro, rechazado o reintento. |

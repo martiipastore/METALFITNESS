@@ -161,7 +161,7 @@ Sin `make`: `docker compose --env-file .env -f deploy/docker-compose.yml up -d -
 | http://localhost:8080/api/v1/status | Estado agregado de todos los servicios |
 | http://localhost:4010 | Mock de la API de partners (Prism) |
 | http://localhost:3000 | Grafana: tablero «Metal Fitness — recorrido y salud», sin login ([etapa 14](docs/entrega-final/ETAPA_14_OBSERVABILIDAD.md)) |
-| http://localhost:9090/alerts | Prometheus: alertas `ServicioCaido`, `MensajesEnDLQ` y `MetricasNoDisponibles` |
+| http://localhost:9090/alerts | Prometheus: alertas `ServicioCaido`, `MensajesEnDLQ`, `MetricasNoDisponibles` y `ServicioDegradado` |
 | http://localhost:16686 | Jaeger local; historial volátil en memoria |
 | http://localhost:8025 | Mailpit (correos de activación); solo con el perfil `identity` |
 | https://metalfitness-club.vercel.app | Despliegue público (frontend, `/api/v1` y `/partner-api/v2`) |
