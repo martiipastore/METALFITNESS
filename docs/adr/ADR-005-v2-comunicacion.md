@@ -41,6 +41,10 @@ No se afirma atomicidad entre servicios. Cada invariante fuerte se protege dentr
 
 Todos los clientes propagan `traceparent` y `X-Correlation-Id`, respetan el presupuesto temporal de la solicitud y solo reintentan operaciones idempotentes.
 
+### Implementación de la tabla anterior (D-102, 16/11/2026)
+
+Hasta esta fecha el código no cumplía la tabla: Booking y Training usaban un timeout de 2 s, sin reintento ni circuit breaker. `pkg/resiliencia` lo implementa como un `RoundTripper` para **booking → members** y **training → members**: 800 ms por intento, un reintento a los 100 ms solo en GET y HEAD ante error de red, timeout o 502/503/504, y un circuit breaker que se abre tras 5 fallas seguidas, rechaza durante 10 s y después deja pasar una sola prueba. El tope total de la llamada sigue siendo `BOOKING_MEMBERS_TIMEOUT` / `TRAINING_MEMBERS_TIMEOUT` (2 s). Las llamadas de Benefits a Members conservan su propio presupuesto (registro externo, 3,5 s y sin reintento). Los parámetros del circuit breaker son propios, no del teórico (D-102).
+
 ## Validación de membresía al reservar
 
 1. Booking consulta a members inmediatamente antes de iniciar la transacción local de reserva.

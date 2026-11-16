@@ -20,6 +20,7 @@ import (
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/httpserver"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/logger"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/messaging"
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/resiliencia"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/telemetry"
 	bookingamqp "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/amqp"
 	bookinghttp "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/http"
@@ -148,10 +149,18 @@ func run(cfg config.Config, log *slog.Logger) error {
 			go func() { defer close(done); relay.Run(relayCtx) }()
 		}
 		reloj := relojSistema{}
+		// ADR-005 v2 y D-102: 800 ms por intento, un reintento en lecturas a los
+		// 100 ms y circuit breaker (5 fallas seguidas, 10 s abierto, una prueba).
+		// El tope total de la llamada sigue siendo cfg.MembersTimeout.
+		circuitoMembers := resiliencia.NuevoBreaker(5, 10*time.Second)
+		circuitoMembers.AlCambiar = func(desde, hacia string) {
+			log.Warn("circuito hacia members-service", slog.String("desde", desde), slog.String("hacia", hacia))
+		}
+		haciaMembers := resiliencia.Transport{Breaker: circuitoMembers, PorIntento: 800 * time.Millisecond, Reintentos: 1, Espera: 100 * time.Millisecond}
 		membersClient := members.Client{
 			URL:    cfg.MembersURL,
 			Secret: cfg.InternalServiceKey,
-			HTTP:   &http.Client{Timeout: cfg.MembersTimeout, Transport: correlation.Transport{Base: telemetry.Transport{}}},
+			HTTP:   &http.Client{Timeout: cfg.MembersTimeout, Transport: correlation.Transport{Base: telemetry.Transport{Base: haciaMembers}}},
 		}
 		servicio := application.New(db, db, membersClient, reloj)
 		if cache != nil {
