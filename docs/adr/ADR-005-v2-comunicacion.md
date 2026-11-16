@@ -52,6 +52,16 @@ Todos los clientes propagan `traceparent` y `X-Correlation-Id`, respetan el pres
 
 La consulta reduce la ventana de datos obsoletos y permite fallar cerrado cuando members no responde. El evento y el registro de revocaciones resuelven la carrera, pero durante la propagación puede existir una reserva transitoriamente confirmada. La garantía final es **convergencia a un estado válido**, no una transacción distribuida.
 
+### Precisión de la implementación (D-98, 15/11/2026)
+
+Al implementar los pasos 3, 4 y 6 se eligió serializar **por alumno** en lugar de por `membresia_id`. Booking ya tomaba un bloqueo transaccional por alumno en cada reserva (duplicados, turno diario y superposición), y el mismo mecanismo sirve para la baja del alumno (`usuario.desactivado`, RN-34), que no tiene membresía asociada. Así no cambia la API interna de vigencia ni la tabla de reservas:
+
+- Antes de consultar a members, Booking anota el instante de la validación.
+- El consumidor toma el bloqueo del alumno y, en una transacción, deduplica el evento, cancela las reservas futuras sin cobertura (consultando a members sin caché) y registra la revocación con la hora de la base.
+- La transacción de la reserva toma el mismo bloqueo y rechaza la inserción si existe una revocación del alumno registrada después de la validación, menos 2 s de margen por diferencia de reloj. El rechazo es conservador: el alumno puede reintentar y la nueva consulta a members ya refleja la baja.
+
+La garantía es la misma: la reserva o se confirmó antes y el consumidor la cancela, o llega después y se rechaza. Ver D-98 y `docs/entrega-final/BAJAS_RESERVAS.md`.
+
 ## Interacciones asíncronas
 
 | Evento | Productor → Consumidor | Efecto |
@@ -117,7 +127,7 @@ La garantía del broker es **al menos una vez**. La deduplicación produce un ú
 - Una reserva puede aparecer confirmada durante la propagación de una cancelación concurrente.
 - La cuenta de beneficios puede no estar disponible inmediatamente después del alta.
 - Un email puede duplicarse en la ventana indeterminada de SMTP.
-- Booking debe almacenar la membresía de respaldo, las revocaciones consumidas y serializar ambas operaciones por membresía.
+- Booking debe almacenar las revocaciones consumidas y serializar la reserva y el consumo de la baja (por alumno, según la precisión D-98).
 
 ## Cómo se verificará
 

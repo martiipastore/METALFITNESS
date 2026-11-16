@@ -553,6 +553,7 @@ func (s *Servicio) Reservar(ctx context.Context, a Actor, clave, claseID string)
 	if err = clase.ValidarReserva(s.reloj.Ahora()); err != nil {
 		return domain.Reserva{}, false, err
 	}
+	validadoEn := s.reloj.Ahora() // antes de consultar: una revocación posterior la invalida (CL-19)
 	vigencia, err := s.members.Vigencia(ctx, a.ID, []string{clase.Fecha()})
 	if err != nil {
 		return domain.Reserva{}, false, dependencia(err)
@@ -560,13 +561,63 @@ func (s *Servicio) Reservar(ctx context.Context, a Actor, clave, claseID string)
 	if err = vigencia.ValidarParaReservar(clase.Fecha()); err != nil {
 		return domain.Reserva{}, false, err
 	}
-	reserva, repetida, err := s.reservas.Reservar(ctx, op, claseID, func(c domain.Clase) error {
+	reserva, repetida, err := s.reservas.Reservar(ctx, op, claseID, validadoEn, func(c domain.Clase) error {
 		return c.ValidarReserva(s.reloj.Ahora())
 	})
 	if err == nil && !repetida {
 		s.invalidarClases(ctx) // cambió la ocupación
 	}
 	return reserva, repetida, err
+}
+
+// maxFechasVigencia es el máximo de fechas que members acepta por consulta.
+const maxFechasVigencia = 31
+
+// Revocar aplica una baja informada por members-service (RN-04, RN-34, D-98).
+// Una membresía cancelada cancela las reservas futuras cuya fecha ya no cubre
+// otra membresía vigente (CL-12), según members consultado sin caché dentro de
+// la transacción; si members no responde, falla y el evento se reintenta. Un
+// alumno dado de baja pierde todas sus reservas futuras. Las reentregas no tienen
+// efecto.
+func (s *Servicio) Revocar(ctx context.Context, r domain.Revocacion) (int, error) {
+	if !patronUUID.MatchString(r.EventoID) || !patronUUID.MatchString(r.AlumnoID) || r.OcurridaEn.IsZero() {
+		return 0, domain.ErrValidacion
+	}
+	switch r.Tipo {
+	case domain.RevocacionMembresiaCancelada:
+		if !patronUUID.MatchString(r.MembresiaID) {
+			return 0, domain.ErrValidacion
+		}
+	case domain.RevocacionUsuarioDesactivado:
+		if r.MembresiaID != "" {
+			return 0, domain.ErrValidacion
+		}
+	default:
+		return 0, domain.ErrValidacion
+	}
+	canceladas, repetido, err := s.reservas.Revocar(ctx, r, s.reloj.Ahora(), func(reservas []domain.Reserva) ([]string, error) {
+		if len(reservas) == 0 || r.Tipo == domain.RevocacionUsuarioDesactivado {
+			return r.ReservasACancelar(reservas, domain.Vigencia{}), nil
+		}
+		vigencia := domain.Vigencia{AlumnoActivo: true, VigenteEn: map[string]bool{}}
+		fechas := domain.FechasDeReservas(reservas)
+		for inicio := 0; inicio < len(fechas); inicio += maxFechasVigencia {
+			fin := min(inicio+maxFechasVigencia, len(fechas))
+			parcial, err := s.members.Vigencia(ctx, r.AlumnoID, fechas[inicio:fin])
+			if err != nil {
+				return nil, dependencia(err)
+			}
+			vigencia.AlumnoActivo = vigencia.AlumnoActivo && parcial.AlumnoActivo
+			for fecha, vigente := range parcial.VigenteEn {
+				vigencia.VigenteEn[fecha] = vigente
+			}
+		}
+		return r.ReservasACancelar(reservas, vigencia), nil
+	})
+	if err == nil && !repetido && canceladas > 0 {
+		s.invalidarClases(ctx) // liberó cupos
+	}
+	return canceladas, err
 }
 
 // MisReservas lista las reservas del alumno (HU-16, CA-16.1).

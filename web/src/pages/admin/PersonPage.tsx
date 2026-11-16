@@ -99,7 +99,7 @@ export function PersonPage({ id }: { id: string }) {
       {message && <p role="status" aria-live="polite">{message}</p>}
       <PersonData person={person} busy={busy} onSave={(body) => run(() => authRequest(`/api/v1/users/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), 'Datos actualizados.')} />
       {active && person.dni && person.rol !== 'ADMINISTRADOR' && (
-        <ReasonAction label="Dar de baja" busy={busy} onConfirm={(motivo) => run(() => post(`/api/v1/users/${id}/deactivate`, { motivo }), 'La persona quedó dada de baja.')} />
+        <ReasonAction label="Dar de baja" busy={busy} onConfirm={(motivo) => run(() => post(`/api/v1/users/${id}/deactivate`, { motivo }), 'La persona quedó dada de baja. Si es alumno, sus reservas futuras se cancelan en unos segundos.')} />
       )}
 
       {person.rol === 'ALUMNO' && (
@@ -109,7 +109,7 @@ export function PersonPage({ id }: { id: string }) {
           busy={busy || !active}
           onAssign={(body) => run(() => post('/api/v1/memberships', { usuario_id: id, ...body }, true), 'Membresía asignada.')}
           onRenew={(body) => run(() => post(`/api/v1/memberships/users/${id}/renew`, body, true), 'Membresía renovada.')}
-          onCancel={(membershipId, motivo) => run(() => post(`/api/v1/memberships/${membershipId}/cancel`, { motivo }, true), 'Membresía cancelada.')}
+          onCancel={(membershipId, motivo) => run(() => post(`/api/v1/memberships/${membershipId}/cancel`, { motivo }, true), 'Membresía cancelada. Las reservas futuras que no cubra otra membresía se cancelan en unos segundos.')}
         />
       )}
 

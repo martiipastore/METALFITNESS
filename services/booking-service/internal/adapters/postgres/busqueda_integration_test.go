@@ -59,7 +59,7 @@ func TestBusquedaPostgres(t *testing.T) {
 
 	t.Run("reserva_rechazada_no_deja_evento", func(t *testing.T) {
 		antes := len(eventos(c.ID))
-		_, _, err := db.Reservar(ctx, op(uuidN(902), "busqueda-reserva-02"), c.ID, func(domain.Clase) error { return domain.ErrSinCupo })
+		_, _, err := db.Reservar(ctx, op(uuidN(902), "busqueda-reserva-02"), c.ID, time.Now(), func(domain.Clase) error { return domain.ErrSinCupo })
 		require.ErrorIs(t, err, domain.ErrSinCupo)
 		require.Len(t, eventos(c.ID), antes, "rollback: ni versión ni evento")
 	})

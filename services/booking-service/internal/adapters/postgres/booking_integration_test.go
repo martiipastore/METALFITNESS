@@ -80,7 +80,7 @@ func op(actor, key string) ports.Operacion {
 func validarAhora(c domain.Clase) error { return c.ValidarReserva(time.Now()) }
 
 func reservar(db *DB, alumno, key, claseID string) (domain.Reserva, bool, error) {
-	return db.Reservar(context.Background(), op(alumno, key), claseID, validarAhora)
+	return db.Reservar(context.Background(), op(alumno, key), claseID, time.Now(), validarAhora)
 }
 
 func cancelar(db *DB, alumno, key, reservaID string) (domain.Reserva, bool, error) {
@@ -175,7 +175,7 @@ func TestBookingPostgres(t *testing.T) {
 		require.ErrorIs(t, err, domain.ErrReservaDuplicada)
 		o := op(alumno, "reserva-zumba-1")
 		o.Huella = fmt.Sprintf("%064d", 99)
-		_, _, err = db.Reservar(ctx, o, zumbaClase.ID, validarAhora)
+		_, _, err = db.Reservar(ctx, o, zumbaClase.ID, time.Now(), validarAhora)
 		require.ErrorIs(t, err, domain.ErrConflictoIdempotencia)
 	})
 

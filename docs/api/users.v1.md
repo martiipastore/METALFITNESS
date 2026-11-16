@@ -56,8 +56,8 @@ Efectos del alta:
 - `PUT /users/{id}` acepta `nombre`, `apellido`, `telefono`, `fecha_nacimiento` y
   `matricula`. DNI, email y rol no se modifican.
 - `POST /users/{id}/deactivate` con `{"motivo":"…"}` (3 a 200 caracteres) deja la persona
-  `INACTIVO`; nunca se borra. Escribe `usuario.desactivado` en el outbox, que booking
-  consumirá para cancelar reservas futuras (D-20, CA-01.3). Una persona inactiva no
+  `INACTIVO`; nunca se borra. Escribe `usuario.desactivado` en el outbox; booking lo
+  consume y cancela las reservas futuras del alumno (D-20, D-98, CA-01.3). Una persona inactiva no
   puede iniciar sesión (CA-01.4). Dar de baja a un profesor con clases futuras se
   rechazará cuando exista booking (RN-34, CA-02.3).
 

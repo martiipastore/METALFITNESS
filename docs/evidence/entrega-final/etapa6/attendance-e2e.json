@@ -1,7 +1,7 @@
 {
   "stage": "Entrega final - etapa 6",
-  "startedAtUtc": "2026-11-10T21:21:01Z",
-  "finishedAtUtc": "2026-11-10T21:26:56Z",
+  "startedAtUtc": "2026-11-15T23:22:34Z",
+  "finishedAtUtc": "2026-11-15T23:27:33Z",
   "passed": true,
   "checks": [
     {
@@ -130,6 +130,18 @@
     },
     {
       "name": "puntos_evento_invalido_en_DLQ_sin_modificar_ledger",
+      "passed": true
+    },
+    {
+      "name": "bajas_membresia_cancelada_cancela_reservas_futuras_y_libera_cupo_RN04",
+      "passed": true
+    },
+    {
+      "name": "bajas_reentrega_del_mismo_evento_sin_efecto_regla7",
+      "passed": true
+    },
+    {
+      "name": "bajas_alumno_dado_de_baja_cancela_reservas_futuras_RN34",
       "passed": true
     }
   ],

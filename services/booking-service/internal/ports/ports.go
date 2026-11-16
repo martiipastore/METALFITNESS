@@ -126,7 +126,14 @@ type Reservas interface {
 	Previa(ctx context.Context, op Operacion, destino any) (bool, error)
 	// Reservar bloquea la clase, aplica validar sobre su estado actual y verifica
 	// duplicado, turno diario de Musculación y superposición en la misma transacción.
-	Reservar(ctx context.Context, op Operacion, claseID string, validar func(domain.Clase) error) (domain.Reserva, bool, error)
+	// validadoEn es cuándo se confirmó la vigencia con members: si después llegó una
+	// revocación del alumno, la reserva se rechaza (CL-19).
+	Reservar(ctx context.Context, op Operacion, claseID string, validadoEn time.Time, validar func(domain.Clase) error) (domain.Reserva, bool, error)
+	// Revocar registra una baja informada por members y cancela, con el mismo
+	// bloqueo por alumno que Reservar, las reservas futuras confirmadas que elegir
+	// devuelva (RN-04, RN-34). Una reentrega del mismo evento no tiene efecto y
+	// devuelve repetido=true.
+	Revocar(ctx context.Context, r domain.Revocacion, ahora time.Time, elegir func([]domain.Reserva) ([]string, error)) (canceladas int, repetido bool, err error)
 	// CancelarReserva bloquea la reserva y su clase y aplica validar, que devuelve
 	// sinCambios cuando ya estaba cancelada.
 	CancelarReserva(ctx context.Context, op Operacion, reservaID, motivo string, validar func(domain.Reserva) (bool, error)) (domain.Reserva, bool, error)
