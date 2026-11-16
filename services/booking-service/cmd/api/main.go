@@ -28,6 +28,7 @@ import (
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/opensearch"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/postgres"
 	bookingredis "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/redis"
+	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/sse"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/application"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/config"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
@@ -96,7 +97,14 @@ func run(cfg config.Config, log *slog.Logger) error {
 	// misma cola; la deduplicación por event_id está en booking_db.
 	revocador := &revocadorDiferido{}
 	var bajas []*messaging.Consumer
+	// Cupos en vivo (bonus D-40, D-103): cada instancia escucha clase.actualizada
+	// en una cola temporal propia y lo reenvía a los navegadores conectados.
+	var enVivo *bookingamqp.Ocupacion
+	var hub *sse.Hub
 	if cfg.MessagingEnabled {
+		hub = sse.NuevoHub(500)
+		enVivo = &bookingamqp.Ocupacion{URL: cfg.AMQPURL, Hub: hub, Log: log}
+		checks = append(checks, health.Check{Name: "cupos-en-vivo", Fn: enVivo.Ready, Partial: true})
 		for _, route := range []messaging.Route{{Queue: "booking.membresia-cancelada", Key: "membresia.cancelada"}, {Queue: "booking.usuario-desactivado", Key: "usuario.desactivado"}} {
 			adapter := bookingamqp.Revocaciones{App: revocador, EventType: route.Key}
 			consumer := &messaging.Consumer{URL: cfg.AMQPURL, Route: route, Handle: adapter.Handle, Permanent: bookingamqp.PermanentRevocacion, Log: log}
@@ -173,6 +181,14 @@ func run(cfg config.Config, log *slog.Logger) error {
 			log.Info("búsqueda de clases en OpenSearch habilitada")
 		}
 		bookinghttp.Register(router, servicio, cfg.InternalServiceKey, reloj.Ahora)
+		if enVivo != nil {
+			bookinghttp.RegisterStream(router, hub, cfg.InternalServiceKey, bookinghttp.Latido, bookinghttp.DuracionStream)
+			vivoCtx, cancel := context.WithCancel(ctx)
+			hecho := make(chan struct{})
+			defer func() { cancel(); <-hecho }()
+			go func() { defer close(hecho); enVivo.Run(vivoCtx) }()
+			log.Info("cupos en vivo habilitados")
+		}
 		if len(bajas) > 0 {
 			revocador.app = servicio
 			bajasCtx, cancel := context.WithCancel(ctx)

@@ -31,6 +31,7 @@ documento de cada etapa.
 | **Balanceo de Booking** (2 instancias, balanceadas por el gateway) | Implementado el 15/11/2026 (etapa 12B): round-robin, política 3/2, métricas y tablero | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md), D-96, [etapa 12B](entrega-final/ETAPA_12_BORDE.md) |
 | **Arranque desde cero**: healthchecks que no dan sano durante el init, `make down`/`make clean` con perfiles, datos de prueba | Verificado con arranques limpios | [ARRANQUE_DOCKER.md](entrega-final/ARRANQUE_DOCKER.md) |
 | **Bajas → reservas**: `membresia.cancelada` y `usuario.desactivado` publicados por Members y consumidos por Booking, que cancela las reservas futuras y libera los cupos; un profesor con clases futuras no se da de baja (Members consulta su agenda a Booking) | Implementado el 15/11/2026 | [BAJAS_RESERVAS.md](entrega-final/BAJAS_RESERVAS.md), D-98, D-99 |
+| **Cupos en vivo** (bonus D-40): `GET /api/v1/classes/stream` con Server-Sent Events por el gateway; cada instancia de Booking escucha `clase.actualizada` en una cola temporal y la pantalla de Clases actualiza la ocupación sin recargar | Implementado el 16/11/2026 | [ADR-023](adr/ADR-023-cupos-en-vivo-sse.md), D-103 |
 | Evento `alumno.creado` | Diseño objetivo; no publicado | §7 |
 
 Los diagramas y las demás secciones describen el **diseño objetivo** salvo que digan
@@ -342,7 +343,7 @@ La validación booking → members usa datos frescos, pero no es una transacció
 | `membresia.advertencia_vencimiento` | members-service | notification-worker | Enviar advertencia el día del vencimiento | RN-41 |
 | `asistencia.registrada` | booking-service | benefits-service | Acreditar +500 puntos por ingreso válido exactamente una vez | RN-20, RN-21 |
 | `inasistencia.registrada` | booking-service | benefits-service | Aplicar hasta -100 puntos por reserva confirmada no asistida, sin saldo negativo y exactamente una vez | RN-38 |
-| `clase.actualizada` | booking-service | booking-indexer | Upsert del documento de la clase en OpenSearch (ignora versiones viejas) | CQRS |
+| `clase.actualizada` | booking-service | booking-indexer; cada instancia de booking-service (cola temporal propia) | Upsert del documento de la clase en OpenSearch (ignora versiones viejas); cupos en vivo por SSE a los navegadores (ADR-023) | CQRS; bonus D-40 |
 | `membresia.cancelada` | members-service | booking-service | Cancelar reservas futuras no cubiertas por otra membresía vigente | RN-04 |
 | `usuario.desactivado` | members-service | booking-service | Cancelar reservas futuras del alumno dado de baja | RN-34 |
 
@@ -833,6 +834,7 @@ flowchart LR
 | [ADR-020](adr/ADR-020-membresias-independientes.md) | Club — Membresías con historial independiente del ledger | Propuesto; implementado en CB-04 y precisado por D-77 |
 | [ADR-021](adr/ADR-021-despliegue-vercel.md) | Adicional — Publicación en Vercel con PostgreSQL gestionado | Aceptado (D-75); reemplaza D-41 |
 | [ADR-022](adr/ADR-022-registro-externo-members-benefits.md) | D1/D5 — Llamadas cruzadas Benefits ↔ Members en el registro externo | Propuesto; documenta el diseño implementado |
+| [ADR-023](adr/ADR-023-cupos-en-vivo-sse.md) | Bonus D-40 — Cupos en vivo con Server-Sent Events | Implementado el 16/11/2026 (D-103); revisión pendiente |
 
 ### Decisión del TP → ADR
 

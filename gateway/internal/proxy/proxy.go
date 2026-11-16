@@ -176,7 +176,14 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Los cupos en vivo (D-103) son una conexión abierta: no llevan el timeout de
+	// la ruta. Siguen autenticados y con control de tráfico; Booking la corta a
+	// los 10 minutos y el navegador se reconecta.
 	ctx, cancel := context.WithTimeout(r.Context(), rt.timeout)
+	if EsStream(r.Method, cleaned) {
+		cancel()
+		ctx, cancel = context.WithCancel(r.Context())
+	}
 	defer cancel()
 	if b, ok := p.balanceadores[rt.service]; ok {
 		inst, err := b.Elegir()
@@ -202,6 +209,11 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	u.RawPath = ""
 	out.URL = &u
 	rt.proxy.ServeHTTP(w, out)
+}
+
+// EsStream identifica la única ruta de Server-Sent Events de la API (D-103).
+func EsStream(method, cleaned string) bool {
+	return method == http.MethodGet && cleaned == "/api/v1/classes/stream"
 }
 
 func partnerPath(p string) bool {

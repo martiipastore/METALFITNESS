@@ -1123,3 +1123,47 @@ button.link { background: none; border: 0; padding: 0; color: var(--accent); fon
   .coupon-fresh, .coupon-fresh .coupon-code { animation: none; }
   .reward-card, .reward-card:hover { transition: none; transform: none; }
 }
+
+/* Cupos en vivo (bonus D-40, D-103): indicador de conexión y resaltado de la
+   clase que cambió. Solo CSS; sin animación con prefers-reduced-motion. */
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--muted, #b9bcae);
+}
+.live-status i {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--warn);
+}
+.live-status-en_vivo { color: var(--ok); font-weight: 600; letter-spacing: 0.02em; }
+.live-status-en_vivo i {
+  background: var(--ok);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
+  animation: live-latido 1.8s ease-out infinite;
+}
+.live-status-sin_conexion i { background: var(--muted, #8a8d80); }
+@keyframes live-latido {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); }
+  70% { box-shadow: 0 0 0 0.5rem transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.live-pulse {
+  animation: live-cambio 1.4s ease-out;
+}
+.live-pulse .occupancy small {
+  color: var(--accent);
+  font-weight: 700;
+}
+@keyframes live-cambio {
+  0% { box-shadow: 0 0 0 2px var(--accent); transform: translateY(-2px); }
+  100% { box-shadow: 0 0 0 0 transparent; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-status-en_vivo i, .live-pulse { animation: none; }
+  .live-pulse { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
