@@ -56,9 +56,17 @@ func (c *cacheClasesFalsa) GuardarClases(_ context.Context, g, clave string, p d
 		return errors.New("redis caído")
 	}
 	c.copias[g+clave] = p
+	c.copias["ultima:"+clave] = p
 	c.guardadas++
 	c.ultimaGuardada = p
 	return nil
+}
+func (c *cacheClasesFalsa) LeerUltimaClases(_ context.Context, clave string) (domain.PaginaClases, bool, error) {
+	if c.caida {
+		return domain.PaginaClases{}, false, errors.New("redis caído")
+	}
+	p, ok := c.copias["ultima:"+clave]
+	return p, ok, nil
 }
 func (c *cacheClasesFalsa) InvalidarClases(context.Context) error {
 	if c.caida {
@@ -197,5 +205,38 @@ func TestEscriturasInvalidanBusquedas(t *testing.T) {
 	res.previa, res.reserva = true, domain.Reserva{ID: "r"}
 	if _, repetida, err := s.Reservar(ctx, yo, clave, claseID); err != nil || !repetida || cache.invalidadas != 1 {
 		t.Fatalf("un replay idempotente no cambia nada: repetida=%v invalidadas=%d err=%v", repetida, cache.invalidadas, err)
+	}
+}
+
+// Hallazgo de la jornada de fallas (15/11/2026): con OpenSearch caído y
+// PostgreSQL arriba, cada reserva cambia la generación y la copia vigente queda
+// inalcanzable. La última copia conocida evita responder 503 (ADR-007 v2, D-95).
+func TestCopiaVencidaSobreviveALaInvalidacion(t *testing.T) {
+	ctx := context.Background()
+	ahora := time.Date(2026, 11, 16, 10, 0, 0, 0, domain.Zona)
+	base := &catalogoBuscable{}
+	cache := nuevaCacheClases()
+	s := New(base, &reservas{}, members{}, relojMovil{&ahora}).ConCacheClases(cache, &marcasFalsas{}, 30*time.Second)
+	yo := Actor{ID: alumno, Rol: RolAlumno}
+	filtro := domain.FiltroClases{Texto: "zum", Pagina: 1, Tamano: 20}
+
+	if _, err := s.BuscarClases(ctx, yo, filtro); err != nil {
+		t.Fatal(err)
+	}
+	cache.InvalidarClases(ctx) // una reserva confirmada
+	base.caida = true
+	page, err := s.BuscarClases(ctx, yo, filtro)
+	if err != nil || page.Origen != domain.OrigenCacheVencida || len(page.Items) == 0 {
+		t.Fatalf("la última copia se sirve como vencida: origen=%s err=%v", page.Origen, err)
+	}
+	base.caida = false
+	if page, err = s.BuscarClases(ctx, yo, filtro); err != nil || page.Origen != domain.OrigenFuente {
+		t.Fatalf("con la fuente arriba nunca se usa la última copia: origen=%s err=%v", page.Origen, err)
+	}
+	cache.copias = map[string]domain.PaginaClases{}
+	cache.InvalidarClases(ctx)
+	base.caida = true
+	if _, err = s.BuscarClases(ctx, yo, filtro); err == nil {
+		t.Fatal("sin ninguna copia y sin fuente, la búsqueda falla (503)")
 	}
 }

@@ -1,0 +1,1133 @@
+[
+  {
+    "t": "2026-11-16T00:14:11.9741878-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:13.9746314-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:15.9740479-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:17.9740972-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:19.974291-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:21.9742559-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:23.9744703-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "unreachable",
+      "booking-service-1": "unreachable",
+      "booking-service-2": "unreachable",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:25.9849415-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "unreachable",
+      "booking-service-1": "unreachable",
+      "booking-service-2": "unreachable",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:27.9949272-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "unreachable",
+      "booking-service-1": "unreachable",
+      "booking-service-2": "unreachable",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:29.9984548-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:31.9742011-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "unreachable",
+      "booking-service-2": "unreachable",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:33.9777997-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:35.9743337-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "unreachable",
+      "booking-service-1": "degraded",
+      "booking-service-2": "unreachable",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:37.9792849-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "unreachable",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:39.9861678-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "unreachable",
+      "booking-service-1": "unreachable",
+      "booking-service-2": "unreachable",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:42.0032114-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "unreachable",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:44.0080104-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "unreachable",
+      "booking-service-1": "degraded",
+      "booking-service-2": "unreachable",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:46.0119085-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:47.974485-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:49.974709-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:51.9760753-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:53.9746345-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:55.9740607-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:57.9894229-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:14:59.9842528-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:01.9852854-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:03.9744962-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:05.9745069-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:07.97425-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:09.9741378-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:11.974352-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:13.9747026-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:16.0039051-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:17.975999-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:19.9745812-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:21.974101-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:23.9741879-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:25.9782221-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:27.9742091-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:29.9750253-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:31.9763853-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:33.9768648-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:35.9744386-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:37.9744288-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:39.9746271-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:41.9741044-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:43.9743364-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:45.9743526-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:47.9744915-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:49.9740625-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:51.974834-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:53.9885986-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:55.9768476-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:57.9745233-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:15:59.9743218-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:01.9742672-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:03.9754577-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:05.9745677-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:07.9741772-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:10.0378342-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:12.212098-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:13.9750065-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:15.9889246-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:17.9753023-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:19.9745366-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:21.9743789-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:23.9820596-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:25.9748236-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:27.9748811-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:29.974331-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:31.985074-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:33.9744147-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:35.9761212-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:37.9748255-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:39.9789565-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:41.9769349-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:43.9746455-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:45.9747745-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:47.974899-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:49.9743344-03:00",
+    "global": "not_ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "not_ready",
+      "booking-service-1": "degraded",
+      "booking-service-2": "degraded",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:51.9805904-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:53.9750586-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:55.9745961-03:00",
+    "global": "degraded",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "degraded",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:57.97456-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:16:59.9782665-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:17:01.9761765-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  },
+  {
+    "t": "2026-11-16T00:17:06.4158661-03:00",
+    "global": "ready",
+    "servicios": {
+      "benefits-service": "ready",
+      "booking-indexer": "ready",
+      "booking-service-1": "ready",
+      "booking-service-2": "ready",
+      "members-service": "ready",
+      "notification-worker": "ready",
+      "training-service": "ready"
+    }
+  }
+]

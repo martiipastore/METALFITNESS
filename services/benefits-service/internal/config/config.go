@@ -39,7 +39,7 @@ func Load() (Config, error) {
 		DBDSN:                       l.Required("BENEFITS_DB_DSN"),
 		LogLevel:                    l.String("LOG_LEVEL", "info"),
 		ShutdownTimeout:             l.Duration("SHUTDOWN_TIMEOUT", 10*time.Second),
-		HealthTimeout:               l.Duration("HEALTH_CHECK_TIMEOUT", 2*time.Second),
+		HealthTimeout:               l.Duration("HEALTH_CHECK_TIMEOUT", time.Second),
 		MeltEnabled:                 l.String("BENEFITS_MELT_ENABLED", "false") == "true",
 		MeltURL:                     l.String("BENEFITS_MELT_URL", "https://melt-gateway-prueba.onrender.com/api/v1"),
 		MeltKey:                     l.String("BENEFITS_MELT_PARTNER_KEY", ""),

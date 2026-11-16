@@ -27,7 +27,10 @@ func decode(c *gin.Context, out any) bool {
 	return d.Decode(&extra) == io.EOF
 }
 func identityError(c *gin.Context, err error) {
-	status, code, detail := 500, problem.CodeInternal, "No se pudo completar la operación."
+	// Un error sin clasificar es una dependencia que falló (base, Benefits, SMTP):
+	// 503 para que el cliente reintente, como en el resto de Members. Antes era
+	// 500 (jornada de fallas del 15/11/2026, con PostgreSQL caído).
+	status, code, detail := 503, problem.CodeDependencyUnavailable, "No se pudo completar la operación. Reintentá en unos segundos."
 	switch {
 	case errors.Is(err, model.ErrRateLimited):
 		status, code, detail = 429, "LIMITE_EXCEDIDO", "Demasiados intentos. Reintentá en un minuto."
@@ -40,6 +43,9 @@ func identityError(c *gin.Context, err error) {
 		status, code, detail = 404, problem.CodeNotFound, "No existe un registro con ese evento para la integración."
 	case errors.Is(err, model.ErrConflict):
 		status, code, detail = 409, "CONFLICTO_IDENTIDAD", "La solicitud no coincide con una vinculación o evento anterior."
+	}
+	if status == 503 {
+		c.Header("Retry-After", "1")
 	}
 	problem.Write(c, problem.New(status, code, "No se pudo completar la solicitud", detail))
 }

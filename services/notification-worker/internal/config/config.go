@@ -38,7 +38,7 @@ func Load() (Config, error) {
 		MongoDatabase:      l.String("NOTIFICATION_MONGO_DB", "notifications_db"),
 		LogLevel:           l.String("LOG_LEVEL", "info"),
 		ShutdownTimeout:    l.Duration("SHUTDOWN_TIMEOUT", 10*time.Second),
-		HealthTimeout:      l.Duration("HEALTH_CHECK_TIMEOUT", 2*time.Second),
+		HealthTimeout:      l.Duration("HEALTH_CHECK_TIMEOUT", time.Second),
 	}
 	return cfg, l.Err()
 }

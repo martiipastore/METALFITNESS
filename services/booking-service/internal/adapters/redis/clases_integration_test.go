@@ -83,6 +83,19 @@ func TestClasesRedisReal(t *testing.T) {
 	require.False(t, ok)
 	require.NotEqual(t, g3, g4)
 
+	// La última copia sobrevive a la invalidación y vive la misma retención; solo
+	// la usa la aplicación cuando la fuente no responde (jornada, D-95).
+	ultima, ok, err := c.LeerUltimaClases(ctx, "k")
+	require.NoError(t, err)
+	require.True(t, ok, "la última copia no depende de la generación")
+	require.Equal(t, esperada, ultima)
+	ttl, err = client.TTL(ctx, prefijoUltima+"k").Result()
+	require.NoError(t, err)
+	require.Greater(t, ttl, 29*time.Minute)
+	_, ok, err = c.LeerUltimaClases(ctx, "otra")
+	require.NoError(t, err)
+	require.False(t, ok)
+
 	require.NoError(t, client.Set(ctx, prefijoClases+g4+":roto", "{roto", time.Minute).Err())
 	_, _, ok, err = c.LeerClases(ctx, "roto")
 	require.NoError(t, err)

@@ -64,7 +64,11 @@ func run(cfg config.Config, log *slog.Logger) error {
 	defer db.Close()
 
 	var relay *messaging.Relay
-	checks := []health.Check{{Name: "postgres", Fn: db.Ping}}
+	// Con la caché de búsquedas u OpenSearch, la búsqueda responde sin PostgreSQL
+	// (ADR-007 v2, D-95); reservar falla cerrado igual. PostgreSQL pasa a ser
+	// parcial para que el balanceador no retire las dos instancias cuando cae la
+	// base compartida (jornada de fallas del 15/11/2026, D-100).
+	checks := []health.Check{{Name: "postgres", Fn: db.Ping, Partial: cfg.CacheEnabled || cfg.SearchEnabled}}
 	if cfg.MessagingEnabled {
 		if !cfg.Enabled || cfg.AMQPURL == "" {
 			return errors.New("mensajería requiere BOOKING_ENABLED=true y BOOKING_AMQP_URL")

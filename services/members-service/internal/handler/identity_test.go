@@ -2,6 +2,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -41,4 +42,17 @@ func TestCuentaPrivadaExigeActorConCredencialInterna(t *testing.T) {
 			require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
 		})
 	}
+}
+
+// Jornada de fallas del 15/11/2026: con PostgreSQL caído el login respondía 500.
+// Un error sin clasificar es una dependencia que falló: 503 con Retry-After.
+func TestErrorSinClasificarEsDependenciaNoDisponible(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/api/v1/auth/login", nil)
+	identityError(c, errors.New("failed to connect to host=postgres"))
+	require.Equal(t, 503, w.Code)
+	require.Equal(t, "1", w.Header().Get("Retry-After"))
+	require.Contains(t, w.Body.String(), "DEPENDENCIA_NO_DISPONIBLE")
+	require.NotContains(t, w.Body.String(), "postgres", "nunca se expone el error interno")
 }

@@ -32,3 +32,15 @@ groups:
         annotations:
           summary: "Sin métricas de {{ $labels.job }}"
           description: "Prometheus no puede leer {{ $labels.instance }}/metrics hace más de 1 minuto."
+
+      # Un servicio sigue respondiendo pero perdió una dependencia parcial (Redis,
+      # RabbitMQ, OpenSearch, la base de Booking con caché). Agregada después de la
+      # jornada de fallas del 15/11/2026: con Redis caído no saltaba ninguna alerta.
+      - alert: ServicioDegradado
+        expr: gateway_upstream_degraded == 1
+        for: 20s
+        labels:
+          severity: advertencia
+        annotations:
+          summary: "{{ $labels.service }} funciona con una dependencia caída"
+          description: "{{ $labels.service }} informa degraded hace más de 20 s. Ver el detalle en /api/v1/status y make logs s={{ $labels.service }}."

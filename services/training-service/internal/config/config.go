@@ -31,7 +31,7 @@ func Load() (Config, error) {
 		MongoDatabase:   l.String("TRAINING_MONGO_DB", "training_db"),
 		LogLevel:        l.String("LOG_LEVEL", "info"),
 		ShutdownTimeout: l.Duration("SHUTDOWN_TIMEOUT", 10*time.Second),
-		HealthTimeout:   l.Duration("HEALTH_CHECK_TIMEOUT", 2*time.Second),
+		HealthTimeout:   l.Duration("HEALTH_CHECK_TIMEOUT", time.Second),
 		Enabled:         l.String("TRAINING_ENABLED", "false") == "true",
 		ServiceKey:      l.String("GYM_INTERNAL_SERVICE_KEY", ""),
 		MembersURL:      l.String("TRAINING_MEMBERS_URL", "http://members-service:8081"),

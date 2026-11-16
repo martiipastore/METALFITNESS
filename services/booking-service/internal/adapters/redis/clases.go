@@ -18,10 +18,15 @@ import (
 // Claves de la caché de búsquedas de clases (ADR-007 v2). La generación es un
 // valor aleatorio: invalidar la reemplaza y las copias anteriores quedan
 // inalcanzables hasta vencer. Si Redis pierde la generación, se crea otra y
-// todas las búsquedas vuelven a la fuente; nunca se reutiliza una copia vieja.
+// todas las búsquedas vuelven a la fuente. Además se guarda la última copia de
+// cada búsqueda fuera de las generaciones: solo se sirve si la fuente no
+// responde (copia vencida), nunca en lugar de consultarla.
 const (
 	ClaveGeneracionClases = "booking:clases:v1:generacion"
 	prefijoClases         = "booking:clases:v1:"
+	// prefijoUltima guarda la última copia de cada búsqueda, fuera de las
+	// generaciones; las generaciones son hexadecimales y nunca valen "ultima".
+	prefijoUltima = "booking:clases:v1:ultima:"
 )
 
 var _ ports.CacheClases = (*Clases)(nil)
@@ -113,19 +118,42 @@ func (c *Clases) LeerClases(ctx context.Context, clave string) (domain.PaginaCla
 	if err != nil {
 		return domain.PaginaClases{}, "", false, c.error(err)
 	}
-	var copia paginaCopia
-	if err = json.Unmarshal(raw, &copia); err != nil {
+	out, ok := desdeCopia(raw)
+	if !ok {
 		// Una copia ilegible se trata como faltante y se reemplaza.
 		c.Metricas.Faltantes.Add(1)
 		return domain.PaginaClases{}, g, false, nil
 	}
 	c.Metricas.Aciertos.Add(1)
+	return out, g, true, nil
+}
+
+// LeerUltimaClases lee la última copia de la clave sin importar la generación.
+func (c *Clases) LeerUltimaClases(ctx context.Context, clave string) (domain.PaginaClases, bool, error) {
+	ctx, cancel := c.ctx(ctx)
+	defer cancel()
+	raw, err := c.Client.Get(ctx, prefijoUltima+clave).Bytes()
+	if errors.Is(err, goredis.Nil) {
+		return domain.PaginaClases{}, false, nil
+	}
+	if err != nil {
+		return domain.PaginaClases{}, false, c.error(err)
+	}
+	out, ok := desdeCopia(raw)
+	return out, ok, nil
+}
+
+func desdeCopia(raw []byte) (domain.PaginaClases, bool) {
+	var copia paginaCopia
+	if err := json.Unmarshal(raw, &copia); err != nil {
+		return domain.PaginaClases{}, false
+	}
 	out := domain.PaginaClases{Items: make([]domain.Clase, 0, len(copia.Items)), Total: copia.Total, Pagina: copia.Pagina, Tamano: copia.Tamano, ConsultadoEn: copia.ConsultadoEn}
 	for _, i := range copia.Items {
 		out.Items = append(out.Items, domain.Clase{ID: i.ID, ActividadID: i.ActividadID, ActividadNombre: i.ActividadNombre, Musculacion: i.Musculacion, HorarioID: i.HorarioID,
 			Inicio: i.Inicio, Fin: i.Fin, ProfesorID: i.ProfesorID, ProfesorNombre: i.ProfesorNombre, Capacidad: i.Capacidad, Ocupacion: i.Ocupacion, Estado: i.Estado, Version: i.Version})
 	}
-	return out, g, true, nil
+	return out, true
 }
 
 func (c *Clases) GuardarClases(ctx context.Context, generacion, clave string, p domain.PaginaClases) error {
@@ -140,7 +168,12 @@ func (c *Clases) GuardarClases(ctx context.Context, generacion, clave string, p 
 	}
 	ctx, cancel := c.ctx(ctx)
 	defer cancel()
-	return c.error(c.Client.Set(ctx, prefijoClases+generacion+":"+clave, raw, c.Retencion).Err())
+	// La copia de la generación vigente y la última conocida, en un solo viaje.
+	pipe := c.Client.TxPipeline()
+	pipe.Set(ctx, prefijoClases+generacion+":"+clave, raw, c.Retencion)
+	pipe.Set(ctx, prefijoUltima+clave, raw, c.Retencion)
+	_, err = pipe.Exec(ctx)
+	return c.error(err)
 }
 
 func (c *Clases) InvalidarClases(ctx context.Context) error {
