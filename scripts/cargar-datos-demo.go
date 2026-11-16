@@ -115,6 +115,8 @@ func main() {
 	}
 	fmt.Printf("✓ la búsqueda «zum» encuentra %d clases de Zumba\n", pagina.Total)
 
+	asegurarCuponera(token, hoy)
+
 	fmt.Println()
 	fmt.Println("Listo. Web: http://localhost:5173")
 	fmt.Printf("  Administrador: %s (contraseña MEMBERS_ADMIN_PASSWORD de .env)\n", env["MEMBERS_ADMIN_EMAIL"])
@@ -123,6 +125,43 @@ func main() {
 	} else {
 		fmt.Println("  Alumna:        alumna@gym.local (contraseña mostrada en la primera carga)")
 	}
+}
+
+// catalogoCuponera es el catálogo de la cuponera del Club (D-94) para la demo:
+// activo y sin vencimiento. Se crean solo los que falten, por nombre, así que
+// correr el script de nuevo no duplica ni pisa cambios hechos desde la web.
+var catalogoCuponera = []struct {
+	nombre, descripcion string
+	costo               int
+}{
+	{"Batido proteico", "Un batido en la barra del gimnasio, del sabor que elijas.", 300},
+	{"Clase de prueba para un amigo", "Traé a alguien a una clase grupal sin cargo.", 500},
+	{"Toalla Metal Fitness", "Toalla de microfibra con el logo del gimnasio.", 800},
+	{"Botella térmica Metal Fitness", "Botella de acero de 750 ml.", 1200},
+	{"10 % de descuento en la cuota", "Descuento sobre la próxima cuota mensual.", 1500},
+	{"Remera Metal Fitness", "Remera técnica de entrenamiento.", 2000},
+}
+
+func asegurarCuponera(token string, hoy time.Time) {
+	var actuales struct {
+		Items []struct {
+			Nombre string `json:"nombre"`
+		} `json:"items"`
+	}
+	pedir(token, http.MethodGet, "/benefits/rewards", nil, "", &actuales)
+	existe := map[string]bool{}
+	for _, b := range actuales.Items {
+		existe[b.Nombre] = true
+	}
+	creados := 0
+	for _, b := range catalogoCuponera {
+		if existe[b.nombre] {
+			continue
+		}
+		pedir(token, http.MethodPost, "/benefits/rewards", map[string]any{"nombre": b.nombre, "descripcion": b.descripcion, "costo": b.costo, "vigente_desde": hoy.Format(time.DateOnly), "activo": true}, "", nil)
+		creados++
+	}
+	fmt.Printf("✓ cuponera: %d beneficios sin vencimiento (%d nuevos)\n", len(catalogoCuponera), creados)
 }
 
 func hoyArgentina() time.Time {
