@@ -30,7 +30,7 @@ documento de cada etapa.
 | **Nube**: gateway, Members, Benefits y web en Vercel con PostgreSQL gestionado; la API de partners es pública | Publicado; Booking, training y mensajería solo locales (L-19) | [ADR-021](adr/ADR-021-despliegue-vercel.md), D-75 |
 | **Balanceo de Booking** (2 instancias, balanceadas por el gateway) | Implementado el 15/11/2026 (etapa 12B): round-robin, política 3/2, métricas y tablero | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md), D-96, [etapa 12B](entrega-final/ETAPA_12_BORDE.md) |
 | **Arranque desde cero**: healthchecks que no dan sano durante el init, `make down`/`make clean` con perfiles, datos de prueba | Verificado con arranques limpios | [ARRANQUE_DOCKER.md](entrega-final/ARRANQUE_DOCKER.md) |
-| **Bajas → reservas**: `membresia.cancelada` y `usuario.desactivado` publicados por Members y consumidos por Booking, que cancela las reservas futuras y libera los cupos | Implementado el 15/11/2026 | [BAJAS_RESERVAS.md](entrega-final/BAJAS_RESERVAS.md), D-98 |
+| **Bajas → reservas**: `membresia.cancelada` y `usuario.desactivado` publicados por Members y consumidos por Booking, que cancela las reservas futuras y libera los cupos; un profesor con clases futuras no se da de baja (Members consulta su agenda a Booking) | Implementado el 15/11/2026 | [BAJAS_RESERVAS.md](entrega-final/BAJAS_RESERVAS.md), D-98, D-99 |
 | Evento `alumno.creado` | Diseño objetivo; no publicado | §7 |
 
 Los diagramas y las demás secciones describen el **diseño objetivo** salvo que digan
@@ -76,7 +76,7 @@ Este documento describe la **arquitectura objetivo** del sistema. Las tablas de 
 | **Validado en resiliencia** | Caída controlada 502/503/504 antes/después de commit, recuperación por misma clave y rollback previo al commit; proxy exclusivo de pruebas retirado al terminar. [Etapa 6](entrega-2/ETAPA_6_RESILIENCIA.md) y [postmortem](POSTMORTEM.md). |
 | **Implementado en observabilidad** | Primera traza Gateway → Benefits → PostgreSQL y logs correlacionados; Collector y Jaeger en memoria. [Evidencia](entrega-2/ETAPA_4_OBSERVABILIDAD.md). |
 | **Implementado en el resto de la entrega final** | Relay de outbox, `gym.events`, consumidores idempotentes, reintentos y DLQ (etapas 5 y 6); notification-worker; training (etapa 10); caché de actividades y de búsqueda de clases en Redis (etapa 9, D-95); rate limiting en Redis (etapa 12A, D-91); OpenSearch/CQRS (etapa 8); balanceo de Booking en el gateway (etapa 12B, D-96); Prometheus, Grafana y alertas (etapa 14); cuponera interna del Club (D-94). Ver la tabla de estado al comienzo. |
-| **Pendiente de implementación** | Trazas de Members y Booking y propagación de `traceparent` por el outbox; Loki; publicación de `alumno.creado`; impedir la baja de un profesor con clases futuras (RN-34, CA-02.3); recompensas y panel administrativo restantes (CB-05 y resto de CB-07); revisión de ADR-013 v3 (D13, medido el 15/11/2026). |
+| **Pendiente de implementación** | Trazas de Members y Booking y propagación de `traceparent` por el outbox; Loki; publicación de `alumno.creado`; recompensas y panel administrativo restantes (CB-05 y resto de CB-07); revisión de ADR-013 v3 (D13, medido el 15/11/2026). |
 | **Pendiente de corrección externa** | La capacidad consumida (D9) es MELT, implementada y validada en la etapa 13; el grupo proveedor debe enviar una versión corregida y hasta entonces no se cambia el adaptador ni se simula su caída en el postmortem. |
 
 Salvo que una sección indique expresamente el estado actual, sus descripciones deben leerse como decisiones y comportamiento **objetivo**, no como funcionalidad ya disponible.
@@ -327,6 +327,7 @@ El rate limiting **falla abierto** (deja pasar y registra métrica `ratelimit_re
 | training | members | ¿Alumno asignado al profesional? (RN-30) | Autorización | 800 ms | 1 reintento (GET idempotente); **sin caché** | **Falla cerrado:** `503 MEMBERS_NO_DISPONIBLE`; no se ejecuta la operación protegida |
 | benefits | members | Registrar persona externa (`/internal/v1/external-registrations`), implementado | El partner necesita un recibo durable | 3,5 s | No; el partner reintenta con la misma `Idempotency-Key` | `503 UNAVAILABLE` al partner ([ADR-022](adr/ADR-022-registro-externo-members-benefits.md)) |
 | members (worker) | benefits | Completar registro y acreditar (`/internal/v1/external-registrations/fulfill`), implementado | La acreditación pertenece al ledger | 4 s | Sí, desde el worker; idempotente por `eventId` | El registro queda `accepted` hasta confirmarse |
+| members | booking | ¿Profesor con clases futuras PROGRAMADA? (`/internal/v1/profesores/{id}/agenda`, CA-02.3, D-99), implementado | La baja no puede dejar clases sin responsable | 2 s por instancia | Prueba la otra instancia de booking | **Falla cerrado:** `503 DEPENDENCIA_NO_DISPONIBLE`; el profesor no se da de baja |
 | notification-worker | SMTP | Envío de email | Protocolo SMTP | 10 s | Vía colas de reintento | Reintento → DLQ |
 
 La validación booking → members usa datos frescos, pero no es una transacción entre servicios. Booking anota cuándo validó la vigencia. La creación de la reserva y el consumo de `membresia.cancelada` o `usuario.desactivado` usan el mismo bloqueo transaccional por alumno dentro de booking: el consumidor registra una revocación durable y cancela las reservas afectadas, o la inserción posterior detecta una revocación registrada después de su validación y se rechaza (D-98). El estado converge aunque una reserva pueda quedar confirmada transitoriamente durante la propagación. Ver [ADR-005 v2](adr/ADR-005-v2-comunicacion.md).
@@ -534,6 +535,7 @@ La traza atraviesa la frontera asíncrona: el productor guarda `traceparent` en 
 | `PERSONA_DUPLICADA` | 409 | RN-33, CA-01.2 (diseñado en [users.v1](api/users.v1.md)) |
 | `ASIGNACION_DUPLICADA` | 409 | SPEC §9, asignación vigente repetida ([users.v1](api/users.v1.md)) |
 | `SUPERPOSICION_PROFESOR` | 409 | RN-08, CA-07.4 ([booking.v1](api/booking.v1.md)) |
+| `PROFESOR_CON_CLASES_FUTURAS` | 409 | RN-34, CA-02.3: baja de un profesor con clases futuras PROGRAMADA ([users.v1](api/users.v1.md), D-99) |
 | `USUARIO_INACTIVO` | 422 | D-36, ingreso de una persona dada de baja ([booking.v1](api/booking.v1.md)) |
 | `SIN_RESERVA_PARA_HORARIO` | 422 | D-39, CA-22.3 ([booking.v1](api/booking.v1.md)) |
 | `SIN_NUTRICIONISTA` | 422 | CA-33.2 ([training.v1](api/training.v1.md)) |
@@ -589,7 +591,7 @@ Una dependencia es **crítica** cuando el proceso no puede cumplir su responsabi
 
 | Proceso | Dependencias críticas | Dependencias parciales |
 |---|---|---|
-| members-service | PostgreSQL | RabbitMQ y Redis |
+| members-service | PostgreSQL | RabbitMQ, Redis y booking-service (solo para dar de baja a un profesor, D-99) |
 | booking-service | PostgreSQL | members-service, OpenSearch, RabbitMQ y Redis |
 | booking-indexer | RabbitMQ y OpenSearch | PostgreSQL, usado solo para reindexado completo |
 | benefits-service | PostgreSQL | members-service, RabbitMQ y Redis |

@@ -58,8 +58,11 @@ Efectos del alta:
 - `POST /users/{id}/deactivate` con `{"motivo":"…"}` (3 a 200 caracteres) deja la persona
   `INACTIVO`; nunca se borra. Escribe `usuario.desactivado` en el outbox; booking lo
   consume y cancela las reservas futuras del alumno (D-20, D-98, CA-01.3). Una persona inactiva no
-  puede iniciar sesión (CA-01.4). Dar de baja a un profesor con clases futuras se
-  rechazará cuando exista booking (RN-34, CA-02.3).
+  puede iniciar sesión (CA-01.4). Dar de baja a un profesor con clases futuras
+  PROGRAMADA responde `409 PROFESOR_CON_CLASES_FUTURAS`: Members consulta su agenda a
+  booking sin caché y, si booking no responde, `503 DEPENDENCIA_NO_DISPONIBLE` (RN-34,
+  CA-02.3, D-99). Sus horarios recurrentes se conservan, pero desde la baja no generan
+  clases.
 
 ## Asignaciones
 

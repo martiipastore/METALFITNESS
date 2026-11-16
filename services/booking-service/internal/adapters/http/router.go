@@ -26,6 +26,21 @@ func NewRouter(log *slog.Logger, healthTimeout time.Duration, checks ...health.C
 // que define los estados derivados (EN_CURSO, FINALIZADA) en las respuestas.
 func Register(r *gin.Engine, s *application.Servicio, secret string, ahora func() time.Time) {
 	api := r.Group("/api/v1", confiable(secret))
+	// Consultas entre servicios: solo con la clave interna, sin identidad de
+	// usuario. El gateway responde 404 a cualquier ruta con un segmento internal.
+	interno := r.Group("/internal/v1", soloServicios(secret))
+	interno.GET("/profesores/:id/agenda", func(c *gin.Context) {
+		if len(c.Request.URL.Query()) != 0 {
+			responderError(c, domain.ErrValidacion)
+			return
+		}
+		n, err := s.AgendaDeProfesor(c.Request.Context(), c.Param("id"))
+		if err != nil {
+			responderError(c, err)
+			return
+		}
+		c.JSON(200, gin.H{"clases_programadas": n})
+	})
 
 	// Actividades y horarios (HU-06, HU-07).
 	api.GET("/activities", func(c *gin.Context) {

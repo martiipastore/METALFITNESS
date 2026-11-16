@@ -9,11 +9,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync/atomic"
 	"syscall"
 	"time"
 
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/access"
+	"github.com/GuadiViti/Arquitectura-de-Software/pkg/correlation"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/health"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/httpserver"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/logger"
@@ -80,6 +82,11 @@ func run(cfg config.Config, log *slog.Logger) error {
 		}
 		handler.RegisterIdentity(router, identity, cfg.ServiceKey)
 		people := service.NewPeople(db, identity, nil)
+		if cfg.BookingURLs != "" {
+			people.WithAgenda(repository.BookingHTTP{URLs: strings.Split(cfg.BookingURLs, ","), Secret: cfg.ServiceKey, Client: &http.Client{Timeout: 2 * time.Second, Transport: correlation.Transport{}}})
+		} else {
+			log.Warn("sin MEMBERS_BOOKING_URLS: la baja de profesores no verifica clases futuras")
+		}
 		if cfg.AdminEmail != "" {
 			created, err := people.SeedAdmin(ctx, cfg.AdminEmail, cfg.AdminName, cfg.AdminPassword)
 			if err != nil {

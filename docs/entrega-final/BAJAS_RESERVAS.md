@@ -69,12 +69,21 @@ Con eso, una reserva o se confirmó antes, y el consumidor la encuentra y la can
 | `application/revocacion_test.go` | Consulta a Members por lotes, Members caído reintenta, baja sin consulta, reentrega, eventos inválidos | Aprobado |
 | `adapters/amqp/revocaciones_test.go` | Traducción de los dos eventos, rol no alumno sin efecto, sobres inválidos a la DLQ | Aprobado |
 | `adapters/postgres/revocaciones_integration_test.go` (PostgreSQL real) | Cancela y libera cupo una vez, deduplicación, rollback si falla la decisión, CL-19 secuencial y **concurrente (20 carreras, ninguna reserva confirmada al final; ocupación igual a las confirmadas)**, revocaciones inmutables | Aprobado |
-| E2E `-attendance` (servicios reales, RabbitMQ, PostgreSQL y Mailpit aislados) | Cancelar la membresía cancela dos reservas futuras y libera los cupos; Members publicó el evento; reservar después da 422; la reentrega no repite nada; dar de baja un alumno cancela su reserva | **35 escenarios aprobados**, 3 nuevos (`bajas_*`). Evidencia: `docs/evidence/entrega-final/etapa6/attendance-e2e.json` |
+| E2E `-attendance` (servicios reales, RabbitMQ, PostgreSQL y Mailpit aislados) | Cancelar la membresía cancela dos reservas futuras y libera los cupos; Members publicó el evento; reservar después da 422; la reentrega no repite nada; dar de baja un alumno cancela su reserva | **36 escenarios aprobados**, 4 nuevos (`bajas_*`, incluido CA-02.3). Evidencia: `docs/evidence/entrega-final/etapa6/attendance-e2e.json` |
 
 También pasan todos los tests de Booking y Members, y en el stack local (`make demo`) cada cola nueva tiene dos consumidores, uno por instancia de Booking.
 
-## 5. Pendientes
+## 5. Profesores con clases futuras (CA-02.3, D-99, 15/11/2026)
 
-- **CA-02.3 / RN-34, segunda parte:** no se puede dar de baja un profesor con clases futuras PROGRAMADA. Members no consulta todavía a Booking antes de la baja.
+RN-34 también dice que no se puede dar de baja a un profesor con clases futuras PROGRAMADA (CA-02.3: se rechaza hasta que se reasignen o cancelen).
+
+- **Consulta a Booking:** antes de dar de baja a un PROFESOR, Members pregunta a Booking `GET /internal/v1/profesores/{id}/agenda` (clave interna, sin caché). Si tiene clases futuras PROGRAMADA, responde `409 PROFESOR_CON_CLASES_FUTURAS` y la persona queda ACTIVA. Si ninguna instancia de Booking responde, `503`: la baja falla cerrada. Es la primera dependencia síncrona de Members hacia Booking, limitada a esta operación del administrador. En Compose, `MEMBERS_BOOKING_URLS` lista las dos instancias; en Vercel no hay Booking y no se verifica.
+- **Horarios recurrentes:** no se pueden borrar ni reasignar, así que no bloquean la baja; si lo hicieran, un profesor con horario no podría darse de baja nunca. En cambio, la generación de clases saltea los horarios de profesores que Members ya no informa como activos. Así, después de la baja no se le crean clases nuevas.
+- **Riesgo residual:** si se generan clases justo entre la consulta y la baja, pueden quedar clases del profesor dado de baja. El administrador las ve en la gestión de clases y las cancela.
+
+Verificación: tests de la agenda y de la generación en Booking (`application/agenda_test.go`); de la baja con agenda, Booking caído y otros roles en Members (`service/people_agenda_test.go`); del cliente con dos instancias (`repository/booking_test.go`); y el escenario E2E `bajas_profesor_con_clases_rechazado_y_sin_clases_nuevas_CA02_3`.
+
+## 6. Pendientes
+
 - `alumno.creado` y `membresia.vencida` siguen en el outbox sin publicar porque no tienen consumidor.
-- Revisión del equipo de D-98.
+- Revisión del equipo de D-98 y D-99.

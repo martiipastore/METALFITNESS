@@ -1,7 +1,7 @@
 {
   "stage": "Entrega final - etapa 6",
-  "startedAtUtc": "2026-11-15T23:22:34Z",
-  "finishedAtUtc": "2026-11-15T23:27:33Z",
+  "startedAtUtc": "2026-11-16T03:07:23Z",
+  "finishedAtUtc": "2026-11-16T03:11:13Z",
   "passed": true,
   "checks": [
     {
@@ -142,6 +142,10 @@
     },
     {
       "name": "bajas_alumno_dado_de_baja_cancela_reservas_futuras_RN34",
+      "passed": true
+    },
+    {
+      "name": "bajas_profesor_con_clases_rechazado_y_sin_clases_nuevas_CA02_3",
       "passed": true
     }
   ],

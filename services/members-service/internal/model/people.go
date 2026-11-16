@@ -8,6 +8,10 @@ var ErrDuplicate = errors.New("persona duplicada")
 // ErrAssignmentDuplicate indica una asignación vigente igual (SPEC §9).
 var ErrAssignmentDuplicate = errors.New("asignación duplicada")
 
+// ErrTeacherHasClasses rechaza la baja de un profesor responsable de clases
+// futuras PROGRAMADA (RN-34, CA-02.3).
+var ErrTeacherHasClasses = errors.New("profesor con clases futuras")
+
 // Person es una persona del padrón: alumno, profesional o administrador. Las
 // personas externas del Club (D-63) no tienen DNI hasta que el administrador
 // las da de alta como alumnos (D-78).

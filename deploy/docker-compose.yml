@@ -207,6 +207,9 @@ services:
       MEMBERS_JWT_PRIVATE_KEY: ${MEMBERS_JWT_PRIVATE_KEY:-}
       MEMBERS_PUBLIC_URL: ${MEMBERS_PUBLIC_URL:-http://localhost:5173}
       MEMBERS_BENEFITS_URL: http://benefits-service:8083
+      # CA-02.3 (D-99): antes de dar de baja a un profesor, Members consulta su
+      # agenda en Booking. Sin depends_on: Booking ya depende de Members.
+      MEMBERS_BOOKING_URLS: http://booking-service:8082,http://booking-service-2:8082
       MEMBERS_SMTP_HOST: ${MEMBERS_SMTP_HOST:-mailpit}
       MEMBERS_SMTP_PORT: ${MEMBERS_SMTP_PORT:-1025}
       MEMBERS_SMTP_FROM: ${MEMBERS_SMTP_FROM:-gimnasio@gym.local}

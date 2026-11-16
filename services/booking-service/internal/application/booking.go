@@ -295,6 +295,9 @@ func (s *Servicio) GenerarClases(ctx context.Context, a Actor, desde, hasta stri
 		if err != nil {
 			return 0, err
 		}
+		if horarios, err = s.horariosConProfesorActivo(ctx, horarios); err != nil {
+			return 0, err
+		}
 		generadas, err := domain.GenerarClases(actividad, horarios, desde, hasta, now)
 		if err != nil {
 			return 0, err
@@ -483,6 +486,54 @@ func (s *Servicio) DetalleClase(ctx context.Context, a Actor, id string) (Detall
 		out.Reservas = append(out.Reservas, item)
 	}
 	return out, nil
+}
+
+// horariosConProfesorActivo descarta los horarios cuyo profesor ya no está
+// activo en members (RN-34, D-99): después de su baja no se le generan clases.
+// Los horarios no se borran (son historia); simplemente dejan de producir clases.
+func (s *Servicio) horariosConProfesorActivo(ctx context.Context, horarios []domain.Horario) ([]domain.Horario, error) {
+	if len(horarios) == 0 {
+		return horarios, nil
+	}
+	ids := map[string]bool{}
+	var lista []string
+	for _, h := range horarios {
+		if !ids[h.ProfesorID] {
+			ids[h.ProfesorID] = true
+			lista = append(lista, h.ProfesorID)
+		}
+	}
+	profesores, err := s.members.Profesores(ctx, lista)
+	if err != nil {
+		return nil, dependencia(err)
+	}
+	activos := horarios[:0:0]
+	for _, h := range horarios {
+		if p, ok := profesores[h.ProfesorID]; ok && p.Estado == "ACTIVO" {
+			activos = append(activos, h)
+		}
+	}
+	return activos, nil
+}
+
+// AgendaDeProfesor cuenta las clases futuras PROGRAMADA de un profesor. La usa
+// members antes de darlo de baja (RN-34, CA-02.3, D-99).
+func (s *Servicio) AgendaDeProfesor(ctx context.Context, profesorID string) (int, error) {
+	if !patronUUID.MatchString(profesorID) {
+		return 0, domain.ErrValidacion
+	}
+	ahora := s.reloj.Ahora()
+	clases, err := s.catalogo.ClasesDeProfesor(ctx, profesorID, ahora)
+	if err != nil {
+		return 0, err
+	}
+	n := 0
+	for _, c := range clases {
+		if c.Estado == domain.ClaseProgramada && c.Inicio.After(ahora) {
+			n++
+		}
+	}
+	return n, nil
 }
 
 // MisClases lista las clases del profesor desde hoy (HU-21, CA-21.1).

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"net/mail"
 	"regexp"
 	"strings"
@@ -38,6 +39,20 @@ type People struct {
 	repo       PeopleRepository
 	activation func(string) ([]byte, []byte, error)
 	now        func() time.Time
+	agenda     TeacherAgenda
+}
+
+// TeacherAgenda informa cuántas clases futuras PROGRAMADA tiene un profesor.
+// La responde booking-service, dueño de las clases (D-99).
+type TeacherAgenda interface {
+	FutureClasses(ctx context.Context, teacherID string) (int, error)
+}
+
+// WithAgenda habilita la verificación de CA-02.3. Sin agenda (despliegue sin
+// booking, como Vercel) no hay clases que verificar.
+func (s *People) WithAgenda(a TeacherAgenda) *People {
+	s.agenda = a
+	return s
 }
 
 // NewPeople reutiliza la generación de enlaces de activación de Identity
@@ -195,6 +210,24 @@ func (s *People) Deactivate(ctx context.Context, actor, actorRole, id, reason st
 	var ok bool
 	if reason, ok = personText(reason, 3, 200); !ok || !uuidIdentity.MatchString(id) || id == actor {
 		return model.Person{}, model.ErrInvalid
+	}
+	// CA-02.3: un profesor con clases futuras PROGRAMADA no se da de baja hasta
+	// que se reasignen o cancelen. Se pregunta a booking sin caché; si no
+	// responde, la baja falla cerrada (503) en lugar de dejar clases sin profesor.
+	if s.agenda != nil {
+		person, err := s.repo.Person(ctx, id)
+		if err != nil {
+			return model.Person{}, err
+		}
+		if person.Role == access.Teacher {
+			n, err := s.agenda.FutureClasses(ctx, id)
+			if err != nil {
+				return model.Person{}, err
+			}
+			if n > 0 {
+				return model.Person{}, fmt.Errorf("%w: %d", model.ErrTeacherHasClasses, n)
+			}
+		}
 	}
 	return s.repo.DeactivatePerson(ctx, actor, id, reason, deactivable, s.now().UTC())
 }

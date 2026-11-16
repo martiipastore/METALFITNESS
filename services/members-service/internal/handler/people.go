@@ -32,6 +32,8 @@ func peopleError(c *gin.Context, err error) {
 		status, code, detail = 409, "ASIGNACION_DUPLICADA", "Ya existe una asignación vigente entre ese profesional y ese alumno."
 	case errors.Is(err, model.ErrConflict):
 		status, code, detail = 409, "TRANSICION_INVALIDA", "La persona ya estaba dada de baja."
+	case errors.Is(err, model.ErrTeacherHasClasses):
+		status, code, detail = 409, "PROFESOR_CON_CLASES_FUTURAS", "El profesor tiene clases programadas. Cancelalas antes de darlo de baja."
 	}
 	if status == 503 {
 		c.Header("Retry-After", "1")
