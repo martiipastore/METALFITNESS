@@ -23,7 +23,7 @@ Qué hace el runner, en orden:
 2. Crea por la API 100 alumnos `carga.NNN@gym.local` con membresía, un profesor y la actividad «Carga Pico». Las contraseñas se derivan de `GYM_INTERNAL_SERVICE_KEY`: no se imprimen ni se guardan.
 3. Abre una sesión por alumno y pasa los tokens a k6 por un archivo temporal que se borra al final. Members limita el login a 120 por minuto en todo el sistema; el runner renueva los tokens cuando tienen más de 8 minutos y nunca dos veces en el mismo minuto.
 4. Cancela por la API las reservas futuras de los alumnos sintéticos, antes de medir y al terminar.
-   Al terminar también cancela las clases futuras de la actividad «Carga Pico» y la desactiva: la web no muestra clases de actividades inactivas, así que no queda a la vista. La reactiva al empezar.
+   Al terminar también **borra** la actividad de prueba «Carga Pico» con sus horarios, clases y reservas, reconstruye el índice de búsqueda y limpia la caché de Booking: no queda en la base ni a la vista en la web.
 5. Escalera 10/25/50/100 usuarios en búsqueda y en mezcla (90/10), tres picos de 100 alumnos por una clase de 30 cupos con verificación SQL, y una caída de `booking-service-2` con 25 usuarios.
 
 **Mantener el equipo despierto.** Si Windows suspende la notebook, los contenedores se congelan y el escalón queda inválido. En PowerShell, antes de `go run`:

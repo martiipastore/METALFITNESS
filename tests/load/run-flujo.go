@@ -105,8 +105,8 @@ func main() {
 	}()
 	profesor := asegurarPersona(admin, map[string]any{"rol": "PROFESOR", "nombre": "Carga", "apellido": "Profesor", "dni": "39000000", "email": "carga.profesor@gym.local"})
 	actividad := asegurarActividad(admin, "Carga Pico", 30)
-	// La actividad de prueba no debe quedar a la vista en la web: al terminar se
-	// cancelan sus clases futuras y se desactiva (se reactiva al empezar).
+	// La actividad de prueba no debe quedar en la base ni a la vista en la web:
+	// al terminar se borra con todo lo que el test creó.
 	defer func() {
 		paso("Retirando la actividad de prueba")
 		retirarActividad(login(env["MEMBERS_ADMIN_EMAIL"], env["MEMBERS_ADMIN_PASSWORD"]), actividad)
@@ -616,51 +616,27 @@ func asegurarActividad(admin, nombre string, capacidad int) string {
 	return a.ID
 }
 
-// retirarActividad cancela las clases futuras de la actividad de prueba y la
-// desactiva: la web no muestra clases de actividades inactivas y no se generan
-// clases nuevas de sus horarios.
-func retirarActividad(admin, actividad string) {
-	hoy := time.Now().In(loc)
-	canceladas := 0
-	for pagina := 1; pagina <= 10; pagina++ {
-		var p struct {
-			Items []struct {
-				ID     string    `json:"id"`
-				Inicio time.Time `json:"inicio"`
-				Estado string    `json:"estado"`
-			} `json:"items"`
-			Total int `json:"total"`
-		}
-		pedir(admin, http.MethodGet, fmt.Sprintf("/api/v1/classes?fecha_desde=%s&fecha_hasta=%s&actividad_id=%s&pagina=%d&tamano=100", hoy.Format(time.DateOnly), hoy.AddDate(0, 0, 60).Format(time.DateOnly), actividad, pagina), nil, "", &p)
-		for _, c := range p.Items {
-			if c.Estado == "PROGRAMADA" && c.Inicio.After(time.Now()) {
-				pedir(admin, http.MethodPost, "/api/v1/classes/"+c.ID+"/cancel", map[string]any{"motivo": "Actividad de prueba de carga retirada"}, "", nil)
-				canceladas++
-			}
-		}
-		if pagina*100 >= p.Total {
-			break
-		}
+// retirarActividad borra la actividad de prueba con todo lo que el test creó
+// (horarios, clases y reservas): es un dato sintético y no debe quedar en la
+// base ni a la vista en la web. Después reconstruye el índice de búsqueda y
+// limpia la caché de Booking. El test nunca registra asistencias en ella.
+func retirarActividad(_ string, actividad string) {
+	sql := fmt.Sprintf(`BEGIN;
+DELETE FROM reservas WHERE clase_id IN (SELECT id FROM clases WHERE actividad_id = '%[1]s');
+DELETE FROM clases WHERE actividad_id = '%[1]s';
+DELETE FROM horarios WHERE actividad_id = '%[1]s';
+DELETE FROM actividades WHERE id = '%[1]s';
+COMMIT;`, actividad)
+	if out, err := exec.Command("docker", "exec", "gym-postgres-1", "psql", "-U", "postgres", "-d", "booking_db", "-v", "ON_ERROR_STOP=1", "-c", sql).CombinedOutput(); err != nil {
+		fmt.Println("  aviso: no se pudo borrar la actividad de prueba:", strings.TrimSpace(string(out)))
+		return
 	}
-	var a struct {
-		Nombre          string `json:"nombre"`
-		CapacidadMaxima int    `json:"capacidad_maxima"`
+	if out, err := exec.Command("docker", append(compose(), "run", "--rm", "booking-indexer", "-reindex")...).CombinedOutput(); err != nil {
+		fmt.Println("  aviso: no se pudo reconstruir el índice:", strings.TrimSpace(string(out)))
 	}
-	var lista struct {
-		Items []struct {
-			ID              string `json:"id"`
-			Nombre          string `json:"nombre"`
-			CapacidadMaxima int    `json:"capacidad_maxima"`
-		} `json:"items"`
-	}
-	pedir(admin, http.MethodGet, "/api/v1/activities", nil, "", &lista)
-	for _, x := range lista.Items {
-		if x.ID == actividad {
-			a.Nombre, a.CapacidadMaxima = x.Nombre, x.CapacidadMaxima
-		}
-	}
-	pedir(admin, http.MethodPut, "/api/v1/activities/"+actividad, map[string]any{"nombre": a.Nombre, "capacidad_maxima": a.CapacidadMaxima, "activa": false}, "", nil)
-	fmt.Printf("  %d clases canceladas; actividad desactivada\n", canceladas)
+	pw := envOr("REDIS_PASSWORD", "")
+	_ = exec.Command("docker", "exec", "gym-redis-1", "sh", "-c", "redis-cli -a \"$1\" --no-auth-warning --scan --pattern 'booking:*' | xargs -r redis-cli -a \"$1\" --no-auth-warning del", "sh", pw).Run()
+	fmt.Println("  actividad de prueba borrada, índice reconstruido y caché limpia")
 }
 
 type clase struct {
