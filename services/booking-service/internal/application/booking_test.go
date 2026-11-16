@@ -86,7 +86,7 @@ func (r *reservas) Previa(_ context.Context, _ ports.Operacion, destino any) (bo
 	}
 	return r.previa, nil
 }
-func (r *reservas) Reservar(_ context.Context, op ports.Operacion, _ string, validar func(domain.Clase) error) (domain.Reserva, bool, error) {
+func (r *reservas) Reservar(_ context.Context, op ports.Operacion, _ string, _ time.Time, validar func(domain.Clase) error) (domain.Reserva, bool, error) {
 	if err := validar(r.clase); err != nil {
 		return domain.Reserva{}, false, err
 	}

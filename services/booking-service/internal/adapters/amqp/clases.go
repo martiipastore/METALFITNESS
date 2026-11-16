@@ -1,5 +1,6 @@
-// Package amqp es el adaptador de entrada del indexer: traduce clase.actualizada
-// (docs/events/clase.actualizada.v1.json) y lo aplica al índice (ADR-014).
+// Package amqp tiene los adaptadores de entrada por mensajería: el del indexer
+// traduce clase.actualizada (docs/events/clase.actualizada.v1.json) y lo aplica
+// al índice (ADR-014); el de bajas traduce los eventos de members (D-98).
 package amqp
 
 import (

@@ -85,10 +85,21 @@ func bloquearAlumno(ctx context.Context, tx pgx.Tx, alumnoID string) error {
 // Reservar aplica CU-01 pasos 4 a 6 en una transacción: bloquea la clase (el
 // cupo se verifica y se toma de forma atómica, RN-14) y serializa las reservas
 // del alumno para duplicado, turno diario y superposición (RN-13, RN-39, RN-40).
-func (d *DB) Reservar(ctx context.Context, op ports.Operacion, claseID string, validar func(domain.Clase) error) (domain.Reserva, bool, error) {
+func (d *DB) Reservar(ctx context.Context, op ports.Operacion, claseID string, validadoEn time.Time, validar func(domain.Clase) error) (domain.Reserva, bool, error) {
 	return idempotente(ctx, d, op, func(tx pgx.Tx) (domain.Reserva, error) {
 		alumno := op.Actor
 		if err := bloquearAlumno(ctx, tx, alumno); err != nil {
+			return domain.Reserva{}, err
+		}
+		// CL-19: con el bloqueo tomado, una revocación registrada después de que
+		// members confirmó la vigencia invalida esa confirmación.
+		var revocacion string
+		err := tx.QueryRow(ctx, `SELECT tipo FROM revocaciones WHERE alumno_id=$1 AND registrada_en >= $2 ORDER BY registrada_en DESC LIMIT 1`,
+			alumno, validadoEn.Add(-domain.VentanaRevocacion)).Scan(&revocacion)
+		switch {
+		case err == nil:
+			return domain.Reserva{}, domain.Revocacion{Tipo: revocacion}.Error()
+		case !errors.Is(err, pgx.ErrNoRows):
 			return domain.Reserva{}, err
 		}
 		c, _, err := claseBloqueada(ctx, tx, claseID)
@@ -129,6 +140,67 @@ func (d *DB) Reservar(ctx context.Context, op ports.Operacion, claseID string, v
 		r.Clase = c
 		return r, auditar(ctx, tx, alumno, "RESERVAR", "reserva", r.ID, "")
 	})
+}
+
+// Revocar aplica RN-04 y RN-34 (D-98). Toma el mismo bloqueo por alumno que
+// Reservar, así que una reserva concurrente o ya está confirmada y la evalúa
+// elegir, o llega después y encuentra la revocación. La deduplicación, la
+// revocación y las cancelaciones van en una sola transacción (CLAUDE.md regla 7).
+func (d *DB) Revocar(ctx context.Context, r domain.Revocacion, ahora time.Time, elegir func([]domain.Reserva) ([]string, error)) (int, bool, error) {
+	canceladas, repetido := 0, false
+	err := d.tx(ctx, func(tx pgx.Tx) error {
+		if err := bloquearAlumno(ctx, tx, r.AlumnoID); err != nil {
+			return err
+		}
+		tag, err := tx.Exec(ctx, `INSERT INTO eventos_consumidos(event_id, event_type) VALUES($1, $2) ON CONFLICT (event_id) DO NOTHING`,
+			r.EventoID, map[string]string{domain.RevocacionMembresiaCancelada: "membresia.cancelada", domain.RevocacionUsuarioDesactivado: "usuario.desactivado"}[r.Tipo])
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() == 0 {
+			repetido = true
+			return nil
+		}
+		rows, err := tx.Query(ctx, `SELECT `+reservaCols+`, `+claseCols+reservaFrom+`
+			WHERE r.alumno_id=$1 AND r.estado='CONFIRMADA' AND c.inicio > $2 ORDER BY c.inicio, r.id FOR UPDATE OF r, c`, r.AlumnoID, ahora)
+		if err != nil {
+			return err
+		}
+		reservas, err := scanReservas(rows)
+		if err != nil {
+			return err
+		}
+		ids, err := elegir(reservas)
+		if err != nil {
+			return err
+		}
+		motivo := r.Motivo()
+		for _, id := range ids {
+			var claseID string
+			if err = tx.QueryRow(ctx, `UPDATE reservas SET estado='CANCELADA', cancelada_en=now(), motivo_cancelacion=$2, actualizada_en=now(), actualizada_por=NULL
+				WHERE id=$1 AND alumno_id=$3 AND estado='CONFIRMADA' RETURNING clase_id::text`, id, motivo, r.AlumnoID).Scan(&claseID); err != nil {
+				return err
+			}
+			if _, err = tx.Exec(ctx, `UPDATE clases SET ocupacion=ocupacion-1, actualizada_en=now() WHERE id=$1`, claseID); err != nil {
+				return err
+			}
+			if err = auditar(ctx, tx, "", "CANCELAR", "reserva", id, motivo); err != nil {
+				return err
+			}
+		}
+		canceladas = len(ids)
+		var membresia any
+		if r.MembresiaID != "" {
+			membresia = r.MembresiaID
+		}
+		_, err = tx.Exec(ctx, `INSERT INTO revocaciones(event_id, alumno_id, tipo, membresia_id, ocurrida_en, reservas_canceladas) VALUES($1,$2,$3,$4,$5,$6)`,
+			r.EventoID, r.AlumnoID, r.Tipo, membresia, r.OcurridaEn, canceladas)
+		return err
+	})
+	if err != nil {
+		return 0, false, traducir(err)
+	}
+	return canceladas, repetido, nil
 }
 
 // CancelarReserva aplica CU-02: bloquea la reserva y su clase, valida y libera el

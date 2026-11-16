@@ -114,6 +114,23 @@ Errores de reservar y cancelar (catálogo de ARCHITECTURE §12.1):
 | 200 | — | Cancelar una reserva ya cancelada informa `estado: CANCELADA` sin cambios (CA-15.2) |
 | 503 | `DEPENDENCIA_NO_DISPONIBLE` | Members no confirma la membresía: falla cerrada, no se reserva (ADR-005 v2) |
 
+### Bajas que llegan desde Members (D-98)
+
+Booking consume `membresia.cancelada` (cola `booking.membresia-cancelada`) y
+`usuario.desactivado` (cola `booking.usuario-desactivado`), con `BOOKING_MESSAGING_ENABLED`.
+No hay endpoint nuevo: el efecto se ve en las reservas.
+
+| Evento | Efecto en las reservas futuras CONFIRMADA del alumno | `motivo_cancelacion` |
+|---|---|---|
+| `membresia.cancelada` | Pasan a CANCELADA las que ya no cubre otra membresía vigente, según members consultado sin caché (RN-04, CA-05.1, CL-12) | `membresía cancelada` |
+| `usuario.desactivado` con rol ALUMNO | Pasan a CANCELADA todas (RN-34, CA-01.3) | `alumno dado de baja` |
+
+Cada cancelación libera el cupo una vez y no tiene plazo de 1 hora: lo hace el sistema,
+no el alumno. Una reentrega del mismo evento no tiene efecto. Una reserva que validó la
+membresía con members antes de que llegara la baja se rechaza con `MEMBRESIA_NO_VIGENTE`
+o `USUARIO_INACTIVO` aunque members la hubiera confirmado (CL-19); si el alumno tiene
+otra membresía vigente, puede reintentar enseguida.
+
 ## Ingreso por DNI (HU-22, D-36 a D-39)
 
 `POST /check-ins` con `{"dni":"40123456"}` y `Idempotency-Key`, desde la pantalla de

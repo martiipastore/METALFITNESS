@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:metalfitness:events:membresia.cancelada:v1",
+  "title": "Cancelación de membresía (RN-04, D-98)",
+  "description": "Lo publica members-service desde outbox_membresias. Lo consume booking-service (cola booking.membresia-cancelada) para cancelar las reservas futuras que ya no cubre otra membresía vigente. No lleva nombre ni email del alumno.",
+  "type": "object",
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "producer", "data"],
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "event_type": {"const": "membresia.cancelada"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "producer": {"const": "members-service"},
+    "correlation_id": {"type": "string"},
+    "traceparent": {"type": "string"},
+    "data": {
+      "type": "object",
+      "required": ["membresia_id", "alumno_id", "fecha_inicio", "fecha_vencimiento", "cancelada_en"],
+      "properties": {
+        "membresia_id": {"type": "string", "format": "uuid"},
+        "alumno_id": {"type": "string", "format": "uuid"},
+        "tipo_membresia": {"type": "string", "minLength": 1},
+        "fecha_inicio": {"type": "string", "format": "date"},
+        "fecha_vencimiento": {"type": "string", "format": "date"},
+        "operacion": {"enum": ["ASIGNACION", "RENOVACION"]},
+        "membresia_anterior_id": {"type": ["string", "null"], "format": "uuid"},
+        "motivo": {"type": ["string", "null"]},
+        "cancelada_en": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

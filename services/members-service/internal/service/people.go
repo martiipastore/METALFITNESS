@@ -187,7 +187,7 @@ func (s *People) Update(ctx context.Context, actor, actorRole, id string, in mod
 }
 
 // Deactivate da de baja lógica a un alumno o profesional (RN-34, CA-01.3). El
-// evento usuario.desactivado queda en el outbox para la etapa 5.
+// evento usuario.desactivado va al outbox; booking cancela las reservas futuras.
 func (s *People) Deactivate(ctx context.Context, actor, actorRole, id, reason string) (model.Person, error) {
 	if err := requireAdmin(actor, actorRole); err != nil {
 		return model.Person{}, err

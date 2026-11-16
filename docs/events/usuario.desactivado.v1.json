@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:metalfitness:events:usuario.desactivado:v1",
+  "title": "Baja lógica de un usuario (RN-34, D-98)",
+  "description": "Lo publica members-service desde outbox_usuarios. Lo consume booking-service (cola booking.usuario-desactivado): si el rol es ALUMNO, cancela todas sus reservas futuras; con otro rol no tiene efecto en booking.",
+  "type": "object",
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "producer", "data"],
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "event_type": {"const": "usuario.desactivado"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "producer": {"const": "members-service"},
+    "correlation_id": {"type": "string"},
+    "traceparent": {"type": "string"},
+    "data": {
+      "type": "object",
+      "required": ["usuario_id", "rol", "desactivado_en"],
+      "properties": {
+        "usuario_id": {"type": "string", "format": "uuid"},
+        "rol": {"enum": ["ALUMNO", "PROFESOR", "NUTRICIONISTA", "ADMINISTRADOR"]},
+        "desactivado_en": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

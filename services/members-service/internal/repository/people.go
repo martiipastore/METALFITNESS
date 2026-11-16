@@ -158,7 +158,7 @@ func (p *Postgres) DeactivatePerson(ctx context.Context, actor, id, reason strin
 	if _, err = tx.Exec(ctx, `UPDATE usuarios SET estado='INACTIVO',dado_de_baja_en=$2,actualizado_en=$2,actualizado_por=$3 WHERE id=$1`, id, now, actor); err != nil {
 		return model.Person{}, err
 	}
-	// Punto de extensión de la etapa 5: booking cancelará reservas futuras (D-20).
+	// Booking consume el evento y cancela las reservas futuras del alumno (RN-34, D-98).
 	if _, err = tx.Exec(ctx, `INSERT INTO outbox_usuarios(event_type,usuario_id,data,occurred_at) VALUES('usuario.desactivado',$1::uuid,jsonb_build_object('usuario_id',$1::uuid,'rol',$2::text,'desactivado_en',$3::timestamptz),$3) ON CONFLICT (usuario_id,event_type) DO NOTHING`, id, person.Role, now); err != nil {
 		return model.Person{}, err
 	}

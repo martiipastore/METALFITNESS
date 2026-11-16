@@ -30,7 +30,8 @@ documento de cada etapa.
 | **Nube**: gateway, Members, Benefits y web en Vercel con PostgreSQL gestionado; la API de partners es pública | Publicado; Booking, training y mensajería solo locales (L-19) | [ADR-021](adr/ADR-021-despliegue-vercel.md), D-75 |
 | **Balanceo de Booking** (2 instancias, balanceadas por el gateway) | Implementado el 15/11/2026 (etapa 12B): round-robin, política 3/2, métricas y tablero | [ADR-012 v3](adr/ADR-012-v3-balanceo-en-gateway.md), D-96, [etapa 12B](entrega-final/ETAPA_12_BORDE.md) |
 | **Arranque desde cero**: healthchecks que no dan sano durante el init, `make down`/`make clean` con perfiles, datos de prueba | Verificado con arranques limpios | [ARRANQUE_DOCKER.md](entrega-final/ARRANQUE_DOCKER.md) |
-| Eventos `membresia.cancelada`, `usuario.desactivado` y `alumno.creado` | Diseño objetivo; no publicados | §7 |
+| **Bajas → reservas**: `membresia.cancelada` y `usuario.desactivado` publicados por Members y consumidos por Booking, que cancela las reservas futuras y libera los cupos | Implementado el 15/11/2026 | [BAJAS_RESERVAS.md](entrega-final/BAJAS_RESERVAS.md), D-98 |
+| Evento `alumno.creado` | Diseño objetivo; no publicado | §7 |
 
 Los diagramas y las demás secciones describen el **diseño objetivo** salvo que digan
 lo contrario. Detalle de la ampliación en el [plan del Club](PLAN_CLUB_BENEFICIOS.md);
@@ -75,7 +76,7 @@ Este documento describe la **arquitectura objetivo** del sistema. Las tablas de 
 | **Validado en resiliencia** | Caída controlada 502/503/504 antes/después de commit, recuperación por misma clave y rollback previo al commit; proxy exclusivo de pruebas retirado al terminar. [Etapa 6](entrega-2/ETAPA_6_RESILIENCIA.md) y [postmortem](POSTMORTEM.md). |
 | **Implementado en observabilidad** | Primera traza Gateway → Benefits → PostgreSQL y logs correlacionados; Collector y Jaeger en memoria. [Evidencia](entrega-2/ETAPA_4_OBSERVABILIDAD.md). |
 | **Implementado en el resto de la entrega final** | Relay de outbox, `gym.events`, consumidores idempotentes, reintentos y DLQ (etapas 5 y 6); notification-worker; training (etapa 10); caché de actividades y de búsqueda de clases en Redis (etapa 9, D-95); rate limiting en Redis (etapa 12A, D-91); OpenSearch/CQRS (etapa 8); balanceo de Booking en el gateway (etapa 12B, D-96); Prometheus, Grafana y alertas (etapa 14); cuponera interna del Club (D-94). Ver la tabla de estado al comienzo. |
-| **Pendiente de implementación** | Trazas de Members y Booking y propagación de `traceparent` por el outbox; Loki; publicación y consumo de `membresia.cancelada` y `usuario.desactivado` (RN-04, RN-34) y `alumno.creado`; recompensas y panel administrativo restantes (CB-05 y resto de CB-07); revisión de ADR-013 v3 (D13, medido el 15/11/2026). |
+| **Pendiente de implementación** | Trazas de Members y Booking y propagación de `traceparent` por el outbox; Loki; publicación de `alumno.creado`; impedir la baja de un profesor con clases futuras (RN-34, CA-02.3); recompensas y panel administrativo restantes (CB-05 y resto de CB-07); revisión de ADR-013 v3 (D13, medido el 15/11/2026). |
 | **Pendiente de corrección externa** | La capacidad consumida (D9) es MELT, implementada y validada en la etapa 13; el grupo proveedor debe enviar una versión corregida y hasta entonces no se cambia el adaptador ni se simula su caída en el postmortem. |
 
 Salvo que una sección indique expresamente el estado actual, sus descripciones deben leerse como decisiones y comportamiento **objetivo**, no como funcionalidad ya disponible.
@@ -241,7 +242,7 @@ flowchart LR
 - **Adaptadores de entrada:** handlers HTTP con Gin y consumidores AMQP; traducen la interacción externa y llaman a los puertos de entrada.
 - **CQRS de lectura:** las búsquedas de clases disponibles (`GET /clases?actividad=&fecha=`) se resuelven en OpenSearch; **toda escritura y toda validación** (cupo, duplicados, superposición) se hacen contra PostgreSQL. La ocupación mostrada en listados es eventualmente consistente; la reserva nunca lo es.
 - **Concurrencia del cupo (RN-14):** actualización condicional atómica sobre la clase (`ocupacion < capacidad`) o bloqueo de fila, en la misma transacción que inserta la reserva. Restricciones únicas parciales para "una reserva CONFIRMADA por alumno y clase". Detalle en ADR-003.
-- **Cancelaciones concurrentes de membresía:** cada reserva conserva `membresia_id`; booking registra las revocaciones consumidas. La creación de reservas y el consumidor se serializan con `pg_advisory_xact_lock` sobre esa membresía, conforme a ADR-005 v2.
+- **Cancelaciones concurrentes de membresía y bajas:** booking registra las revocaciones consumidas (`membresia.cancelada`, `usuario.desactivado`). La creación de reservas y el consumidor se serializan con `pg_advisory_xact_lock` sobre el alumno; una reserva validada con members antes de una revocación posterior se rechaza (ADR-005 v2, precisión D-98).
 - **2 instancias balanceadas por el gateway (ADR-012 v3):** sin estado en memoria. Los procesos programados (marcar ausencias al finalizar clases, relay del outbox) se coordinan con `pg_advisory_lock` / `FOR UPDATE SKIP LOCKED` para no ejecutarse dos veces.
 - **Binarios:** `cmd/api` (HTTP + consumidor) y `cmd/indexer` (booking-indexer). Mismo módulo, mismo dominio de lectura.
 
@@ -328,7 +329,7 @@ El rate limiting **falla abierto** (deja pasar y registra métrica `ratelimit_re
 | members (worker) | benefits | Completar registro y acreditar (`/internal/v1/external-registrations/fulfill`), implementado | La acreditación pertenece al ledger | 4 s | Sí, desde el worker; idempotente por `eventId` | El registro queda `accepted` hasta confirmarse |
 | notification-worker | SMTP | Envío de email | Protocolo SMTP | 10 s | Vía colas de reintento | Reintento → DLQ |
 
-La validación booking → members usa datos frescos, pero no es una transacción entre servicios. Members devuelve la membresía que cubre la fecha de la clase y booking la guarda con la reserva. La creación de la reserva y el consumo de `membresia.cancelada` usan el mismo bloqueo transaccional por `membresia_id` dentro de booking: el consumidor registra una revocación durable y cancela las reservas afectadas, o la inserción posterior detecta la revocación y se rechaza. El estado converge aunque una reserva pueda quedar confirmada transitoriamente durante la propagación. Ver [ADR-005 v2](adr/ADR-005-v2-comunicacion.md).
+La validación booking → members usa datos frescos, pero no es una transacción entre servicios. Booking anota cuándo validó la vigencia. La creación de la reserva y el consumo de `membresia.cancelada` o `usuario.desactivado` usan el mismo bloqueo transaccional por alumno dentro de booking: el consumidor registra una revocación durable y cancela las reservas afectadas, o la inserción posterior detecta una revocación registrada después de su validación y se rechaza (D-98). El estado converge aunque una reserva pueda quedar confirmada transitoriamente durante la propagación. Ver [ADR-005 v2](adr/ADR-005-v2-comunicacion.md).
 
 ### 6.2 Asíncronas (RabbitMQ, exchange `gym.events`)
 
@@ -401,7 +402,7 @@ Notas:
 | Colas de reintento | `<cola>.retry.10s`, `<cola>.retry.1m`, `<cola>.retry.10m` | TTL fijo + dead-letter de vuelta a `gym.events` con la routing key original |
 | DLQ | `<cola>.dlq` | durable; revisión manual y re-publicación con herramienta del Makefile |
 
-Colas iniciales: `notification.membresia-activada`, `benefits.asistencia-registrada`, `benefits.inasistencia-registrada`, `booking-indexer.clase-actualizada` y, si se aprueban, `booking.membresia-cancelada`, `booking.usuario-desactivado`.
+Colas: `notification.membresia-activada`, `benefits.asistencia-registrada`, `benefits.inasistencia-registrada`, `booking-indexer.clase-actualizada`, `booking.membresia-cancelada` y `booking.usuario-desactivado` (estas dos desde el 15/11/2026, D-98).
 
 **Política de reintento:** error transitorio → se publica a la cola de reintento correspondiente al número de intento (header `x-attempt`), luego ACK del original. Tras 4 intentos fallidos o ante un error permanente (mensaje inválido, versión desconocida) → DLQ.
 
@@ -756,7 +757,7 @@ flowchart LR
 | # | Limitación | Impacto | Mitigación prevista |
 |---|---|---|---|
 | L-01 | **Una sola instancia de PostgreSQL** para tres bases. | Punto único de falla y recursos compartidos; aislamiento lógico, no físico. | Usuarios y permisos por base; ninguna consulta cruzada. Separar instancias es cambiar DSN. |
-| L-02 | **Dependencia síncrona booking → members** para reservar y carrera con una cancelación concurrente. | Si members cae, no se reserva. Una reserva puede confirmarse transitoriamente mientras se propaga una cancelación. | Timeout y circuit breaker; guardar la membresía de respaldo; evento de cancelación, revocación local y bloqueo transaccional compartido por membresía para converger y liberar el cupo. |
+| L-02 | **Dependencia síncrona booking → members** para reservar y carrera con una cancelación concurrente. | Si members cae, no se reserva. Una reserva puede confirmarse transitoriamente mientras se propaga una cancelación. | Timeout y falla cerrada; evento de cancelación, revocación local y bloqueo transaccional compartido por alumno para converger y liberar el cupo (implementado, D-98). |
 | L-03 | **Ocupación eventualmente consistente** en los listados (OpenSearch). | Un listado puede mostrar "1 disponible" cuando ya no hay. | La reserva valida contra Postgres y devuelve `SIN_CUPO`; lag objetivo < 2 s. |
 | L-04 | **Puntos por asistencia con demora** (asincrónicos). | El alumno puede no ver los puntos inmediatamente. | Lag objetivo < 5 s; reintentos + DLQ monitoreada. |
 | L-05 | **Entrega de email no transaccional.** Si el worker muere entre enviar por SMTP y registrar `ENVIADO`, el reintento puede duplicar el correo. | El alumno puede recibir más de una copia en una ventana de falla. | Una notificación lógica por membresía/tipo, trazabilidad de intentos y riesgo explícito en RN-05 y ADR-005 v2. |

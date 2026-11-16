@@ -20,6 +20,7 @@ import (
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/httpserver"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/logger"
 	"github.com/GuadiViti/Arquitectura-de-Software/pkg/messaging"
+	bookingamqp "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/amqp"
 	bookinghttp "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/http"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/members"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/opensearch"
@@ -27,6 +28,8 @@ import (
 	bookingredis "github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/adapters/redis"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/application"
 	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/config"
+	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/domain"
+	"github.com/GuadiViti/Arquitectura-de-Software/services/booking-service/internal/ports"
 	"github.com/gin-gonic/gin"
 	goredis "github.com/redis/go-redis/v9"
 )
@@ -70,6 +73,18 @@ func run(cfg config.Config, log *slog.Logger) error {
 		// clase.actualizada esperan durables y no se pierden (etapa 8).
 		relay = &messaging.Relay{URL: cfg.AMQPURL, Log: log, Publish: db.PublicarOutbox, Routes: []messaging.Route{{Queue: "benefits.asistencia-registrada", Key: "asistencia.registrada"}, {Queue: "benefits.inasistencia-registrada", Key: "inasistencia.registrada"}, {Queue: "booking-indexer.clase-actualizada", Key: "clase.actualizada"}}}
 		checks = append(checks, health.Check{Name: "rabbitmq", Fn: relay.Ready, Partial: true})
+	}
+	// Bajas desde Members (RN-04, RN-34, D-98). Las dos instancias consumen la
+	// misma cola; la deduplicación por event_id está en booking_db.
+	revocador := &revocadorDiferido{}
+	var bajas []*messaging.Consumer
+	if cfg.MessagingEnabled {
+		for _, route := range []messaging.Route{{Queue: "booking.membresia-cancelada", Key: "membresia.cancelada"}, {Queue: "booking.usuario-desactivado", Key: "usuario.desactivado"}} {
+			adapter := bookingamqp.Revocaciones{App: revocador, EventType: route.Key}
+			consumer := &messaging.Consumer{URL: cfg.AMQPURL, Route: route, Handle: adapter.Handle, Permanent: bookingamqp.PermanentRevocacion, Log: log}
+			bajas = append(bajas, consumer)
+			checks = append(checks, health.Check{Name: route.Queue, Fn: consumer.Ready, Partial: true})
+		}
 	}
 	var indice *opensearch.Client
 	if cfg.SearchEnabled {
@@ -132,6 +147,21 @@ func run(cfg config.Config, log *slog.Logger) error {
 			log.Info("búsqueda de clases en OpenSearch habilitada")
 		}
 		bookinghttp.Register(router, servicio, cfg.InternalServiceKey, reloj.Ahora)
+		if len(bajas) > 0 {
+			revocador.app = servicio
+			bajasCtx, cancel := context.WithCancel(ctx)
+			done := make(chan struct{}, len(bajas))
+			defer func() {
+				cancel()
+				for range bajas {
+					<-done
+				}
+			}()
+			for _, c := range bajas {
+				go func(c *messaging.Consumer) { c.Run(bajasCtx); done <- struct{}{} }(c)
+			}
+			log.Info("consumo de bajas desde members habilitado")
+		}
 		go cerrarClases(ctx, log, servicio, cfg.CloseInterval)
 		log.Info("reservas habilitadas")
 	}
@@ -171,4 +201,15 @@ func cerrarClases(ctx context.Context, log *slog.Logger, s *application.Servicio
 			}
 		}
 	}
+}
+
+// revocadorDiferido permite declarar los consumidores (y su chequeo de salud)
+// antes de construir el servicio de aplicación, que depende de la base migrada.
+type revocadorDiferido struct{ app *application.Servicio }
+
+func (r *revocadorDiferido) Revocar(ctx context.Context, rev domain.Revocacion) (int, error) {
+	if r.app == nil {
+		return 0, ports.ErrNoDisponible
+	}
+	return r.app.Revocar(ctx, rev)
 }

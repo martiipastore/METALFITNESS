@@ -697,6 +697,7 @@ func run() {
 		}
 		if *withAttendance {
 			attendanceFlow(gatewayURL, benefitsURL, mailURL, membersEnv["MEMBERS_AMQP_URL"], passwordUser, today, sql, adminHeaders, login, func() { stopBenefits() }, resumeBenefits)
+			revocationFlow(gatewayURL, mailURL, passwordUser, today, sql, adminHeaders, login)
 		}
 		if *withClub {
 			clubFlow(gatewayURL, benefitsURL, passwordUser, sql, adminHeaders, login)
@@ -799,6 +800,91 @@ func bookingFlow(base, mailURL string, sql func(string, string) string, admin fu
 	status, history := request(base, "GET", "/api/v1/bookings/me?estado=AUSENTE", headers(""), nil)
 	ensure(status == 200 && history["total"] == float64(1), "Ausencia no aparece en historial")
 	mark("booking_cierre_automatico_ausencia_y_outbox")
+}
+
+// revocationFlow cubre RN-04, RN-34, CA-05.1, CA-01.3 y la regla 7 (D-98): Members
+// publica membresia.cancelada y usuario.desactivado por su outbox y Booking
+// cancela las reservas futuras y libera los cupos. La carrera CL-19 se prueba
+// contra PostgreSQL en booking-service/internal/adapters/postgres.
+func revocationFlow(base, mailURL, password, today string, sql func(string, string) string, admin func(string) map[string]string, login func(string, string, int) string) {
+	create := func(email, dni string) (string, map[string]string) {
+		status, person := request(base, "POST", "/api/v1/users", admin(""), map[string]string{"rol": "ALUMNO", "nombre": "Persona", "apellido": "Baja", "dni": dni, "email": email, "fecha_nacimiento": "2000-01-01"})
+		ensure(status == 201, "No crea alumno para bajas")
+		_, text := mail(mailURL, email, "")
+		status, _ = request(base, "POST", "/api/v1/auth/activate", nil, map[string]string{"token": activation(text), "password": password})
+		ensure(status == 200, "No activa alumno para bajas")
+		return person["id"].(string), map[string]string{"Authorization": "Bearer " + login(email, password, 200)}
+	}
+	reserve := func(headers map[string]string, key, class string) string {
+		h := map[string]string{"Authorization": headers["Authorization"], "Idempotency-Key": key}
+		status, out := request(base, "POST", "/api/v1/bookings", h, map[string]string{"clase_id": class})
+		ensure(status == 201, fmt.Sprintf("No reserva para bajas: HTTP %d %v", status, out["code"]))
+		return out["reserva"].(map[string]any)["id"].(string)
+	}
+	state := func(reservation string) string {
+		return sql("booking_db", "SELECT estado||'/'||coalesce(motivo_cancelacion,'') FROM reservas WHERE id='"+reservation+"';")
+	}
+	occupancy := func(class string) string {
+		return sql("booking_db", "SELECT ocupacion FROM clases WHERE id='"+class+"';")
+	}
+
+	// Dos clases futuras propias, de Funcional, pasado mañana y una semana después.
+	activity := sql("booking_db", "SELECT id FROM actividades WHERE nombre='Funcional';")
+	professor := sql("booking_db", "SELECT profesor_id FROM clases LIMIT 1;")
+	zone, err := time.LoadLocation("America/Argentina/Buenos_Aires")
+	must(err)
+	day := time.Now().In(zone).AddDate(0, 0, 2)
+	weekday := int(day.Weekday())
+	if weekday == 0 {
+		weekday = 7
+	}
+	status, _ := request(base, "POST", "/api/v1/activities/"+activity+"/schedules", admin(""), map[string]any{"dia_semana": weekday, "inicio": "19:00", "duracion_minutos": 60, "profesor_id": professor, "capacidad": 5})
+	ensure(status == 201, "No crea horario para bajas")
+	status, _ = request(base, "POST", "/api/v1/classes/generate", admin(""), map[string]string{"desde": day.Format(time.DateOnly), "hasta": day.AddDate(0, 0, 7).Format(time.DateOnly)})
+	ensure(status == 200, "No genera clases para bajas")
+	first := sql("booking_db", fmt.Sprintf("SELECT id FROM clases WHERE actividad_id='%s' AND inicio::date='%s' AND (inicio AT TIME ZONE 'America/Argentina/Buenos_Aires')::time='19:00';", activity, day.Format(time.DateOnly)))
+	second := sql("booking_db", fmt.Sprintf("SELECT id FROM clases WHERE actividad_id='%s' AND inicio::date='%s' AND (inicio AT TIME ZONE 'America/Argentina/Buenos_Aires')::time='19:00';", activity, day.AddDate(0, 0, 7).Format(time.DateOnly)))
+	ensure(first != "" && second != "", "Faltan las clases para bajas")
+
+	// RN-04 / CA-05.1: cancelar la única membresía cancela las dos reservas.
+	student, studentHeaders := create("revocation-student@example.test", "40111555")
+	status, assigned := request(base, "POST", "/api/v1/memberships", admin("revocation-membership-001"), map[string]string{"usuario_id": student, "tipo_codigo": "MENSUAL", "fecha_inicio": today, "motivo": "Recorrido de bajas E2E"})
+	ensure(status == 201, "No asigna membresía para bajas")
+	membership := assigned["membresia"].(map[string]any)["id"].(string)
+	r1, r2 := reserve(studentHeaders, "revocation-reserve-001", first), reserve(studentHeaders, "revocation-reserve-002", second)
+	before1, before2 := occupancy(first), occupancy(second)
+	status, _ = request(base, "POST", "/api/v1/memberships/"+membership+"/cancel", admin("revocation-cancel-001"), map[string]any{"motivo": "Baja pedida en recepción"})
+	ensure(status == 200, "No cancela la membresía")
+	eventually("reservas canceladas por membresia.cancelada", func() bool {
+		return state(r1) == "CANCELADA/membresía cancelada" && state(r2) == "CANCELADA/membresía cancelada"
+	})
+	ensure(occupancy(first) != before1 && occupancy(second) != before2, "La cancelación no liberó los cupos")
+	ensure(sql("booking_db", "SELECT reservas_canceladas FROM revocaciones WHERE alumno_id='"+student+"' AND tipo='MEMBRESIA_CANCELADA';") == "2", "Revocación no registrada")
+	ensure(sql("members_db", "SELECT count(*) FROM outbox_membresias WHERE membresia_id='"+membership+"' AND event_type='membresia.cancelada' AND publicado_en IS NOT NULL;") == "1", "Members no publicó membresia.cancelada")
+	status, _ = request(base, "POST", "/api/v1/bookings", map[string]string{"Authorization": studentHeaders["Authorization"], "Idempotency-Key": "revocation-reserve-003"}, map[string]string{"clase_id": first})
+	ensure(status == 422, "Sin membresía todavía se puede reservar")
+	mark("bajas_membresia_cancelada_cancela_reservas_futuras_y_libera_cupo_RN04")
+
+	// Regla 7: Members vuelve a publicar el mismo evento y Booking no repite nada.
+	after1 := occupancy(first)
+	sql("members_db", "UPDATE outbox_membresias SET publicado_en=NULL WHERE membresia_id='"+membership+"' AND event_type='membresia.cancelada';")
+	eventually("reentrega publicada", func() bool {
+		return sql("members_db", "SELECT count(*) FROM outbox_membresias WHERE membresia_id='"+membership+"' AND event_type='membresia.cancelada' AND publicado_en IS NOT NULL;") == "1"
+	})
+	time.Sleep(2 * time.Second)
+	ensure(sql("booking_db", "SELECT count(*) FROM revocaciones WHERE alumno_id='"+student+"';") == "1" && occupancy(first) == after1, "La reentrega repitió la revocación")
+	mark("bajas_reentrega_del_mismo_evento_sin_efecto_regla7")
+
+	// RN-34 / CA-01.3: dar de baja a un alumno cancela sus reservas futuras.
+	other, otherHeaders := create("revocation-other@example.test", "40111666")
+	status, _ = request(base, "POST", "/api/v1/memberships", admin("revocation-membership-002"), map[string]string{"usuario_id": other, "tipo_codigo": "MENSUAL", "fecha_inicio": today, "motivo": "Recorrido de bajas E2E"})
+	ensure(status == 201, "No asigna membresía al segundo alumno")
+	r3 := reserve(otherHeaders, "revocation-reserve-004", first)
+	status, _ = request(base, "POST", "/api/v1/users/"+other+"/deactivate", admin(""), map[string]string{"motivo": "Baja definitiva"})
+	ensure(status == 200, "No da de baja al alumno")
+	eventually("reserva cancelada por usuario.desactivado", func() bool { return state(r3) == "CANCELADA/alumno dado de baja" })
+	ensure(occupancy(first) == after1, "La baja no liberó el cupo")
+	mark("bajas_alumno_dado_de_baja_cancela_reservas_futuras_RN34")
 }
 
 // RN-05/ADR-005: dependencias reales y fallas aisladas; no usa el stack habitual.

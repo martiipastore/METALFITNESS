@@ -126,8 +126,12 @@ func run(cfg config.Config, log *slog.Logger) error {
 						}
 						if bus == nil {
 							bus, err = messaging.Dial(workCtx, cfg.AMQPURL)
-							if err == nil {
-								err = bus.Topology("notification.membresia-activada", "membresia.activada", []time.Duration{10 * time.Second, time.Minute, 10 * time.Minute})
+							// Las colas de los consumidores se declaran también acá: si el
+							// consumidor está apagado, los eventos esperan durables.
+							for _, route := range []messaging.Route{{Queue: "notification.membresia-activada", Key: "membresia.activada"}, {Queue: "booking.membresia-cancelada", Key: "membresia.cancelada"}, {Queue: "booking.usuario-desactivado", Key: "usuario.desactivado"}} {
+								if err == nil {
+									err = bus.Topology(route.Queue, route.Key, messaging.RetryDelays)
+								}
 							}
 						}
 						if err == nil {
