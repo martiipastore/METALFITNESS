@@ -85,6 +85,8 @@ Paso 'inyector de resiliencia (tests y vet)' 'gateway' {
 }
 Paso 'diagnostico de pool (vet)' 'services/benefits-service' { go vet ../../tests/load/pool-info.go }
 Paso 'ejecutor E2E (vet)' '.' { go vet ./tests/e2e/identity/main.go }
+Paso 'ejecutor de carga D13 (vet)' '.' { go vet ./tests/load/run-flujo.go }
+Paso 'jornada de fallas (vet)' '.' { go vet ./tests/resilience/jornada.go }
 
 # 2. Frontend: instalacion reproducible, tipos y build.
 if (Disponible 'npm') {
@@ -111,6 +113,7 @@ if ($OmitirE2E) {
     Registrar 'E2E identidad y membresias' 'OMITIDO' 0 'omitido por parametro'
 } elseif ($dockerOk) {
     Paso 'E2E identidad y membresias (14 escenarios)' '.' { go run ./tests/e2e/identity/main.go -memberships }
+    Paso 'E2E reservas, mensajeria, puntos y bajas (36 escenarios)' '.' { go run ./tests/e2e/identity/main.go -attendance }
 } else {
     Registrar 'E2E identidad y membresias' 'OMITIDO' 0 'Docker no disponible'
 }
