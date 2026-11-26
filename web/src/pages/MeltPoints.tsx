@@ -19,7 +19,7 @@ interface Envio {
 
 const STATE: Record<Envio['estado'], { label: string; icon: string; detail: string }> = {
   ACREDITADO: { label: 'Acreditados en MELT', icon: '✓', detail: 'Ya están en tu cuenta de MELT.' },
-  PENDIENTE_REGISTRO: { label: 'Esperan tu registro', icon: '◆', detail: 'Registrate en MELT con tu mismo email para recibirlos.' },
+  PENDIENTE_REGISTRO: { label: 'Pendientes de activar', icon: '◆', detail: 'Tocá «Activar mis puntos» y registrate en MELT con tu mismo email.' },
   PENDIENTE_ENVIO: { label: 'Enviando a MELT', icon: '…', detail: 'MELT no respondió todavía; se reintenta automáticamente sin duplicar.' },
   RECHAZADO: { label: 'No acreditados', icon: '✕', detail: 'MELT no aceptó el envío.' },
 };
@@ -48,7 +48,12 @@ export function MeltPoints() {
   if (!available) return null;
 
   const credited = items?.filter((e) => e.estado === 'ACREDITADO').reduce((sum, e) => sum + e.puntos, 0) ?? 0;
-  const link = items?.find((e) => e.estado === 'PENDIENTE_REGISTRO' && e.registro_url);
+  // Guía de MELT (26/11/2026): ante un 202 se muestran los puntos pendientes y
+  // un botón «Activar mis puntos» con la registroUrl completa (incluido el #).
+  // Se usa el enlace más reciente: MELT lo renueva al repetir el mismo pedido.
+  const pendientes = items?.filter((e) => e.estado === 'PENDIENTE_REGISTRO') ?? [];
+  const pending = pendientes.reduce((sum, e) => sum + e.puntos, 0);
+  const link = pendientes.filter((e) => e.registro_url).sort((a, b) => (b.registro_vence ?? '').localeCompare(a.registro_vence ?? ''))[0];
 
   return (
     <section className="melt-panel" aria-label="Puntos MELT">
@@ -62,9 +67,10 @@ export function MeltPoints() {
           <strong>+{perAttendance}<small>pts MELT</small></strong>
           <p>Además de tus puntos del gimnasio, cada clase a la que asistís suma puntos en MELT, el club de beneficios aliado.</p>
           <p className="melt-total">{credited.toLocaleString('es-AR')} pts ya acreditados</p>
+          {pending > 0 && <p className="melt-total">Tenés {pending.toLocaleString('es-AR')} puntos pendientes en MELT</p>}
           {link?.registro_url && (
             <a className="button button-primary" href={link.registro_url} target="_blank" rel="noopener noreferrer">
-              Registrarme en MELT <span aria-hidden="true">↗</span>
+              Activar mis puntos <span aria-hidden="true">↗</span>
             </a>
           )}
         </div>

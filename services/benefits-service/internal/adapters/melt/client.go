@@ -89,7 +89,7 @@ func Traducir(status int, body []byte) (domain.ResultadoMelt, error) {
 			return domain.ResultadoMelt{}, ErrIncierto
 		}
 		return domain.ResultadoMelt{Tipo: domain.ResultadoPendiente, RegistroURL: p.RegistroURL, RegistroVence: p.VenceEn,
-			Motivo: "Registrate en MELT con tu mismo email para recibir los puntos."}, nil
+			Motivo: "Puntos pendientes en MELT: activalos registrándote con tu mismo email."}, nil
 	case http.StatusUnauthorized:
 		// Clave ausente o incorrecta: es configuración nuestra, no un rechazo del
 		// envío. Se reintenta para que se recupere al corregir la clave.
