@@ -79,6 +79,14 @@ El grupo de MELT envió una guía corregida («MELT / Beneficios API v1») y una
 
 **Prueba contra MELT real (26/11/2026, 15 h):** el pedido de la guía (email nuevo, 100 puntos, referencia única) respondió **`503 AUTH_NO_DISPONIBLE`** («No se pudo verificar el destinatario») durante más de 4 minutos. También después de despertar sus servicios con `/health`, cuando el gateway y Auth de MELT ya respondían «ok». La clave es aceptada: con una clave inválida respondería `401`. El problema es interno del proveedor (su servicio de Beneficios no logra verificar el destinatario en Auth) y hay que informarlo al grupo de MELT. Mientras tanto, nuestros envíos quedan «Enviando a MELT» y se reintentan solos: no se pierde ningún punto ni se duplica cuando MELT se recupere.
 
+**Prueba contra MELT real después de su arreglo (26/11/2026, 20:35):** el grupo de MELT informó que lo había resuelto.
+
+- **Pedido directo:** el primero, apenas despertado el servicio, todavía dio `503` (arranque en frío de Render). Los siguientes, con emails y referencias nuevos, respondieron **`202` pendiente** en menos de 1 s, con `registroUrl` y vencimiento a 7 días. Repetir un pedido con la misma referencia devolvió el mismo pendiente (mismo `venceEn`), sin duplicar.
+- **Punta a punta desde el sistema:** una clase temporal, la reserva de la alumna de demostración y su ingreso por DNI (VERDE, +500 puntos). Benefits registró el envío de 100 puntos con la referencia `metalfitness-asistencia-<id>`. El primer intento no obtuvo respuesta y se reprogramó con la misma referencia. El segundo obtuvo `202` → `PENDIENTE_REGISTRO`, con enlace vigente hasta el 03/12/2026. `GET /api/v1/benefits/me/melt` lo muestra a la alumna, de modo que la tarjeta indica «Tenés 100 puntos pendientes en MELT» con **Activar mis puntos**.
+- **Limpieza:** la clase temporal se borró después de la prueba. El índice se reconstruyó y la caché se limpió.
+
+Queda pendiente registrarse en MELT con ese email y ver que la tarjeta pase a «Acreditados» (`200`).
+
 ## 5. Pendiente
 
 1. En la demostración: abrir el enlace desde la tarjeta, registrarse en MELT con
