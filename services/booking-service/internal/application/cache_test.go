@@ -25,11 +25,11 @@ func (c *catalogoContado) CrearActividad(_ context.Context, _ string, a domain.A
 	a.ID = actID
 	return a, c.falla
 }
-func (c *catalogoContado) ModificarActividad(_ context.Context, _, _ string, cambiar func(domain.Actividad, bool) (domain.Actividad, error)) (domain.Actividad, error) {
+func (c *catalogoContado) ModificarActividad(_ context.Context, _, _ string, cambiar func(domain.Actividad, domain.ClasesFuturas) (domain.Actividad, error)) (domain.Actividad, error) {
 	if c.falla != nil {
 		return domain.Actividad{}, c.falla
 	}
-	return cambiar(domain.Actividad{ID: actID, Nombre: "Zumba", CapacidadMaxima: 20, Activa: true}, false)
+	return cambiar(domain.Actividad{ID: actID, Nombre: "Zumba", CapacidadMaxima: 20, Activa: true}, domain.ClasesFuturas{})
 }
 
 type cacheFalsa struct {

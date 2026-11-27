@@ -193,7 +193,9 @@ func GenerarClases(a Actividad, horarios []Horario, desde, hasta string, now tim
 			semana = 7
 		}
 		for _, h := range horarios {
-			if h.DiaSemana != semana || h.ActividadID != a.ID {
+			// Un horario anterior a la regla de apertura (S-02, D-104) no genera
+			// clases en días u horas en que el gimnasio está cerrado.
+			if h.DiaSemana != semana || h.ActividadID != a.ID || !GimnasioAbierto(h) {
 				continue
 			}
 			comienzo := time.Date(dia.Year(), dia.Month(), dia.Day(), h.InicioMinutos/60, h.InicioMinutos%60, 0, 0, Zona)

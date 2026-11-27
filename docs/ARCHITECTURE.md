@@ -538,6 +538,8 @@ La traza atraviesa la frontera asíncrona: el productor guarda `traceparent` en 
 | `PERSONA_DUPLICADA` | 409 | RN-33, CA-01.2 (diseñado en [users.v1](api/users.v1.md)) |
 | `ASIGNACION_DUPLICADA` | 409 | SPEC §9, asignación vigente repetida ([users.v1](api/users.v1.md)) |
 | `SUPERPOSICION_PROFESOR` | 409 | RN-08, CA-07.4 ([booking.v1](api/booking.v1.md)) |
+| `TOPE_MENOR_A_RESERVAS` | 409 | CA-06.5, D-105: bajar el tope de una actividad por debajo de las reservas de una clase futura ([booking.v1](api/booking.v1.md)) |
+| `GIMNASIO_CERRADO` | 422 | S-02, CA-07.1b, D-104: horario en domingo o que un sábado termina después de las 14:00 ([booking.v1](api/booking.v1.md)) |
 | `PROFESOR_CON_CLASES_FUTURAS` | 409 | RN-34, CA-02.3: baja de un profesor con clases futuras PROGRAMADA ([users.v1](api/users.v1.md), D-99) |
 | `USUARIO_INACTIVO` | 422 | D-36, ingreso de una persona dada de baja ([booking.v1](api/booking.v1.md)) |
 | `SIN_RESERVA_PARA_HORARIO` | 422 | D-39, CA-22.3 ([booking.v1](api/booking.v1.md)) |

@@ -39,9 +39,10 @@ type Catalogo interface {
 	Actividades(ctx context.Context) ([]domain.Actividad, error)
 	Actividad(ctx context.Context, id string) (domain.Actividad, error)
 	CrearActividad(ctx context.Context, actor string, a domain.Actividad) (domain.Actividad, error)
-	// ModificarActividad bloquea la actividad y le pasa a cambiar si tiene clases
-	// futuras con reservas confirmadas (CA-06.3).
-	ModificarActividad(ctx context.Context, actor, id string, cambiar func(actual domain.Actividad, conReservasFuturas bool) (domain.Actividad, error)) (domain.Actividad, error)
+	// ModificarActividad bloquea la actividad y le pasa a cambiar el resumen de
+	// sus clases futuras (CA-06.3, CA-06.5). Si el tope baja, deja horarios y
+	// clases futuras programadas con capacidad como máximo igual al tope nuevo.
+	ModificarActividad(ctx context.Context, actor, id string, cambiar func(actual domain.Actividad, futuras domain.ClasesFuturas) (domain.Actividad, error)) (domain.Actividad, error)
 	Horarios(ctx context.Context, actividadID string) ([]domain.Horario, error)
 	// CrearHorario rechaza con domain.ErrSuperposicionProfesor si el profesor ya
 	// tiene un horario que se pisa (RN-08, CA-07.4).

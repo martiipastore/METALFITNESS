@@ -190,7 +190,7 @@ func (s *Servicio) ModificarActividad(ctx context.Context, a Actor, id string, n
 	if !patronUUID.MatchString(id) || (nombre == nil && capacidad == nil && activa == nil) {
 		return domain.Actividad{}, domain.ErrValidacion
 	}
-	modificada, err := s.catalogo.ModificarActividad(ctx, a.ID, id, func(actual domain.Actividad, conReservas bool) (domain.Actividad, error) {
+	modificada, err := s.catalogo.ModificarActividad(ctx, a.ID, id, func(actual domain.Actividad, futuras domain.ClasesFuturas) (domain.Actividad, error) {
 		if nombre != nil {
 			n, err := domain.NormalizarNombre(*nombre)
 			if err != nil {
@@ -200,9 +200,12 @@ func (s *Servicio) ModificarActividad(ctx context.Context, a Actor, id string, n
 		}
 		if capacidad != nil {
 			actual.CapacidadMaxima = *capacidad
+			if err := actual.ValidarTope(futuras); err != nil {
+				return actual, err
+			}
 		}
 		if activa != nil {
-			if actual.Activa && !*activa && conReservas {
+			if actual.Activa && !*activa && futuras.ConReservas {
 				return actual, domain.ErrTransicionInvalida
 			}
 			actual.Activa = *activa

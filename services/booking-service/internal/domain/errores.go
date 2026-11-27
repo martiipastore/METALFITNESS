@@ -17,6 +17,8 @@ var (
 	ErrPlazoCancelacionVencido = errors.New("plazo de cancelación vencido")
 	ErrTransicionInvalida      = errors.New("transición inválida")
 	ErrSuperposicionProfesor   = errors.New("el profesor ya tiene una clase superpuesta")
+	ErrGimnasioCerrado         = errors.New("el gimnasio está cerrado en ese día u horario")
+	ErrTopeMenorQueReservas    = errors.New("el tope es menor que las reservas de una clase futura")
 	ErrMembresiaNoVigente      = errors.New("membresía no vigente")
 	ErrUsuarioInactivo         = errors.New("usuario inactivo")
 	ErrSinReservaParaHorario   = errors.New("sin reserva para este horario")

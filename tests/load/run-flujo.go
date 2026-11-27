@@ -153,7 +153,7 @@ func main() {
 	}
 	for n := 0; n < picos; n++ {
 		paso(fmt.Sprintf("pico de reservas %d/%d: %d alumnos por una clase de 30 cupos", n+1, picos, alumnos))
-		claseID := clasePico(admin, actividad, profesor.ID, hoy.AddDate(0, 0, 3), n)
+		claseID := clasePico(admin, actividad, profesor.ID, diaHabil(hoy.AddDate(0, 0, 3)), n)
 		escribirJSON(filepath.Join(datos, "clases.json"), map[string]any{"pico": claseID, "pool": pool, "desde": desde, "hasta": hasta})
 		ses.vigentes()
 		r := correr(datos, "pico", alumnos, "", "", nil)
@@ -974,4 +974,14 @@ func must(err error, msg string) {
 		}
 		os.Exit(1)
 	}
+}
+
+// diaHabil devuelve la misma fecha o el próximo día de lunes a viernes: los
+// picos usan horarios de 05:00 a 22:00 y el gimnasio cierra los domingos y los
+// sábados desde las 14:00 (S-02, D-104).
+func diaHabil(t time.Time) time.Time {
+	for t.Weekday() == time.Saturday || t.Weekday() == time.Sunday {
+		t = t.AddDate(0, 0, 1)
+	}
+	return t
 }

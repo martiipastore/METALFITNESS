@@ -1,4 +1,4 @@
-import { addDays, Clase, DAYS, localDate, range, todayPlus } from './types';
+import { addDays, Clase, DAYS, localDate, range, SATURDAY, SATURDAY_CLOSE, SUNDAY, todayPlus } from './types';
 
 // Agenda semanal de clases (pantalla de Clases, vista "Semana"). Los colores por
 // actividad salen de la gama de la página: lima, oliva, amarillo, arena, salvia
@@ -34,14 +34,18 @@ export function WeekView({ monday, classes, tones, student, busy, pulses, onRese
       {days.map((date, i) => {
         const list = byDay.get(date) ?? [];
         const [, month, dayNumber] = date.split('-');
+        const closed = i + 1 === SUNDAY && list.length === 0;
         return (
-          <li key={date} className={`week-day${date === today ? ' week-day-today' : ''}${date < today ? ' week-day-past' : ''}`}>
+          <li key={date} className={`week-day${date === today ? ' week-day-today' : ''}${date < today ? ' week-day-past' : ''}${closed ? ' week-day-closed' : ''}`}>
             <h2>
               <span>{DAYS[i + 1]}</span>
               <time dateTime={date}>{dayNumber}/{month}</time>
               {date === today && <b>Hoy</b>}
             </h2>
-            {list.length === 0 ? (
+            {i + 1 === SATURDAY && <p className="week-hours">Abierto hasta las {SATURDAY_CLOSE}</p>}
+            {closed ? (
+              <p className="week-closed">Cerrado</p>
+            ) : list.length === 0 ? (
               <p className="week-empty">Sin clases</p>
             ) : (
               <ul>
