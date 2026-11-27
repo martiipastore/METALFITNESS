@@ -182,6 +182,8 @@ Referencias a páginas del PDF de 149 páginas aportado por el equipo. Se distin
 
 | Fecha | Cambio |
 |---|---|
+| 26/11/2026 | MELT envió su versión corregida y una clave nueva: los puntos quedan pendientes aunque la persona no tenga cuenta (202 con registroUrl). Sin cambios de contrato; D-92 se mantiene (100 puntos por asistencia). Textos «Tenés N puntos pendientes en MELT» y «Activar mis puntos». Prueba contra MELT real: 503 AUTH_NO_DISPONIBLE persistente, a informar al proveedor. Ver docs/entrega-final/ETAPA_13_MELT.md §4.1. |
+| 16/11/2026 | Agenda semanal en la pantalla de Clases con color por actividad dentro de la paleta de la página. Sin decisión nueva: ver docs/entrega-final/ETAPA_11_FRONTEND.md §3.1. |
 | 16/11/2026 | Se agrega D-103 y ADR-023: cupos en vivo con Server-Sent Events (bonus D-40). Word sin sincronizar. |
 | 16/11/2026 | Se agrega D-102: timeout de 800 ms, un reintento en lecturas y circuit breaker en Booking y Training hacia Members (`pkg/resiliencia`). Word sin sincronizar. |
 | 16/11/2026 | Healthcheck de MongoDB por TCP (de 61 % a 5 % de CPU en reposo) y migraciones `.sql` con LF fijo en `.gitattributes` más huella tolerante a CRLF (`pkg/migracion`). Arranque desde cero verificado dos veces. Sin decisión nueva: ver docs/entrega-final/ARRANQUE_DOCKER.md §2.2 y §2.3. |

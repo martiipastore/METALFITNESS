@@ -133,3 +133,21 @@ export function errorText(error: unknown, fallback: string): string {
 export function newIdempotencyKey(): string {
   return crypto.randomUUID();
 }
+
+/** Fecha AAAA-MM-DD de un instante, en hora de Argentina. */
+export function localDate(iso: string): string {
+  return isoDate.format(new Date(iso));
+}
+
+/** Suma días a una fecha AAAA-MM-DD (aritmética de calendario, sin zona). */
+export function addDays(date: string, days: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Lunes de la semana de una fecha AAAA-MM-DD. */
+export function mondayOf(date: string): string {
+  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay(); // 0 = domingo
+  return addDays(date, weekday === 0 ? -6 : 1 - weekday);
+}

@@ -1,9 +1,10 @@
-import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '../../auth/session';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { EmptyState, Notice, NoticeState, PageHeading } from '../../components/PageParts';
 import { CambioOcupacion, EstadoEnVivo, useCuposEnVivo } from './live';
-import { Actividad, Clase, CLASS_STATES, day, errorText, newIdempotencyKey, occupancy, PaginaClases, range, time, todayPlus } from './types';
+import { Actividad, addDays, Clase, CLASS_STATES, day, errorText, mondayOf, newIdempotencyKey, occupancy, PaginaClases, range, time, todayPlus } from './types';
+import { activityTones, WeekLegend, WeekView } from './WeekView';
 
 // Clases disponibles y reserva (booking.v1, HU-13 y HU-14). El administrador usa
 // la misma búsqueda y entra al detalle de cada clase. La reserva se valida
@@ -16,6 +17,25 @@ const TYPING_DELAY_MS = 300;
 const REFRESH_MS = 30_000;
 // Cuánto dura el resaltado de una clase que cambió en vivo.
 const PULSE_MS = 1_400;
+// Máximo que acepta la API por página; la semana se pide completa.
+const WEEK_PAGE_SIZE = 100;
+const VIEW_KEY = 'metalfitness.clases.vista';
+
+type Vista = 'lista' | 'semana';
+
+function storedView(): Vista {
+  try {
+    return window.localStorage.getItem(VIEW_KEY) === 'semana' ? 'semana' : 'lista';
+  } catch {
+    return 'lista';
+  }
+}
+
+/** "16/11 – 22/11" para el encabezado de la semana. */
+function weekLabel(monday: string): string {
+  const fmt = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}`;
+  return `${fmt(monday)} – ${fmt(addDays(monday, 6))}`;
+}
 
 /** Aplica un cambio en vivo si es más nuevo que lo que ya muestra la lista. */
 function aplicarCambio(c: Clase, cambio: CambioOcupacion): Clase {
@@ -35,6 +55,9 @@ export function ClassesPage() {
   const { authRequest, user } = useSession();
   const [dialog, confirm] = useConfirm();
   const [activities, setActivities] = useState<Actividad[]>([]);
+  // Actividades inactivas: sus clases no se muestran (una actividad inactiva no
+  // tiene clases futuras reservadas, CA-06.3; el historial queda en Mis reservas).
+  const [inactivas, setInactivas] = useState<Set<string>>(new Set());
   const initial = { texto: '', desde: todayPlus(), hasta: todayPlus(7), actividad: '', soloDisponibles: false };
   const [filters, setFilters] = useState(initial);
   const [applied, setApplied] = useState(initial);
@@ -42,28 +65,65 @@ export function ClassesPage() {
   const [data, setData] = useState<PaginaClases | null>(null);
   const [notice, setNotice] = useState<NoticeState | null>(null);
   const [busy, setBusy] = useState('');
+  // Vista "Semana": agenda de lunes a domingo con colores por actividad.
+  const [vista, setVista] = useState<Vista>(storedView);
+  const [monday, setMonday] = useState(() => mondayOf(todayPlus()));
   // Cupos en vivo (D-103): versión vista por clase y clases resaltadas.
   const versiones = useRef(new Map<string, number>());
   const [pulsos, setPulsos] = useState<Record<string, true>>({});
 
   useEffect(() => {
     authRequest<{ items: Actividad[] }>('/api/v1/activities')
-      .then((res) => setActivities(res.data.items.filter((a) => a.activa)))
+      .then((res) => {
+        setActivities(res.data.items.filter((a) => a.activa));
+        setInactivas(new Set(res.data.items.filter((a) => !a.activa).map((a) => a.id)));
+      })
       .catch(() => setActivities([]));
   }, [authRequest]);
 
   const load = useCallback(async () => {
-    const params = new URLSearchParams({ fecha_desde: applied.desde, fecha_hasta: applied.hasta, pagina: String(page), tamano: String(PAGE_SIZE) });
+    const semana = vista === 'semana';
+    const params = new URLSearchParams({
+      fecha_desde: semana ? monday : applied.desde,
+      fecha_hasta: semana ? addDays(monday, 6) : applied.hasta,
+      pagina: String(semana ? 1 : page),
+      tamano: String(semana ? WEEK_PAGE_SIZE : PAGE_SIZE),
+    });
     if (applied.texto.trim()) params.set('q', applied.texto.trim());
     if (applied.actividad) params.set('actividad_id', applied.actividad);
     if (applied.soloDisponibles) params.set('solo_disponibles', 'true');
     try {
       const res = await authRequest<PaginaClases>(`/api/v1/classes?${params.toString()}`);
-      setData(res.data);
+      if (!semana) {
+        setData(res.data);
+        return;
+      }
+      // La semana entera, aunque tenga más clases que una página.
+      const items = [...res.data.items];
+      for (let pagina = 2; items.length < res.data.total && pagina <= 10; pagina++) {
+        params.set('pagina', String(pagina));
+        const more = await authRequest<PaginaClases>(`/api/v1/classes?${params.toString()}`);
+        if (more.data.items.length === 0) break;
+        items.push(...more.data.items);
+      }
+      setData({ ...res.data, items, pagina: 1, tamano: items.length });
     } catch (error) {
       setNotice({ tone: 'error', text: errorText(error, 'No se pudieron cargar las clases.') });
     }
-  }, [authRequest, applied, page]);
+  }, [authRequest, applied, page, vista, monday]);
+
+  function changeView(next: Vista) {
+    setVista(next);
+    setPage(1);
+    try {
+      window.localStorage.setItem(VIEW_KEY, next);
+    } catch {
+      // sin almacenamiento local, la vista vuelve a "Lista" al recargar
+    }
+  }
+
+  const visibles = useMemo(() => (data ? data.items.filter((c) => !inactivas.has(c.actividad.id)) : []), [data, inactivas]);
+  const tones = useMemo(() => activityTones([...activities.map((a) => a.nombre), ...visibles.map((c) => c.actividad.nombre)]), [activities, visibles]);
 
   useEffect(() => {
     void load();
@@ -188,8 +248,10 @@ export function ClassesPage() {
         <label className="filters-search">Buscar
           <input type="search" placeholder="Ej.: zum, funcional o el nombre del profesor" maxLength={60} value={filters.texto} onChange={(e) => setFilters({ ...filters, texto: e.target.value })} />
         </label>
-        <label>Desde <input type="date" value={filters.desde} onChange={(e) => setFilters({ ...filters, desde: e.target.value })} required /></label>
-        <label>Hasta <input type="date" value={filters.hasta} onChange={(e) => setFilters({ ...filters, hasta: e.target.value })} required /></label>
+        {vista === 'lista' && <>
+          <label>Desde <input type="date" value={filters.desde} onChange={(e) => setFilters({ ...filters, desde: e.target.value })} required /></label>
+          <label>Hasta <input type="date" value={filters.hasta} onChange={(e) => setFilters({ ...filters, hasta: e.target.value })} required /></label>
+        </>}
         <label>Actividad
           <select value={filters.actividad} onChange={(e) => setFilters({ ...filters, actividad: e.target.value })}>
             <option value="">Todas</option>
@@ -203,13 +265,28 @@ export function ClassesPage() {
         <p className="active-filters">
           <span>Filtros activos:</span>
           {applied.texto.trim() && <b>“{applied.texto.trim()}”</b>}
-          <b>{applied.desde} → {applied.hasta}</b>
+          {vista === 'lista' && <b>{applied.desde} → {applied.hasta}</b>}
           {activeName && <b>{activeName}</b>}
           {applied.soloDisponibles && <b>Solo con lugar</b>}
           <button type="button" className="button-secondary" onClick={clearFilters}>Limpiar filtros</button>
         </p>
       )}
-      <LiveStatus estado={enVivo} />
+      <div className="view-bar">
+        <div className="view-toggle" role="group" aria-label="Vista de las clases">
+          <button type="button" aria-pressed={vista === 'lista'} onClick={() => changeView('lista')}>Lista</button>
+          <button type="button" aria-pressed={vista === 'semana'} onClick={() => changeView('semana')}>Semana</button>
+        </div>
+        {vista === 'semana' && (
+          <nav className="week-nav" aria-label="Semanas">
+            <button type="button" className="button-secondary" onClick={() => setMonday(addDays(monday, -7))} aria-label="Semana anterior">←</button>
+            <strong>{weekLabel(monday)}</strong>
+            <button type="button" className="button-secondary" onClick={() => setMonday(addDays(monday, 7))} aria-label="Semana siguiente">→</button>
+            {monday !== mondayOf(todayPlus()) && <button type="button" className="button-secondary" onClick={() => setMonday(mondayOf(todayPlus()))}>Esta semana</button>}
+          </nav>
+        )}
+        <LiveStatus estado={enVivo} />
+      </div>
+      {vista === 'semana' && <WeekLegend tones={tones} />}
       <Notice key={notice?.text} notice={notice} />
       {data?.origen === 'cache_vencida' && (
         <Notice notice={{ tone: 'info', text: `Mostramos la última búsqueda guardada, de las ${time(data.consultado_en)}, porque el sistema de clases no responde. La reserva se confirma siempre con la disponibilidad real.` }} />
@@ -219,11 +296,13 @@ export function ClassesPage() {
       )}
       {data === null ? (
         notice?.tone !== 'error' && <div className="dashboard-skeleton" aria-label="Cargando clases" />
-      ) : data.items.length === 0 ? (
+      ) : vista === 'semana' ? (
+        <WeekView monday={monday} classes={visibles} tones={tones} student={student} busy={busy} pulses={pulsos} onReserve={(c) => void reserve(c)} />
+      ) : visibles.length === 0 ? (
         <EmptyState title="Sin clases para esos filtros">Probá con otro texto, otras fechas, otra actividad o sin “Solo con lugar”.</EmptyState>
       ) : student ? (
         <ol className="class-grid" aria-label="Clases encontradas">
-          {data.items.map((c) => <ClassCard key={c.id} clase={c} busy={busy} pulse={pulsos[c.id] === true} onReserve={() => void reserve(c)} />)}
+          {visibles.map((c) => <ClassCard key={c.id} clase={c} busy={busy} pulse={pulsos[c.id] === true} onReserve={() => void reserve(c)} />)}
         </ol>
       ) : (
         <table className="data-table responsive-table">
@@ -231,7 +310,7 @@ export function ClassesPage() {
             <tr><th>Día</th><th>Horario</th><th>Actividad</th><th>Profesor</th><th>Ocupación</th><th>Estado</th><th><span className="sr-only">Acciones</span></th></tr>
           </thead>
           <tbody>
-            {data.items.map((c) => (
+            {visibles.map((c) => (
               <tr key={c.id} className={pulsos[c.id] ? 'live-pulse' : undefined}>
                 <td data-label="Día">{day(c.inicio)}</td>
                 <td data-label="Horario">{range(c)}</td>
@@ -248,7 +327,7 @@ export function ClassesPage() {
           </tbody>
         </table>
       )}
-      {data && pages > 1 && (
+      {data && vista === 'lista' && pages > 1 && (
         <nav className="pagination" aria-label="Páginas de clases">
           <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</button>
           <span>Página {page} de {pages}</span>

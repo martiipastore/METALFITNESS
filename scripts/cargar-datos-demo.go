@@ -1,5 +1,5 @@
 // cargar-datos-demo carga, a través del gateway, los datos mínimos para
-// demostrar la búsqueda de clases (D-95): dos profesores, una alumna activada
+// demostrar la búsqueda de clases (D-95): tres profesores, una alumna activada
 // con membresía mensual, horarios en cinco actividades y las clases de las
 // próximas dos semanas. Se puede correr más de una vez: lo que ya existe se
 // saltea. Requiere el stack de `make demo` levantado.
@@ -56,9 +56,10 @@ func main() {
 
 	lucia := asegurarPersona(token, map[string]any{"rol": "PROFESOR", "nombre": "Lucía", "apellido": "Gómez", "dni": "30111222", "email": "lucia.gomez@gym.local"})
 	juan := asegurarPersona(token, map[string]any{"rol": "PROFESOR", "nombre": "Juan", "apellido": "Ruiz", "dni": "30333444", "email": "juan.ruiz@gym.local"})
+	martin := asegurarPersona(token, map[string]any{"rol": "PROFESOR", "nombre": "Martín", "apellido": "Sosa", "dni": "30777888", "email": "martin.sosa@gym.local"})
 	desde := time.Now().Add(-time.Minute) // solo correos llegados desde esta carga
 	alumna := asegurarPersona(token, map[string]any{"rol": "ALUMNO", "nombre": "Martina", "apellido": "Demo", "dni": "40555666", "email": "alumna@gym.local", "fecha_nacimiento": "2002-03-15"})
-	fmt.Println("✓ profesores Lucía Gómez y Juan Ruiz; alumna Martina Demo")
+	fmt.Println("✓ profesores Lucía Gómez, Juan Ruiz y Martín Sosa; alumna Martina Demo")
 
 	password := ""
 	if alumna.ActivacionPendiente {
@@ -71,7 +72,7 @@ func main() {
 
 	asegurarMembresia(token, alumna.ID)
 
-	profesores := map[string]string{"lucia": lucia.ID, "juan": juan.ID}
+	profesores := map[string]string{"lucia": lucia.ID, "juan": juan.ID, "martin": martin.ID}
 	actividades := map[string]string{}
 	var lista struct {
 		Items []struct{ ID, Nombre string } `json:"items"`
@@ -80,12 +81,22 @@ func main() {
 	for _, a := range lista.Items {
 		actividades[a.Nombre] = a.ID
 	}
+	todos := []int{1, 2, 3, 4, 5, 6, 7}
 	horarios := []horario{
 		{"Zumba", "lucia", []int{1, 3}, "19:00", 60, 20},
 		{"Funcional", "juan", []int{2, 4}, "18:00", 60, 25},
 		{"Strong Nation", "lucia", []int{5}, "19:00", 60, 20},
 		{"GAP", "juan", []int{6}, "10:00", 60, 20},
-		{"Musculación", "lucia", []int{1, 2, 3, 4, 5}, "10:00", 0, 30},
+		// Musculación (S-02, RN-07, CA-07.1): todos los días, 7 turnos de 2 horas
+		// entre las 08:00 y las 22:00, con capacidad 50, a cargo de un profesor
+		// dedicado. Lucía y Juan quedan para las clases grupales.
+		{"Musculación", "martin", todos, "08:00", 0, 50},
+		{"Musculación", "martin", todos, "10:00", 0, 50},
+		{"Musculación", "martin", todos, "12:00", 0, 50},
+		{"Musculación", "martin", todos, "14:00", 0, 50},
+		{"Musculación", "martin", todos, "16:00", 0, 50},
+		{"Musculación", "martin", todos, "18:00", 0, 50},
+		{"Musculación", "martin", todos, "20:00", 0, 50},
 	}
 	creados := 0
 	for _, h := range horarios {
@@ -115,6 +126,8 @@ func main() {
 	}
 	fmt.Printf("✓ la búsqueda «zum» encuentra %d clases de Zumba\n", pagina.Total)
 
+	asegurarCuponera(token, hoy)
+
 	fmt.Println()
 	fmt.Println("Listo. Web: http://localhost:5173")
 	fmt.Printf("  Administrador: %s (contraseña MEMBERS_ADMIN_PASSWORD de .env)\n", env["MEMBERS_ADMIN_EMAIL"])
@@ -123,6 +136,43 @@ func main() {
 	} else {
 		fmt.Println("  Alumna:        alumna@gym.local (contraseña mostrada en la primera carga)")
 	}
+}
+
+// catalogoCuponera es el catálogo de la cuponera del Club (D-94) para la demo:
+// activo y sin vencimiento. Se crean solo los que falten, por nombre, así que
+// correr el script de nuevo no duplica ni pisa cambios hechos desde la web.
+var catalogoCuponera = []struct {
+	nombre, descripcion string
+	costo               int
+}{
+	{"Batido proteico", "Un batido en la barra del gimnasio, del sabor que elijas.", 300},
+	{"Clase de prueba para un amigo", "Traé a alguien a una clase grupal sin cargo.", 500},
+	{"Toalla Metal Fitness", "Toalla de microfibra con el logo del gimnasio.", 800},
+	{"Botella térmica Metal Fitness", "Botella de acero de 750 ml.", 1200},
+	{"10 % de descuento en la cuota", "Descuento sobre la próxima cuota mensual.", 1500},
+	{"Remera Metal Fitness", "Remera técnica de entrenamiento.", 2000},
+}
+
+func asegurarCuponera(token string, hoy time.Time) {
+	var actuales struct {
+		Items []struct {
+			Nombre string `json:"nombre"`
+		} `json:"items"`
+	}
+	pedir(token, http.MethodGet, "/benefits/rewards", nil, "", &actuales)
+	existe := map[string]bool{}
+	for _, b := range actuales.Items {
+		existe[b.Nombre] = true
+	}
+	creados := 0
+	for _, b := range catalogoCuponera {
+		if existe[b.nombre] {
+			continue
+		}
+		pedir(token, http.MethodPost, "/benefits/rewards", map[string]any{"nombre": b.nombre, "descripcion": b.descripcion, "costo": b.costo, "vigente_desde": hoy.Format(time.DateOnly), "activo": true}, "", nil)
+		creados++
+	}
+	fmt.Printf("✓ cuponera: %d beneficios sin vencimiento (%d nuevos)\n", len(catalogoCuponera), creados)
 }
 
 func hoyArgentina() time.Time {
@@ -209,6 +259,9 @@ func asegurarHorarios(token, actividadID, profesorID string, h horario) int {
 		if ya {
 			continue
 		}
+		// El gateway admite 10 solicitudes por segundo por usuario (D-79): con
+		// los 49 turnos de Musculación hay que espaciar las altas.
+		time.Sleep(150 * time.Millisecond)
 		pedir(token, http.MethodPost, "/activities/"+actividadID+"/schedules", map[string]any{"dia_semana": dia, "inicio": h.inicio, "duracion_minutos": h.duracion, "profesor_id": profesorID, "capacidad": h.capacidad}, "", nil)
 		creados++
 	}

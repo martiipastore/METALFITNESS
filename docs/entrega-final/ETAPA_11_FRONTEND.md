@@ -74,6 +74,18 @@ vez → el alumno ve saldo y movimientos.
 | Horas en 12 h sin a. m./p. m. («01:05» en lugar de «13:05») | Formato único de 24 h con zona Argentina |
 | Botones destructivos en lima | Rojo para baja, cancelación y reversión; gris para revocar y volver |
 
+## 3.1 Agenda semanal de clases (16/11/2026)
+
+La pantalla de Clases suma la vista **Semana**, junto a **Lista** (la elección se recuerda en el navegador):
+
+- Grilla de lunes a domingo, con navegación entre semanas, botón «Esta semana», el día de hoy resaltado y los días pasados atenuados. En pantallas angostas los días se apilan, sin scroll horizontal.
+- Cada clase es un bloque con hora, actividad, profesor, barra de ocupación y lugares libres. El alumno reserva desde el bloque; el administrador entra al detalle. Los filtros de texto, actividad y «Solo con lugar» siguen funcionando, y los **cupos en vivo** (D-103) también se ven en la grilla.
+- **Color por actividad, de la gama de la página:** seis tonos (lima, oliva, amarillo, arena, salvia y oliva profundo), asignados por orden alfabético para que sean estables, con una leyenda. El rojo queda reservado para errores. El tono marca el borde, la barra y un fondo tenue; la actividad y los lugares siempre se leen como texto, no solo por el color (DISENO §4). El tono más oscuro, usado también en la hora, tiene un contraste de alrededor de 4,8:1.
+- La semana se pide completa (páginas de 100) aunque tenga más clases que una página.
+- La pantalla de Clases (lista y semana) no muestra clases de **actividades inactivas**: una actividad inactiva no tiene clases futuras reservadas (CA-06.3) y su historial sigue en «Mis reservas». Así, la actividad de prueba del test de carga no aparece en la agenda.
+
+Verificado con `tsc` y el build; la revisión visual en el navegador queda pendiente.
+
 ## 4. Pendiente
 
 - Revisión de otro integrante y validación visual del equipo sobre el prototipo en

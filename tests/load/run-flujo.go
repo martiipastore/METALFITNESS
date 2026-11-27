@@ -105,6 +105,12 @@ func main() {
 	}()
 	profesor := asegurarPersona(admin, map[string]any{"rol": "PROFESOR", "nombre": "Carga", "apellido": "Profesor", "dni": "39000000", "email": "carga.profesor@gym.local"})
 	actividad := asegurarActividad(admin, "Carga Pico", 30)
+	// La actividad de prueba no debe quedar en la base ni a la vista en la web:
+	// al terminar se borra con todo lo que el test creó.
+	defer func() {
+		paso("Retirando la actividad de prueba")
+		retirarActividad(login(env["MEMBERS_ADMIN_EMAIL"], env["MEMBERS_ADMIN_PASSWORD"]), actividad)
+	}()
 	hoy := time.Now().In(loc)
 	desde, hasta := hoy.Format(time.DateOnly), hoy.AddDate(0, 0, 13).Format(time.DateOnly)
 	pool := poolDeClases(admin, desde, hasta, actividad)
@@ -591,17 +597,46 @@ func tokenActivacion(email string, desde time.Time) string {
 
 func asegurarActividad(admin, nombre string, capacidad int) string {
 	var lista struct {
-		Items []struct{ ID, Nombre string } `json:"items"`
+		Items []struct {
+			ID, Nombre string
+			Activa     bool `json:"activa"`
+		} `json:"items"`
 	}
 	pedir(admin, http.MethodGet, "/api/v1/activities", nil, "", &lista)
 	for _, a := range lista.Items {
 		if a.Nombre == nombre {
+			if !a.Activa {
+				pedir(admin, http.MethodPut, "/api/v1/activities/"+a.ID, map[string]any{"nombre": nombre, "capacidad_maxima": capacidad, "activa": true}, "", nil)
+			}
 			return a.ID
 		}
 	}
 	var a struct{ ID string }
 	pedir(admin, http.MethodPost, "/api/v1/activities", map[string]any{"nombre": nombre, "capacidad_maxima": capacidad}, "", &a)
 	return a.ID
+}
+
+// retirarActividad borra la actividad de prueba con todo lo que el test creó
+// (horarios, clases y reservas): es un dato sintético y no debe quedar en la
+// base ni a la vista en la web. Después reconstruye el índice de búsqueda y
+// limpia la caché de Booking. El test nunca registra asistencias en ella.
+func retirarActividad(_ string, actividad string) {
+	sql := fmt.Sprintf(`BEGIN;
+DELETE FROM reservas WHERE clase_id IN (SELECT id FROM clases WHERE actividad_id = '%[1]s');
+DELETE FROM clases WHERE actividad_id = '%[1]s';
+DELETE FROM horarios WHERE actividad_id = '%[1]s';
+DELETE FROM actividades WHERE id = '%[1]s';
+COMMIT;`, actividad)
+	if out, err := exec.Command("docker", "exec", "gym-postgres-1", "psql", "-U", "postgres", "-d", "booking_db", "-v", "ON_ERROR_STOP=1", "-c", sql).CombinedOutput(); err != nil {
+		fmt.Println("  aviso: no se pudo borrar la actividad de prueba:", strings.TrimSpace(string(out)))
+		return
+	}
+	if out, err := exec.Command("docker", append(compose(), "run", "--rm", "booking-indexer", "-reindex")...).CombinedOutput(); err != nil {
+		fmt.Println("  aviso: no se pudo reconstruir el índice:", strings.TrimSpace(string(out)))
+	}
+	pw := envOr("REDIS_PASSWORD", "")
+	_ = exec.Command("docker", "exec", "gym-redis-1", "sh", "-c", "redis-cli -a \"$1\" --no-auth-warning --scan --pattern 'booking:*' | xargs -r redis-cli -a \"$1\" --no-auth-warning del", "sh", pw).Run()
+	fmt.Println("  actividad de prueba borrada, índice reconstruido y caché limpia")
 }
 
 type clase struct {

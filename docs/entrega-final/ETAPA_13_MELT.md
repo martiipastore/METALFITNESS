@@ -67,6 +67,26 @@ membresías ni asistencias.
 | **Punta a punta contra el MELT real, sin clave** | Ingreso por DNI → saldo local de 500 a 1.000 → envío registrado → `401 PARTNER_NO_AUTORIZADO` → envío «Enviando a MELT» con reintento, sin afectar los puntos locales |
 | **Punta a punta contra el MELT real, con la clave** (11/11, 13:57) | El primer reintento con clave falló de forma transitoria (MELT despertando) y se reprogramó. El siguiente obtuvo `202` con `registroUrl` HTTPS y vencimiento a 7 días → estado «Esperan tu registro» y botón **Registrarme en MELT** en la tarjeta del alumno. Repetir la solicitud con la misma referencia devolvió el mismo pendiente (idempotente) |
 
+## 4.1 Versión corregida del proveedor (26/11/2026)
+
+El grupo de MELT envió una guía corregida («MELT / Beneficios API v1») y una clave nueva, guardada solo en `.env` como `BENEFITS_MELT_PARTNER_KEY`. El cambio es de su lado: **la persona ya no necesita tener cuenta en MELT** para que se le acrediten puntos. Ante un email sin cuenta, MELT responde `202` y deja los puntos pendientes; se activan cuando la persona se registra con el mismo email desde la `registroUrl`, una invitación de 7 días que se renueva repitiendo el mismo pedido.
+
+- **Contrato:** sin cambios para nosotros. Misma URL, mismo `POST /beneficios/acreditaciones`, mismos campos (`email`, `puntos`, `referencia`, `descripcion`) y mismas respuestas (`201`, `200` idempotente, `202` pendiente, errores `400/401/404/409/415/422/503`). El adaptador y su test de contrato siguen valiendo.
+- **Regla de negocio:** se mantiene D-92. **100 puntos MELT por cada asistencia**, además de los 500 del gimnasio. Solo la asistencia (ingreso por DNI en la ventana de la clase) genera el envío; una reserva cancelada o una ausencia no envían nada.
+- **Comportamiento ante cada respuesta:** un `503` o un corte se reintentan con la misma referencia. Mientras el envío está pendiente de registro, se repite el mismo pedido cada 2 minutos, lo que renueva el enlace si venció y detecta cuando la persona ya se registró.
+- **Pantalla de la alumna:** según la guía, ante un `202` muestra «Tenés N puntos pendientes en MELT» y el botón **«Activar mis puntos»** con la `registroUrl` completa (incluido el `#`), en lugar de «Registrarme en MELT».
+- **`BENEFITS_MELT_ENABLED=true`** en el `.env` local: estaba apagado.
+
+**Prueba contra MELT real (26/11/2026, 15 h):** el pedido de la guía (email nuevo, 100 puntos, referencia única) respondió **`503 AUTH_NO_DISPONIBLE`** («No se pudo verificar el destinatario») durante más de 4 minutos. También después de despertar sus servicios con `/health`, cuando el gateway y Auth de MELT ya respondían «ok». La clave es aceptada: con una clave inválida respondería `401`. El problema es interno del proveedor (su servicio de Beneficios no logra verificar el destinatario en Auth) y hay que informarlo al grupo de MELT. Mientras tanto, nuestros envíos quedan «Enviando a MELT» y se reintentan solos: no se pierde ningún punto ni se duplica cuando MELT se recupere.
+
+**Prueba contra MELT real después de su arreglo (26/11/2026, 20:35):** el grupo de MELT informó que lo había resuelto.
+
+- **Pedido directo:** el primero, apenas despertado el servicio, todavía dio `503` (arranque en frío de Render). Los siguientes, con emails y referencias nuevos, respondieron **`202` pendiente** en menos de 1 s, con `registroUrl` y vencimiento a 7 días. Repetir un pedido con la misma referencia devolvió el mismo pendiente (mismo `venceEn`), sin duplicar.
+- **Punta a punta desde el sistema:** una clase temporal, la reserva de la alumna de demostración y su ingreso por DNI (VERDE, +500 puntos). Benefits registró el envío de 100 puntos con la referencia `metalfitness-asistencia-<id>`. El primer intento no obtuvo respuesta y se reprogramó con la misma referencia. El segundo obtuvo `202` → `PENDIENTE_REGISTRO`, con enlace vigente hasta el 03/12/2026. `GET /api/v1/benefits/me/melt` lo muestra a la alumna, de modo que la tarjeta indica «Tenés 100 puntos pendientes en MELT» con **Activar mis puntos**.
+- **Limpieza:** la clase temporal se borró después de la prueba. El índice se reconstruyó y la caché se limpió.
+
+Queda pendiente registrarse en MELT con ese email y ver que la tarjeta pase a «Acreditados» (`200`).
+
 ## 5. Pendiente
 
 1. En la demostración: abrir el enlace desde la tarjeta, registrarse en MELT con
