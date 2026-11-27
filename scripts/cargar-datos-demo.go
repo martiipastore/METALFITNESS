@@ -81,22 +81,25 @@ func main() {
 	for _, a := range lista.Items {
 		actividades[a.Nombre] = a.ID
 	}
-	todos := []int{1, 2, 3, 4, 5, 6, 7}
+	habiles := []int{1, 2, 3, 4, 5}
+	conSabado := []int{1, 2, 3, 4, 5, 6}
 	horarios := []horario{
 		{"Zumba", "lucia", []int{1, 3}, "19:00", 60, 20},
 		{"Funcional", "juan", []int{2, 4}, "18:00", 60, 25},
 		{"Strong Nation", "lucia", []int{5}, "19:00", 60, 20},
 		{"GAP", "juan", []int{6}, "10:00", 60, 20},
-		// Musculación (S-02, RN-07, CA-07.1): todos los días, 7 turnos de 2 horas
-		// entre las 08:00 y las 22:00, con capacidad 50, a cargo de un profesor
-		// dedicado. Lucía y Juan quedan para las clases grupales.
-		{"Musculación", "martin", todos, "08:00", 0, 50},
-		{"Musculación", "martin", todos, "10:00", 0, 50},
-		{"Musculación", "martin", todos, "12:00", 0, 50},
-		{"Musculación", "martin", todos, "14:00", 0, 50},
-		{"Musculación", "martin", todos, "16:00", 0, 50},
-		{"Musculación", "martin", todos, "18:00", 0, 50},
-		{"Musculación", "martin", todos, "20:00", 0, 50},
+		// Musculación (S-02, RN-07, CA-07.1, D-104): de lunes a viernes, 7 turnos
+		// de 2 horas entre las 08:00 y las 22:00; los sábados, los 3 turnos que
+		// terminan hasta las 14:00; los domingos el gimnasio cierra. Capacidad 50,
+		// a cargo de un profesor dedicado. Lucía y Juan quedan para las clases
+		// grupales.
+		{"Musculación", "martin", conSabado, "08:00", 0, 50},
+		{"Musculación", "martin", conSabado, "10:00", 0, 50},
+		{"Musculación", "martin", conSabado, "12:00", 0, 50},
+		{"Musculación", "martin", habiles, "14:00", 0, 50},
+		{"Musculación", "martin", habiles, "16:00", 0, 50},
+		{"Musculación", "martin", habiles, "18:00", 0, 50},
+		{"Musculación", "martin", habiles, "20:00", 0, 50},
 	}
 	creados := 0
 	for _, h := range horarios {
@@ -260,7 +263,7 @@ func asegurarHorarios(token, actividadID, profesorID string, h horario) int {
 			continue
 		}
 		// El gateway admite 10 solicitudes por segundo por usuario (D-79): con
-		// los 49 turnos de Musculación hay que espaciar las altas.
+		// los 38 turnos de Musculación hay que espaciar las altas.
 		time.Sleep(150 * time.Millisecond)
 		pedir(token, http.MethodPost, "/activities/"+actividadID+"/schedules", map[string]any{"dia_semana": dia, "inicio": h.inicio, "duracion_minutos": h.duracion, "profesor_id": profesorID, "capacidad": h.capacidad}, "", nil)
 		creados++

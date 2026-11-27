@@ -43,6 +43,8 @@ confirma con members-service (`/internal/v1/profesores`): debe ser un PROFESOR a
 |---|---|---|
 | 400 | `VALIDACION` | Capacidad fuera de tope, franja de Musculación inválida o responsable que no es un PROFESOR activo |
 | 409 | `SUPERPOSICION_PROFESOR` | El profesor ya es responsable de una clase superpuesta (RN-08, CA-07.4) |
+| 409 | `TOPE_MENOR_A_RESERVAS` | El tope nuevo de la actividad es menor que las reservas de una clase futura (CA-06.5, D-105) |
+| 422 | `GIMNASIO_CERRADO` | El horario cae en domingo o un sábado termina después de las 14:00 (S-02, CA-07.1b, D-104) |
 | 409 | `TRANSICION_INVALIDA` | Inactivar una actividad con clases futuras reservadas (CA-06.3) |
 
 ## Clases

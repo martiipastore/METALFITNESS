@@ -2,7 +2,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../../auth/session';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { fullName, Person } from '../admin/types';
-import { Actividad, DAYS, errorText, Horario, todayPlus } from './types';
+import { Actividad, DAYS, errorText, Horario, OPENING_HOURS, SATURDAY, SATURDAY_CLOSE, SUNDAY, todayPlus } from './types';
 
 // Actividades, horarios recurrentes y generación de clases (booking.v1, HU-06 y
 // HU-07). Topes, franjas de Musculación, responsable PROFESOR y superposiciones
@@ -211,7 +211,7 @@ export function ActivitiesPage() {
             <span aria-hidden="true">03</span>
             <div><p>Actividad seleccionada</p><h2>Horarios de {current.nombre}</h2></div>
           </div>
-          <p className="muted">Al agregar un horario se generan sus clases desde el {period.desde} hasta el {period.hasta} (período de la sección 04). Para ponerle horario a otra actividad, tocá «Horarios» en la tabla.</p>
+          <p className="muted">Al agregar un horario se generan sus clases desde el {period.desde} hasta el {period.hasta} (período de la sección 04). Para ponerle horario a otra actividad, tocá «Horarios» en la tabla. {OPENING_HOURS}</p>
           {schedules.length === 0 ? (
             <p>Sin horarios.</p>
           ) : (
@@ -227,13 +227,13 @@ export function ActivitiesPage() {
           <form className="inline-form" onSubmit={createSchedule}>
             <label>Día
               <select value={schedule.dia} onChange={(e) => setSchedule({ ...schedule, dia: e.target.value })}>
-                {DAYS.slice(1).map((d, i) => <option key={d} value={i + 1}>{d}</option>)}
+                {DAYS.slice(1, SUNDAY).map((d, i) => <option key={d} value={i + 1}>{d === 'Sábado' ? `Sábado (hasta las ${SATURDAY_CLOSE})` : d}</option>)}
               </select>
             </label>
             <label>Inicio
               {current.musculacion ? (
                 <select value={schedule.inicio} onChange={(e) => setSchedule({ ...schedule, inicio: e.target.value })}>
-                  {MUSCLE_SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {MUSCLE_SLOTS.filter((s) => Number(schedule.dia) !== SATURDAY || s < '13:00').map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               ) : (
                 <input type="time" value={schedule.inicio} onChange={(e) => setSchedule({ ...schedule, inicio: e.target.value })} required />

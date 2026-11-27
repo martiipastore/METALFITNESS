@@ -56,24 +56,38 @@ func (d *DB) CrearActividad(ctx context.Context, actor string, a domain.Activida
 	return out, traducir(err)
 }
 
-// ModificarActividad bloquea la actividad y aplica cambiar (CA-06.2, CA-06.3).
-func (d *DB) ModificarActividad(ctx context.Context, actor, id string, cambiar func(domain.Actividad, bool) (domain.Actividad, error)) (domain.Actividad, error) {
+// ModificarActividad bloquea la actividad y aplica cambiar (CA-06.2, CA-06.3,
+// CA-06.5). Si el tope baja, la misma transacción ajusta horarios y clases
+// futuras programadas; el trigger de clases publica cada cambio (búsqueda y
+// cupos en vivo).
+func (d *DB) ModificarActividad(ctx context.Context, actor, id string, cambiar func(domain.Actividad, domain.ClasesFuturas) (domain.Actividad, error)) (domain.Actividad, error) {
 	var out domain.Actividad
 	err := d.tx(ctx, func(tx pgx.Tx) error {
 		actual, err := scanActividad(tx.QueryRow(ctx, `SELECT `+actividadCols+` FROM actividades WHERE id=$1 FOR UPDATE`, id))
 		if err != nil {
 			return err
 		}
-		var conReservas bool
-		if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM clases c JOIN reservas r ON r.clase_id=c.id AND r.estado='CONFIRMADA' WHERE c.actividad_id=$1 AND c.estado='PROGRAMADA' AND c.inicio>now())`, id).Scan(&conReservas); err != nil {
+		var futuras domain.ClasesFuturas
+		if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM clases c JOIN reservas r ON r.clase_id=c.id AND r.estado='CONFIRMADA' WHERE c.actividad_id=$1 AND c.estado='PROGRAMADA' AND c.inicio>now()),
+			COALESCE((SELECT max(ocupacion) FROM clases WHERE actividad_id=$1 AND estado='PROGRAMADA' AND inicio>now()), 0)`, id).Scan(&futuras.ConReservas, &futuras.OcupacionMaxima); err != nil {
 			return err
 		}
-		nueva, err := cambiar(actual, conReservas)
+		nueva, err := cambiar(actual, futuras)
 		if err != nil {
 			return err
 		}
 		out, err = scanActividad(tx.QueryRow(ctx, `UPDATE actividades SET nombre=$2,capacidad_maxima=$3,activa=$4,actualizada_en=now(),actualizada_por=$5 WHERE id=$1 RETURNING `+actividadCols, id, nueva.Nombre, nueva.CapacidadMaxima, nueva.Activa, actor))
 		if err != nil {
+			return err
+		}
+		// Siempre, no solo cuando el tope baja: corrige también datos guardados
+		// antes de esta regla (horarios o clases por encima del tope vigente).
+		// Las condiciones capacidad>tope hacen que, si no hay nada que ajustar,
+		// no se escriba ni se publique nada.
+		if _, err = tx.Exec(ctx, `UPDATE horarios SET capacidad=$2 WHERE actividad_id=$1 AND capacidad>$2`, id, nueva.CapacidadMaxima); err != nil {
+			return err
+		}
+		if _, err = tx.Exec(ctx, `UPDATE clases SET capacidad=$2 WHERE actividad_id=$1 AND estado='PROGRAMADA' AND inicio>now() AND capacidad>$2`, id, nueva.CapacidadMaxima); err != nil {
 			return err
 		}
 		return auditar(ctx, tx, actor, "MODIFICAR", "actividad", id, "")

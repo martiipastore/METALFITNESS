@@ -66,7 +66,7 @@ func TestBusquedaPostgres(t *testing.T) {
 
 	t.Run("renombrar_actividad_republica_sus_clases", func(t *testing.T) {
 		antes := len(eventos(c.ID))
-		_, err := db.ModificarActividad(ctx, uuidN(1), zumba.ID, func(a domain.Actividad, _ bool) (domain.Actividad, error) {
+		_, err := db.ModificarActividad(ctx, uuidN(1), zumba.ID, func(a domain.Actividad, _ domain.ClasesFuturas) (domain.Actividad, error) {
 			a.Nombre = "Zumba Fitness"
 			return a, nil
 		})
@@ -74,7 +74,7 @@ func TestBusquedaPostgres(t *testing.T) {
 		evs := eventos(c.ID)
 		require.Len(t, evs, antes+1)
 		require.Equal(t, "Zumba Fitness", evs[len(evs)-1]["actividad_nombre"])
-		_, err = db.ModificarActividad(ctx, uuidN(1), zumba.ID, func(a domain.Actividad, _ bool) (domain.Actividad, error) {
+		_, err = db.ModificarActividad(ctx, uuidN(1), zumba.ID, func(a domain.Actividad, _ domain.ClasesFuturas) (domain.Actividad, error) {
 			a.CapacidadMaxima = 25
 			return a, nil
 		})

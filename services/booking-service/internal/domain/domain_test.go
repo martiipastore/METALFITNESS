@@ -37,6 +37,50 @@ func TestCA06_2TopesDeCapacidad(t *testing.T) {
 	}
 }
 
+// S-02 y D-104: de lunes a viernes todo el día, sábado hasta las 14:00 y
+// domingo cerrado. El límite del sábado es inclusivo (12:00–14:00 entra).
+func TestS02AperturaDelGimnasio(t *testing.T) {
+	musc := Actividad{ID: "m", Nombre: "Musculación", CapacidadMaxima: 50, Musculacion: true, Activa: true}
+	gap := Actividad{ID: "g", Nombre: "GAP", CapacidadMaxima: 30, Activa: true}
+	casos := []struct {
+		nombre string
+		a      Actividad
+		h      Horario
+		err    error
+	}{
+		{"viernes 20:00–22:00", musc, Horario{DiaSemana: 5, InicioMinutos: 20 * 60, DuracionMinutos: 120, ProfesorID: "p", Capacidad: 50}, nil},
+		{"sábado 08:00–10:00", musc, Horario{DiaSemana: Sabado, InicioMinutos: 8 * 60, DuracionMinutos: 120, ProfesorID: "p", Capacidad: 50}, nil},
+		{"sábado 12:00–14:00 (límite)", musc, Horario{DiaSemana: Sabado, InicioMinutos: 12 * 60, DuracionMinutos: 120, ProfesorID: "p", Capacidad: 50}, nil},
+		{"sábado GAP 10:00–11:00", gap, Horario{DiaSemana: Sabado, InicioMinutos: 10 * 60, DuracionMinutos: 60, ProfesorID: "p", Capacidad: 20}, nil},
+		{"sábado 14:00–16:00", musc, Horario{DiaSemana: Sabado, InicioMinutos: 14 * 60, DuracionMinutos: 120, ProfesorID: "p", Capacidad: 50}, ErrGimnasioCerrado},
+		{"sábado 13:30–14:30", gap, Horario{DiaSemana: Sabado, InicioMinutos: 13*60 + 30, DuracionMinutos: 60, ProfesorID: "p", Capacidad: 20}, ErrGimnasioCerrado},
+		{"domingo 10:00–12:00", musc, Horario{DiaSemana: Domingo, InicioMinutos: 10 * 60, DuracionMinutos: 120, ProfesorID: "p", Capacidad: 50}, ErrGimnasioCerrado},
+		{"domingo GAP 09:00", gap, Horario{DiaSemana: Domingo, InicioMinutos: 9 * 60, DuracionMinutos: 60, ProfesorID: "p", Capacidad: 20}, ErrGimnasioCerrado},
+	}
+	for _, c := range casos {
+		if err := ValidarHorario(c.a, c.h); !errors.Is(err, c.err) && !(c.err == nil && err == nil) {
+			t.Errorf("%s: error %v, se esperaba %v", c.nombre, err, c.err)
+		}
+	}
+}
+
+// CA-06.5 y D-105: el tope de una actividad no puede quedar por debajo de las
+// reservas de una clase futura (el límite es inclusivo).
+func TestCA06_5TopeNoMenorQueReservas(t *testing.T) {
+	a := Actividad{Nombre: "CrossFit", CapacidadMaxima: 1}
+	if err := a.ValidarTope(ClasesFuturas{ConReservas: true, OcupacionMaxima: 5}); !errors.Is(err, ErrTopeMenorQueReservas) {
+		t.Errorf("tope 1 con 5 reservas: %v", err)
+	}
+	a.CapacidadMaxima = 5
+	if err := a.ValidarTope(ClasesFuturas{ConReservas: true, OcupacionMaxima: 5}); err != nil {
+		t.Errorf("tope igual a las reservas debe aceptarse: %v", err)
+	}
+	a.CapacidadMaxima = 1
+	if err := a.ValidarTope(ClasesFuturas{}); err != nil {
+		t.Errorf("sin reservas cualquier tope válido se acepta: %v", err)
+	}
+}
+
 func TestCA07_3FranjasDeMusculacion(t *testing.T) {
 	musc := Actividad{ID: "m", Nombre: "Musculación", CapacidadMaxima: 50, Musculacion: true, Activa: true}
 	base := Horario{ActividadID: "m", DiaSemana: 1, DuracionMinutos: 120, ProfesorID: "p", Capacidad: 50}
@@ -84,8 +128,17 @@ func TestCA07_1Y07_2GeneracionDeClases(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(clases) != 49 {
-		t.Fatalf("una semana de Musculación son 49 turnos, hubo %d", len(clases))
+	// D-104: aunque existan horarios de los 7 días (cargados antes de la regla
+	// de apertura), una semana son 7 turnos de lunes a viernes más los 3 del
+	// sábado hasta las 14:00; el domingo no genera nada.
+	if len(clases) != 38 {
+		t.Fatalf("una semana de Musculación son 38 turnos, hubo %d", len(clases))
+	}
+	for _, c := range clases {
+		local := c.Inicio.In(Zona)
+		if local.Weekday() == time.Sunday || (local.Weekday() == time.Saturday && c.Fin.In(Zona).Hour() > 14) {
+			t.Errorf("se generó una clase con el gimnasio cerrado: %s", local.Format("Mon 02/01 15:04"))
+		}
 	}
 	if f := clases[0].Franja(); f == nil || *f != "08:00-10:00" {
 		t.Errorf("primera franja inesperada: %v", f)

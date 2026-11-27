@@ -1287,6 +1287,17 @@ button.link { background: none; border: 0; padding: 0; color: var(--accent); fon
   padding: 0;
 }
 .week-empty { margin: 0; color: var(--muted); font-size: 0.85rem; }
+/* Domingo: el gimnasio cierra (S-02, D-104). */
+.week-day-closed { border-style: dashed; }
+.week-closed {
+  margin: 0;
+  font-family: var(--display-font, inherit);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.week-hours { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.75rem; }
 
 .week-block {
   display: grid;

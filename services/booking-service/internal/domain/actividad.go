@@ -72,6 +72,24 @@ func (a Actividad) Validar() error {
 	return nil
 }
 
+// ClasesFuturas resume las clases futuras programadas de una actividad: si
+// alguna tiene reservas confirmadas y la mayor ocupación entre ellas.
+type ClasesFuturas struct {
+	ConReservas     bool
+	OcupacionMaxima int
+}
+
+// ValidarTope (CA-06.5, D-105): la capacidad de una clase nunca supera el
+// máximo de su actividad, así que bajar el tope ajusta horarios y clases
+// futuras; pero no puede quedar por debajo de las reservas que ya tiene una
+// clase futura.
+func (a Actividad) ValidarTope(f ClasesFuturas) error {
+	if a.CapacidadMaxima < f.OcupacionMaxima {
+		return ErrTopeMenorQueReservas
+	}
+	return nil
+}
+
 // Horario es la regla recurrente a partir de la cual se generan clases (HU-07).
 type Horario struct {
 	ID              string
@@ -87,11 +105,35 @@ type Horario struct {
 // FinMinutos es el minuto del día en que termina el horario.
 func (h Horario) FinMinutos() int { return h.InicioMinutos + h.DuracionMinutos }
 
-// ValidarHorario aplica RN-07, RN-08 y CA-07.3 para la actividad dada. Que el
-// responsable sea un PROFESOR activo lo confirma members-service (CA-07.6).
+// Días de apertura del gimnasio (S-02, D-104): de lunes a viernes todo el día,
+// los sábados hasta las 14:00 y los domingos cerrado.
+const (
+	Sabado       = 6
+	Domingo      = 7
+	CierreSabado = 14 * 60
+)
+
+// GimnasioAbierto indica si un horario cae dentro de los días y horas de
+// apertura: nada el domingo y, el sábado, solo lo que termina hasta las 14:00.
+func GimnasioAbierto(h Horario) bool {
+	switch h.DiaSemana {
+	case Domingo:
+		return false
+	case Sabado:
+		return h.FinMinutos() <= CierreSabado
+	}
+	return true
+}
+
+// ValidarHorario aplica RN-07, RN-08, CA-07.3 y la apertura del gimnasio
+// (S-02) para la actividad dada. Que el responsable sea un PROFESOR activo lo
+// confirma members-service (CA-07.6).
 func ValidarHorario(a Actividad, h Horario) error {
 	if !a.Activa || h.DiaSemana < 1 || h.DiaSemana > 7 || h.Capacidad < 1 || h.Capacidad > a.CapacidadMaxima || h.ProfesorID == "" {
 		return ErrValidacion
+	}
+	if !GimnasioAbierto(h) {
+		return ErrGimnasioCerrado
 	}
 	if a.Musculacion {
 		if h.DuracionMinutos != DuracionMusculacion || !esFranjaMusculacion(h.InicioMinutos) {

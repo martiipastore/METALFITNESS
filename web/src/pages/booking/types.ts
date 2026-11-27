@@ -84,6 +84,13 @@ const isoDate = new Intl.DateTimeFormat('en-CA', { timeZone: ZONE, year: 'numeri
 
 export const DAYS = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
+// Apertura del gimnasio (S-02, D-104): lunes a viernes todo el día, sábados
+// hasta las 14:00 y domingos cerrado. Booking lo vuelve a validar siempre.
+export const SATURDAY = 6;
+export const SUNDAY = 7;
+export const SATURDAY_CLOSE = '14:00';
+export const OPENING_HOURS = 'El gimnasio abre de lunes a viernes y los sábados hasta las 14:00; los domingos está cerrado.';
+
 export const BOOKING_STATES: Record<string, string> = {
   CONFIRMADA: 'Confirmada',
   CANCELADA: 'Cancelada',

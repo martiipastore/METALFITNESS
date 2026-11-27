@@ -749,7 +749,7 @@ func bookingFlow(base, mailURL string, sql func(string, string) string, admin fu
 	// Horario de mañana: no depende de la hora a la que se ejecute la prueba.
 	zone, err := time.LoadLocation("America/Argentina/Buenos_Aires")
 	must(err)
-	tomorrow := time.Now().In(zone).AddDate(0, 0, 1)
+	tomorrow := diaHabil(time.Now().In(zone).AddDate(0, 0, 1))
 	weekday := int(tomorrow.Weekday())
 	if weekday == 0 {
 		weekday = 7
@@ -840,7 +840,7 @@ func revocationFlow(base, mailURL, password, today string, sql func(string, stri
 	professor := sql("booking_db", "SELECT profesor_id FROM clases LIMIT 1;")
 	zone, err := time.LoadLocation("America/Argentina/Buenos_Aires")
 	must(err)
-	day := time.Now().In(zone).AddDate(0, 0, 2)
+	day := diaHabil(time.Now().In(zone).AddDate(0, 0, 2))
 	weekday := int(day.Weekday())
 	if weekday == 0 {
 		weekday = 7
@@ -902,7 +902,7 @@ func revocationFlow(base, mailURL, password, today string, sql func(string, stri
 	status, person := request(base, "POST", "/api/v1/users", admin(""), map[string]string{"rol": "PROFESOR", "nombre": "Persona", "apellido": "Sin clases", "dni": "30111777", "email": "revocation-prof@example.test", "fecha_nacimiento": "1990-01-01"})
 	ensure(status == 201, "No crea profesor sin clases")
 	idle := person["id"].(string)
-	later := day.AddDate(0, 0, 1)
+	later := diaHabil(day.AddDate(0, 0, 1))
 	laterWeekday := int(later.Weekday())
 	if laterWeekday == 0 {
 		laterWeekday = 7
@@ -1625,7 +1625,7 @@ func searchFlow(base, password string, fx searchFixture, sql func(string, string
 	professor := sql("members_db", "SELECT id FROM usuarios WHERE email='booking-prof@example.test';")
 	zone, err := time.LoadLocation("America/Argentina/Buenos_Aires")
 	must(err)
-	tomorrow := time.Now().In(zone).AddDate(0, 0, 1)
+	tomorrow := diaHabil(time.Now().In(zone).AddDate(0, 0, 1))
 	weekday := int(tomorrow.Weekday())
 	if weekday == 0 {
 		weekday = 7
@@ -1934,4 +1934,15 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("%s E2E: %d escenarios aprobados. Informe: %s\n", result.Stage, len(result.Checks), path)
+}
+
+// diaHabil devuelve la misma fecha o el próximo día de lunes a viernes. Los
+// escenarios cargan horarios a cualquier hora y el gimnasio cierra los
+// domingos y los sábados desde las 14:00 (S-02, D-104): así la prueba no
+// depende del día en que se ejecute.
+func diaHabil(t time.Time) time.Time {
+	for t.Weekday() == time.Saturday || t.Weekday() == time.Sunday {
+		t = t.AddDate(0, 0, 1)
+	}
+	return t
 }

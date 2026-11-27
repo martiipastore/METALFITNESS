@@ -98,7 +98,7 @@ Dentro del alcance de esta especificación:
 | ID | Supuesto |
 |---|---|
 | S-01 | Existe una única sede y una única zona horaria de referencia: **America/Argentina/Buenos_Aires**. Todas las fechas y horas de negocio ("hoy", "futura", "vence hoy") se evalúan en esa zona. |
-| S-02 | Musculación funciona de lunes a domingo entre **08:00 y 23:00**, con **7 turnos reservables de 2 horas por día**: 08:00–10:00, 10:00–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–20:00 y 20:00–22:00. El administrador puede cancelar un turno puntual. |
+| S-02 | El gimnasio abre **de lunes a viernes** todo el día, **los sábados hasta las 14:00** y **cierra los domingos** (D-104, 27/11/2026). Musculación tiene **7 turnos reservables de 2 horas por día** de lunes a viernes (08:00–10:00, 10:00–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–20:00 y 20:00–22:00) y los sábados los 3 que terminan hasta las 14:00 (08:00–10:00, 10:00–12:00 y 12:00–14:00). Ningún horario puede caer en domingo ni terminar después de las 14:00 un sábado. El administrador puede cancelar un turno puntual. |
 | S-03 | Las clases del resto de las actividades duran lo que defina su horario (por defecto 60 minutos). |
 | S-04 | Una membresía es **vigente** durante todo el día de su fecha de vencimiento (hasta las 23:59:59 de ese día). |
 | S-05 | Para reservar, la membresía debe estar vigente **al momento de reservar y en la fecha de la clase**. |
@@ -323,12 +323,14 @@ Reglas: RN-07, RN-08, RN-20.
 - **CA-06.2** Dada una actividad, cuando se intenta configurar una capacidad máxima mayor al tope (50 Musculación / 30 resto), entonces se rechaza.
 - **CA-06.3** Dada una actividad con clases futuras con reservas, cuando se inactiva, entonces se rechaza hasta que las clases futuras se cancelen.
 - **CA-06.4** Dada cualquier actividad, cuando se intenta configurar un valor de puntos por asistencia distinto de 500, entonces se rechaza conforme a RN-20.
+- **CA-06.5** Dada una actividad con horarios y clases futuras, cuando el administrador baja su capacidad máxima, entonces los horarios y las clases futuras programadas con más capacidad quedan con la capacidad nueva y los alumnos ven los lugares reales; si alguna clase futura ya tiene más reservas que la capacidad nueva, el cambio se rechaza con `TOPE_MENOR_A_RESERVAS` y no se modifica nada (D-105).
 
 #### HU-07 — Configurar horarios y generar clases
 *Como administrador, quiero definir horarios recurrentes y generar las clases, para que los alumnos puedan reservar.*
 Reglas: RN-07, RN-08, RN-09, RN-10.
 
-- **CA-07.1** Dado el horario de Musculación, cuando se generan las clases de una semana, entonces existen 7 turnos de 2 horas por día (08:00–10:00, 10:00–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–20:00 y 20:00–22:00), cada uno con capacidad 50.
+- **CA-07.1** Dado el horario de Musculación, cuando se generan las clases de una semana, entonces existen 7 turnos de 2 horas por día de lunes a viernes (08:00–10:00, 10:00–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–20:00 y 20:00–22:00) y 3 el sábado (08:00–10:00, 10:00–12:00 y 12:00–14:00), cada uno con capacidad 50; el domingo no hay turnos (D-104).
+- **CA-07.1b** Dado cualquier horario que caiga en domingo o que un sábado termine después de las 14:00, cuando el administrador intenta crearlo, entonces se rechaza con `GIMNASIO_CERRADO` (D-104).
 - **CA-07.2** Dado un horario de Zumba los martes 19:00 de 60 minutos, cuando se generan las clases del mes, entonces se crea una clase PROGRAMADA por cada martes con capacidad ≤ 30 y el profesor responsable indicado.
 - **CA-07.3** Dado un turno de Musculación que no coincide con una de las 7 franjas de 2 horas (ej.: 22:30–23:30), cuando se intenta crear, entonces se rechaza.
 - **CA-07.4** Dado un profesor con una clase de 19:00 a 20:00, cuando se le asigna otra clase que se superpone, entonces se rechaza.
@@ -626,7 +628,7 @@ Reglas: RN-26.
 
 | ID | Regla |
 |---|---|
-| **RN-07** | **Musculación.** Funciona de 08:00 a 23:00 con **7 turnos reservables de 2 horas por día**: 08:00–10:00, 10:00–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–20:00 y 20:00–22:00. No se crean turnos fuera de esas franjas. Capacidad máxima por turno: **50**. |
+| **RN-07** | **Musculación.** De lunes a viernes, **7 turnos reservables de 2 horas por día**: 08:00–10:00, 10:00–12:00, 12:00–14:00, 14:00–16:00, 16:00–18:00, 18:00–20:00 y 20:00–22:00; los sábados, solo los 3 que terminan hasta las 14:00; los domingos, ninguno (apertura del gimnasio, S-02 y D-104). No se crean turnos fuera de esas franjas. Capacidad máxima por turno: **50**. |
 | **RN-08** | **Otras actividades y responsables.** Funcional, GAP, Strong Nation, Zumba (y nuevas actividades) tienen días y horarios configurables. Capacidad máxima por clase: **30**. El responsable de un horario o clase debe ser un **PROFESOR** ACTIVO (nunca un nutricionista) y no puede ser responsable de dos clases que se superpongan en el tiempo. |
 | **RN-09** | **Generación de clases.** Las clases se generan a partir de horarios para un período. Generar dos veces el mismo período no duplica clases (una actividad no puede tener dos clases con la misma fecha-hora de inicio). |
 | **RN-10** | **Capacidad de clase.** `1 ≤ capacidad ≤ máximo de la actividad`. No puede reducirse por debajo de la ocupación actual. Solo se modifica en clases PROGRAMADA. |
