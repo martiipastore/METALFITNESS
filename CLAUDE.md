@@ -163,7 +163,7 @@ Conventional Commits y GitHub Flow; ver [CONTRIBUTING.md](CONTRIBUTING.md). Rama
 | Comando | Qué hace |
 |---|---|
 | `make demo` | Procedimiento único (§2.12): `scripts/preparar-entorno.go` crea `.env` con secretos aleatorios y todos los flags prendidos (no pisa uno existente; `-forzar` regenera y conserva la clave de MELT), levanta el stack con los perfiles `search` e `identity` (Mailpit) y reindexa |
-| `go run scripts/cargar-datos-demo.go` | Con el stack de `make demo` arriba: carga por el gateway dos profesores, una alumna activada con membresía (imprime su contraseña una vez), horarios, clases de dos semanas y el catálogo de la cuponera (seis beneficios sin vencimiento). Idempotente |
+| `go run scripts/cargar-datos-demo.go` | Con el stack de `make demo` arriba: carga por el gateway tres profesores (uno solo para Musculación), una alumna activada con membresía (imprime su contraseña una vez), horarios (Musculación con 7 turnos diarios de lunes a domingo), clases de dos semanas y el catálogo de la cuponera (seis beneficios sin vencimiento). Idempotente |
 | `cp .env.example .env && make up` | Construye y levanta todo el stack; espera a que esté *healthy* |
 | `make down` / `make clean` | Baja el stack / lo baja y borra los volúmenes |
 | `make logs s=<servicio>` / `make ps` | Logs en vivo / estado de los contenedores |
